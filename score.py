@@ -33,7 +33,6 @@ class Score:
     def pad(self, beats: float) -> Score: # Returns padded Score copy
         padded = deepcopy(self)
         padded.notes.append({'tone':0,'sustain_time':0.0,'reserved_time':beats,'amplitude':0.0})
-        
         return padded
 
     def plus(self, note_string: str) -> Score: # Returns copy with notes at end
@@ -47,14 +46,19 @@ class Score:
         return joined
 
     # Debug function for reach()
-    def peek_len(self) -> Score:
-        print(str(self.len()))
+    def peek_notes(self) -> Score:
+        print([n["tone"] for n in self.notes])
         return self
 
     # Recursive function to repeat the original loop until len reaches
     # that of other. If a repeat of the original would surpas len of other,
     # a pad is done instead.
     def reach(self, length: float) -> Score:
+
+        # Empty score objects should stay that way
+        if (self.len() == 0.0):
+            return self.pad(length)
+
         if self.len() < length:
             s = self.plus(self._original)
             if s.len() <= length:
