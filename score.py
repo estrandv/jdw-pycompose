@@ -4,27 +4,20 @@ import jackdaw
 from copy import deepcopy
 from pretty_midi.utilities import note_number_to_hz
 
+from scales import transpose
+
 import json
 import requests
 import random 
 
-def parse(note_string: str, to_hz: bool = True) -> List[Dict]:
+def parse(note_string: str) -> List[Dict]:
     notes = jackdaw.parse(note_string)
-    # Replace note indices with actual hz
-    for note in notes:
-        if to_hz:
-            note["tone"] = note_number_to_hz(note["tone"])
-        else:
-            # jdw-sequencer expects float/decimal format for tone, even when not in hz
-            note["tone"] = float(note["tone"])
     return notes
 
-
 class Score:
-    def __init__(self, note_string: str = "", to_hz: bool = True):
-        self.notes: List[Dict] = parse(note_string, to_hz)
+    def __init__(self, note_string: str = ""):
+        self.notes: List[Dict] = parse(note_string)
         self._original: str = note_string
-        self.to_hz = to_hz
 
     def len(self) -> float:
         return sum([e['reserved_time'] for e in self.notes])
@@ -37,7 +30,7 @@ class Score:
 
     def plus(self, note_string: str) -> Score: # Returns copy with notes at end
         extended = deepcopy(self)
-        extended.notes = extended.notes + parse(note_string, to_hz=self.to_hz)
+        extended.notes = extended.notes + parse(note_string)
         return extended
 
     def join(self, other: Score) -> Score:
@@ -68,21 +61,40 @@ class Score:
         else:
             return self
 
+    # Apply the scales.py scale to the parsed notes
+    def scale(self, scale: List[int]) -> Score:
+        for note in self.notes:
+            note["tone"] = transpose(note["tone"], scale)
+        return self
+
+    # Translate note tones to a viable format prior to sending 
+    def _prepare(self, to_hz: bool):
+        # Replace note indices with actual hz
+        for note in self.notes:
+            if to_hz:
+                note["tone"] = note_number_to_hz(note["tone"])
+            else:
+                # jdw-sequencer expects float/decimal format for tone, even when not in hz
+                note["tone"] = float(note["tone"])
+
     ### Rest call stuff
 
     def post_sample(self, name: str, key: str):
+        self._prepare(False)
         response = requests.post(
             'http://localhost:8000/queue/prosc_sample/'+ key + '/' + name,
             json=self.notes
         )
 
     def post(self, name: str, key: str):
+        self._prepare(True)
         response = requests.post(
             'http://localhost:8000/queue/midi/'+ key + '/' + name,
             json=self.notes
         )    
 
     def post_prosc(self, name: str, key: str):
+        self._prepare(True)
         response = requests.post(
             'http://localhost:8000/queue/prosc/'+ key + '/' + name,
             json=self.notes

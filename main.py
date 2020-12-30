@@ -1,12 +1,13 @@
 from rest_client import *
-
-
-# Score("cccc").stretch(8).post_prosc("b", "longsaw")
+from scales import *
+from score import Score
 
 loop=8.0
-bpm(60)
+bpm(120)
 
-Score("M(a-e[.a]g-..)~:4 5").reach(loop).post_prosc("b", "blipp")
-Score("M([ae]x[eg]x)~:4 6").reach(loop).post_prosc("bgg", "longsaw")
-Score("M(e--- a-g-)~:3 4").reach(loop).post_prosc("cobb", "longsaw")
-Score("(cage) 3").reach(loop).post_sample("dopp", "KORGER1Samples")
+# TODO: STILL wrong, even with test correct. Might be test expects the wrong thing.
+
+Score("(abcd efgh i)~:3 4").reach(loop).scale(MAJOR).post_prosc("b", "blipp")
+#Score("(cage) 3").reach(loop).post_sample("dopp", "KORGER1Samples")
+
+test()
