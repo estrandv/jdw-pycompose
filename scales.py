@@ -2,28 +2,14 @@ from __future__ import annotations # Not needed after python 3.10
 
 # 0:C 1:C# 2:D 3:D# 4:E 5:F 6:F# 7:G 8:G# 9:A 10:A# 11:B
 
-
 CHROMATIC=[0,1,2,3,4,5,6,7,8,9,11]
-MAJOR=[0,2,4,5,7,9,11] # TODO: Next tone is 12, but our math would resolve it to 11 again. It's next octave.
+MAJOR=[0,2,4,5,7,9,11]
 MAJOR_PENTATONIC=[0,2,4,7,9]
 MINOR=[0,2,3,5,7,8,10]
 MINOR_PENTATONIC=[0,3,5,7,10]
 EGYPTIAN=[0,2,5,7,10]
 HUNGARIAN_MINOR=[0,2,3,6,7,8,11]
 
-# TODO: Trying to wrap my head around this.
-# THe tricky part is that we need to loop around both scales and octaves
-# While at the same time continuing the scales in a custom fashion
-# [0,2,4] has three tones, what should the fourth be? If it's index+value it's 4, but that's wrong.
-# It should be 12; the start of the next octave. It diesn't loop around, it applies itself on
-# the next octave. 
-
-# SO THE FORMULA IS?
-# a. Find where in the octave the tone is, e.g. c4 would be 0
-# b. Save which octave you're in
-# c. Find out if the scale value for the octave tone, e.g. 0 in major would be 0
-# d. If the octave tone is greater than the scale, we get a "bonus octave" by the number
-# e. End result is scale[octave_tone] 
 def transpose(tone_index: int, scale: List[int]) -> int:
 
     # A MIDI Octave is 12 notes, starting with note 0 and ending with 11.
@@ -70,7 +56,7 @@ def transpose(tone_index: int, scale: List[int]) -> int:
     return final
 
 # Test to verify tones as expected for major scale
-def test():
+def test_scales():
 
     # The tones are as decoded from parsing lib, starting at A
     # A should be the first note in the third or fourth octave
