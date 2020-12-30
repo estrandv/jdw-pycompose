@@ -46,22 +46,22 @@ def transpose(tone_index: int, scale: List[int]) -> int:
     print("Position in octave: " + str(tone_index_in_octave))
 
     # The amount of times (rounded down) that the tone rounds the available indices in the array
-    # Given an array with max index 4 and a tone of 11, the overshoot would be 2
     # We want to basically loop around the scale to find an available index that matches the 
     # tone index in octave.
     # If index is 4 and the scale has a max index of 3, we get 1 overshoot
-    #   In that case, remainder would calculate as 4 - (1 * 3) = 1
+    #   In that case, position_in_scale would calculate as 4 - (1 * 3) = 1
     overshoot = int(tone_index_in_octave / scale_indices)
     print("Scale Overshoot: " + str(overshoot))
-    remainder = tone_index_in_octave - (overshoot * scale_indices)
-    print("Selected Scale Index: " + str(remainder))
+    position_in_scale = tone_index_in_octave - (overshoot * scale_indices)
+    print("Selected Scale Index: " + str(position_in_scale))
 
     # By now we know the position in the octave and how to divide that to get the 
-    #   position in the scale. We can then add that value to the original tone plus
-    #   any bonus octaves from overshoot.
-    final = scale[remainder] + tone_index + ((overshoot) * octave_len)
+    #   position in the scale. Thus we can get the scale tone for octave 0 
+    #   by using scale[position_in_scale]. After that we can just add back
+    #   all the octaves we've stripped away using overshoot and octave_index
+    final = scale[position_in_scale] + ((overshoot + octave_index) * octave_len)
 
-    print("Scale value: " + str(scale[remainder]))
+    print("Scale value: " + str(scale[position_in_scale]))
 
     print("final (in octave): " + str(final))
     print("----------------")
@@ -74,17 +74,13 @@ def test():
 
     # The tones are as decoded from parsing lib, starting at A
     # A should be the first note in the third or fourth octave
-    # But my scale lib says it should be the third in the third (fourth, technically)
-    # OCTAVES:
-    # 1: starts at 0, ends at 11
-    # 2: starts at 12, ends at 23
-    # 3: starts at 24, ends at 35
-    # 4: starts at 36
-    # Thus my scale lib is lying about octave position.
+    
+    # Third octave: [36,37,38,39, 40,41,42,43 44,45,46,47]
+    #                 c    d       e f     g     a     b  
 
     tones = [36,37,38,39, 40,41,42, 43]
     scale=[0,2,4,5,7,9,11]
-    expected = [36,39,42,44, 47,50,53, 55]
+    expected = [36,38,40,41, 43,45,47, 48]
     
     i = 0
     for tone in tones:

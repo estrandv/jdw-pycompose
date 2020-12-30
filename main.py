@@ -3,11 +3,15 @@ from scales import *
 from score import Score
 
 loop=8.0
-bpm(120)
+bpm(160)
 
 # TODO: STILL wrong, even with test correct. Might be test expects the wrong thing.
 
-Score("(abcd efgh i)~:3 4").reach(loop).scale(MAJOR).post_prosc("b", "blipp")
-#Score("(cage) 3").reach(loop).post_sample("dopp", "KORGER1Samples")
+scale = MINOR
 
-test()
+Score("([a~b!][b~b!]a- [d~d!]i[g~j!]b~ )~:2 5").reach(loop).scale(scale).post_prosc("b", "blipp")
+Score("(a--- e---)~:3 4").reach(loop).scale(scale).post_prosc("c", "blipp")
+Score("([a~:3b]x[d~:3b]x[e~:3b]x[c~:3b]x) 5").reach(loop).scale(scale).post_prosc("d", "longsaw")
+Score("(a8a!!a![aaaa]) 2").reach(loop).post_sample("dopp", "KORGER1Samples")
+
+#test()
