@@ -15,57 +15,55 @@ def parse(note_string: str) -> List[Dict]:
     return notes
 
 class Score:
-    def __init__(self, note_string: str = ""):
-        self.notes: List[Dict] = parse(note_string)
-        self._original: str = note_string
+    def __init__(self):
+        self.notes: List[Dict] = []
+        self._latest_note_string = ""
 
     def len(self) -> float:
         return sum([e['reserved_time'] for e in self.notes])
 
     # Add silent notes equivalent to the provided beats
-    def pad(self, beats: float) -> Score: # Returns padded Score copy
-        padded = deepcopy(self)
-        padded.notes.append({'tone':0,'sustain_time':0.0,'reserved_time':beats,'amplitude':0.0})
-        return padded
+    def pad(self, beats: float):
+        self.notes.append({'tone':0,'sustain_time':0.0,'reserved_time':beats,'amplitude':0.0})
+        return self 
 
-    def plus(self, note_string: str) -> Score: # Returns copy with notes at end
-        extended = deepcopy(self)
-        extended.notes = extended.notes + parse(note_string)
-        return extended
+    def play(self, note_string: str):
+        self.notes = self.notes + parse(note_string)
+        self._latest_note_string = note_string
+        return self 
 
-    def join(self, other: Score) -> Score:
-        joined = deepcopy(self)
-        joined.notes = joined.notes + other.notes
-        return joined
+    def join(self, other: Score):
+        self.notes = self.notes + other.notes
+        return self 
 
     # Debug function for reach()
-    def peek_notes(self) -> Score:
+    def peek_notes(self):
         print([n["tone"] for n in self.notes])
-        return self
+        return self 
 
     # Recursive function to repeat the original loop until len reaches
     # that of other. If a repeat of the original would surpas len of other,
     # a pad is done instead.
-    def reach(self, length: float) -> Score:
+    def reach(self, length: float):
 
         # Empty score objects should stay that way
         if (self.len() == 0.0):
-            return self.pad(length)
+            self.pad(length)
 
         if self.len() < length:
-            s = self.plus(self._original)
-            if s.len() <= length:
-                return s.reach(length)
+            self.play(self._latest_note_string)
+            if self.len() <= length:
+                self.reach(length)
             else:
-                return s.pad(length - self.len())
+                self.pad(length - self.len())
         else:
             return self
 
     # Apply the scales.py scale to the parsed notes
-    def scale(self, scale: List[int]) -> Score:
+    def scale(self, scale: List[int]):
         for note in self.notes:
             note["tone"] = transpose(note["tone"], scale)
-        return self
+        return self 
 
     # Translate note tones to a viable format prior to sending 
     def _prepare(self, to_hz: bool):
@@ -87,7 +85,7 @@ class Score:
         )
 
     def post(self, name: str, key: str):
-        self._prepare(True)
+        self._prepare(False)
         response = requests.post(
             'http://localhost:8000/queue/midi/'+ key + '/' + name,
             json=self.notes
