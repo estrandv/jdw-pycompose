@@ -32,6 +32,10 @@ class Score:
         self._latest_note_string = note_string
         return self 
 
+    def play_latest(self):
+        self.notes = self.notes + parse(self._latest_note_string)
+        return self
+
     def join(self, other: Score):
         self.notes = self.notes + other.notes
         return self 
