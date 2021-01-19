@@ -33,6 +33,11 @@ class Composer:
             if data.posting == PostingTypes.SAMPLE:
                 data.score.post_sample(data.id, data.instrument)
 
+    # Wipe data up until this point
+    def start_here(self):
+        for data in self.score_data_list:
+            data.score.notes = []
+
 class ScoreData:
     def __init__(self, score: Score, id: str, instrument: str, posting: PostingType):
         self.score: Score = score
