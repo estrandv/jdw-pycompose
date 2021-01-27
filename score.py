@@ -12,6 +12,7 @@ import random
 
 def parse(note_string: str) -> List[Dict]:
     notes = jackdaw.parse(note_string)
+    print(notes)
     return notes
 
 class Score:
@@ -24,7 +25,9 @@ class Score:
 
     # Add silent notes equivalent to the provided beats
     def pad(self, beats: float):
-        self.notes.append({'tone':0,'sustain_time':0.0,'reserved_time':beats,'amplitude':0.0})
+        # No need to add worthless padding notes
+        if beats > 0.0:
+            self.notes.append({'tone':0,'sustain_time':0.0,'reserved_time':beats,'amplitude':0.0})
         return self 
 
     def play(self, note_string: str):
@@ -50,16 +53,23 @@ class Score:
     # a pad is done instead.
     def reach(self, length: float):
 
-        # Empty score objects should stay that way
+        # Empty score objects should stay that way. Note how 0.0 means we pad the full amount.
         if (self.len() == 0.0):
             self.pad(length)
 
         if self.len() < length:
-            self.play(self._latest_note_string)
-            if self.len() <= length:
+
+            diff = length - self.len()
+            next_play = Score() # Use a score object to preview play length
+            next_play.play(self._latest_note_string)
+            
+            # If playing once would not overshoot the target length
+            if self.len() + next_play.len() <= length:
+                self.play(self._latest_note_string)
                 self.reach(length)
             else:
-                self.pad(length - self.len())
+                print("Padding: " + self._latest_note_string)
+                self.pad(diff)
         else:
             return self
 

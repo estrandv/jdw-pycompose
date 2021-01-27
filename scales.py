@@ -14,12 +14,9 @@ def transpose(tone_index: int, scale: List[int]) -> int:
 
     # A MIDI Octave is 12 notes, starting with note 0 and ending with 11.
     octave_len = len(CHROMATIC) + 1
-    print("OCtave length: " + str(octave_len))
 
-    print("Tone: " + str(tone_index))
 
     scale_indices = len(scale)
-    print("Scale len: " + str(scale_indices))
 
     # By splitting tone index by octave length (and rounding down),
     # we establish in which octave the tone resides.
@@ -28,8 +25,6 @@ def transpose(tone_index: int, scale: List[int]) -> int:
     # Once we know the octave, we want to know where in the octave the tone is
     # E.g. tone_index 23 is octave_index 1 with 23-(1*12)=11 as tone index in octave
     tone_index_in_octave = tone_index - (octave_index * (octave_len))
-    print("Octave Index: " + str(octave_index))
-    print("Position in octave: " + str(tone_index_in_octave))
 
     # The amount of times (rounded down) that the tone rounds the available indices in the array
     # We want to basically loop around the scale to find an available index that matches the 
@@ -37,20 +32,13 @@ def transpose(tone_index: int, scale: List[int]) -> int:
     # If index is 4 and the scale has a max index of 3, we get 1 overshoot
     #   In that case, position_in_scale would calculate as 4 - (1 * 3) = 1
     overshoot = int(tone_index_in_octave / scale_indices)
-    print("Scale Overshoot: " + str(overshoot))
     position_in_scale = tone_index_in_octave - (overshoot * scale_indices)
-    print("Selected Scale Index: " + str(position_in_scale))
 
     # By now we know the position in the octave and how to divide that to get the 
     #   position in the scale. Thus we can get the scale tone for octave 0 
     #   by using scale[position_in_scale]. After that we can just add back
     #   all the octaves we've stripped away using overshoot and octave_index
     final = scale[position_in_scale] + ((overshoot + octave_index) * octave_len)
-
-    print("Scale value: " + str(scale[position_in_scale]))
-
-    print("final (in octave): " + str(final))
-    print("----------------")
 
     # Return the scale determined tone value in the octave determined by overshoot
     return final

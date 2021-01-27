@@ -15,7 +15,10 @@ class Composer:
     # Pad all contained scores with silence until they are all the same length
     def sync(self):
         for score in self.score_data_list:
-            score.score.pad(self.len() - score.score.len())
+            diff = self.len() - score.score.len()
+            if diff > 0.0:
+                print("Padding: " + score.id + " with " + str(diff))
+                score.score.pad(diff)
 
     def len(self):
         longest = 0.0
@@ -26,6 +29,9 @@ class Composer:
 
     def post_all(self):
         for data in self.score_data_list:
+
+            print("Posting " + data.id + " with len: " + str(data.score.len()))
+
             if data.posting == PostingTypes.PROSC:
                 data.score.post_prosc(data.id, data.instrument)
             if data.posting == PostingTypes.MIDI:
