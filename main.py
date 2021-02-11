@@ -54,18 +54,20 @@ tweak("FMRhodes1", {'gain': 2.0, 'mix': 0.2, 'lfoDepth': 0.2, 'lfoSpeed': 0.8, '
 #cmp.start_here()
 #sinepad.play("(cda.c[da]b.)6")
 
-#bass.play("(e---b---e[.f][g.]hg-f i)~:3 6")
+bass.play("(e---b---e[.f][g.]hg-f i)~:3 6")
 rhodes.play("((ebab)xx7 (abcb)7 )!!!")
+#warsaw.play("([g!! f] fff [g!! f] f f f [g!! f] f f f [g!! h] [g!! f] e g)~:6 7")
 moog.play("(e4--- ---- ---- a5---)~:3")
 moog2.play("(h4--- ---- ---- e4---)~:3")
 #drum2.play("d.").reach(cmp.len())
-#drum.play("j.").reach(cmp.len())
+drum.play("j.").reach(cmp.len())
 borch.play("k.")
 
 #drum4.play("([a!f!!][a!f][a!af!.][a!f])7")
 #drum.play("([a!f!!][a!f][a!af!.][a!f])2")
 
 #sinepad.play("a6...")
+
 
 ###
 rhodes.scale(scale)
