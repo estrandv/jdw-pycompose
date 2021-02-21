@@ -20,6 +20,10 @@ class Composer:
                 print("Padding: " + score.id + " with " + str(diff))
                 score.score.pad(diff)
 
+    def play(self, *scores):
+        for score in scores:
+            score.play_latest().reach(self.len())
+
     def len(self):
         longest = 0.0
         for score in self.score_data_list:
