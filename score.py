@@ -89,25 +89,50 @@ class Score:
                 # jdw-sequencer expects float/decimal format for tone, even when not in hz
                 note["tone"] = float(note["tone"])
 
+
+    def get_messages(self, synth):
+
+        def to_value(key, value):
+            val = {}
+            val["name"] = key 
+            val["value"] = value
+            return val 
+    
+
+        msgs = []
+        for note in self.notes:
+            message = {}
+            values = []
+            values.append(to_value("amp", note["amplitude"]))
+            values.append(to_value("sus", note["sustain_time"]))
+            values.append(to_value("reserved_time", note["reserved_time"]))
+            values.append(to_value("freq", note["tone"]))
+            message["values"] = values
+            message["synth"] = synth
+            msgs.append(message)
+
+        return msgs
+            
+
     ### Rest call stuff
 
     def post_sample(self, name: str, key: str):
         self._prepare(False)
         response = requests.post(
             'http://localhost:8000/queue/prosc_sample/'+ key + '/' + name,
-            json=self.notes
+            json=self.get_messages(key)
         )
 
     def post(self, name: str, key: str):
         self._prepare(False)
         response = requests.post(
             'http://localhost:8000/queue/midi/'+ key + '/' + name,
-            json=self.notes
+            json=self.get_messages(key)
         )    
 
     def post_prosc(self, name: str, key: str):
         self._prepare(True)
         response = requests.post(
             'http://localhost:8000/queue/prosc/'+ key + '/' + name,
-            json=self.notes
+            json=self.get_messages(key)
         )

@@ -33,7 +33,6 @@ rhodes = cmp.new("FMRhodes1", "FMRhodes1", PostingTypes.PROSC)
 borch = cmp.new("BorchBattery", "BorchBattery", PostingTypes.MIDI)
 drsix = cmp.new("drsix", "DR660", PostingTypes.SAMPLE)
 
-reset() ###### RESET CALLED HERE
 
 tweak("warsawBass", {'att': 0.5, 'dec': 1.0, 'preamp': 0.2, 'detune': 1.01})
 tweak("moogBass", {'gain': 0.0, 'pan': -0.1, 'chorus': 0.0, 'gate': 0.1, 'cutoff': 280})
@@ -59,13 +58,13 @@ moog.play("(..g- ..b. ..d. ..b. ..g- ..e. ..b. ..c.) 5").reach(cmp.len())
 warsaw2.play("(.... [aa].a. ..[aa]. b... .... [aa].a. ..[aa]. ....) 5").reach(cmp.len())
 blipp.play("g2--- .... g2--- d2---").reach(cmp.len())
 
-cmp.start_here()
+#cmp.start_here()
 #drsix.play("([c.cc])3")
 cmp.sync()
 drsix.play("(a3c3)xxxxxx [a3c3][c3.c3c3]").reach(cmp.len())
 cmp.sync()
 drsix.play("(a3c3)xxxxxx [a3c3][c3.c3c3]").reach(cmp.len())
-moog.play("([e~b!]xxx [a~b!]xxx) 3").reach(cmp.len())
+moog.play("([e~b!]xxx [a~b!]xxx) 4").reach(cmp.len())
 cmp.sync()
 drsix.play("(a3c3)xxxxxx [a3c3][c3.c3c3]").reach(cmp.len())
 moog.play_latest().reach(cmp.len())
@@ -105,6 +104,7 @@ blipp2.scale(scale)
 organ.scale(scale)
 blipp.scale(scale)
 cmp.post_all()
+reset() ###### RESET CALLED HERE
 
 # Example simple sequencer usage:
 #Score().play("(d..[.d]d[.e]g2-)!:5 4").scale(scale).post_prosc("c", "blipp")
