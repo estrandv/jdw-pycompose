@@ -34,10 +34,34 @@
 #
 from __future__ import annotations
 from copy import deepcopy
+from scales import MAJOR, transpose
+
+from pretty_midi.utilities import note_number_to_hz
+
+# Transform the local note dict into the api expected format 
+# TODO: name/value should probably be renamed to key/value
+# name/value format is needed to work with the strict typing requirements of the current
+# sequencer Rust JSON API. 
+def _export_note(note: dict[str, float], synth_name: str):
+    exported = {"synth": synth_name, "values": []}
+
+    for key in note:
+
+        # TODO: Dirty hack until harmonized
+        if key == "tone":
+            val = {"name": "freq", "value": note["tone"]}
+        else:
+            val = {"name": key, "value": note[key]}
+        exported["values"].append(val)
+
+    return exported
+
 
 class Score:
     def __init__(self):
         self.sections: list[Section] = []
+        self.saved_sections: dict[str, list[Section]] = {}
+
 
     def len(self) -> float:
         total = 0.0
@@ -45,44 +69,96 @@ class Score:
             total += l
         return total
 
+    def pad(self, beats) -> Score:
+        new = Section(self)
+        new.pad(beats)
+        return self
+
     def section(self) -> Section:
         section = Section(self)
         self.sections.append(section)
         section.defaults["amp"] = 1.0
         section.defaults["sus"] = 1.0
-        section.defaults["res"] = 1.0
+        section.defaults["reserved_time"] = 1.0
+        self.last_section = section
         return section
+
+    def save_last(self, name, steps_back = 1) -> Score:
+        print("Unimplemented")
+        return self 
+
+    def repeat(self, saved_name) -> Score:
+        print("Unimplemented")
+        return self 
+
+    def export(self, synth_name: str) -> list:
+        
+        exported = []
+        for section in self.sections:
+            for note in section.notes:
+                exported.append(_export_note(note, synth_name))
+
+        return exported
 
 class Section:
 
     # Class itself should have only noargs constructor
     def __init__(self, parent: Score):
         self.notes: list[dict[str, float]] = []
-        self.defaults: dict[str, float] = {}
+        self.defaults: dict[str, float] = {"amp": 1.0, "sus": 1.0, "reserved_time": 1.0} # Super basic "avoid-null-errors" defaults; expected to be overwritten
         self.parent: Score = parent
+        self.scale: list[int] = MAJOR
+        self.octave: int = 4
 
-    def note(self, tone: int, amp: float = None, sus: float = None, res: float = None, custom: dict[str, float] = {}) -> Section:
+    def _default_fallback(self, values: dict) -> dict[str, float]:
+        
+        processed: dict[str,float] = {}
 
-        # Set any non-assigned vars as dynamic defaults 
-        def default_set(value, name: str):
-            if value == None:
-                return self.defaults[name]
-            else:
-                return value
+        for key in self.defaults:
+            if key not in values or values[key] == None:
+                if key in self.defaults:
+                    processed[key] = float(self.defaults[key])
 
-        amp = default_set(amp, "amp")
-        sus = default_set(sus, "sus")
-        res = default_set(res, "res")
+        for key in values:
+            if values[key] != None:
+                processed[key] = values[key]
 
-        new_note: dict[str, float] = {"tone": float(tone), "amp": amp, "sus": sus, "reserved_time": res}
+        return processed
+
+    # Add a note to the end of the section. Values not provided will fall back on the last specified dynamic defaults.
+    # Use the "custom" arg to provide a free-form list of key/value attributes when the defaults are not enough.
+    def hz_note(self, hz_freq: float, amp: float = None, sus: float = None, res: float = None, default_set: bool = False, custom: dict[str, float] = {}) -> Section:
+
+        new_note: dict = {"tone": hz_freq, "amp": amp, "sus": sus, "reserved_time": res}
 
         # Override everything by name from custom
         for field in custom:
-            new_note[field] = custom[field]
+            if field in custom and custom[field] != None:
+                new_note[field] = custom[field]
 
+        default_fallback = self._default_fallback(new_note)
 
-        self.notes.append(new_note)
+        if default_set:
+            self.defaults = default_fallback
+
+        self.notes.append(default_fallback)
         return self
+
+    # Alternative implementation of the above with auto-scaled midi index as tone arg
+    # Mostly ergonimics
+    def note(self, midi_tone: int, amp: float = None, sus: float = None, res: float = None, default_set: bool = False, custom: dict[str, float] = {}) -> Section:
+        hz_tone = note_number_to_hz(self._midi_format(midi_tone))
+        return self.hz_note(hz_tone, amp, sus, res, default_set, custom)
+
+    def _midi_format(self, midi_tone: int) -> int:
+
+        extra = 0
+        if self.octave > 0:
+            extra = (11 * (self.octave - 1))
+
+        ocatave_tone = extra + midi_tone
+        transposed_tone = transpose(ocatave_tone, self.scale)
+        return transposed_tone
 
     # Play last registered note <times> amount of times - x(1) effectively does nothing 
     def x(self, times: int) -> Section:
@@ -103,6 +179,7 @@ class Section:
 
         return self
 
+    # Returns the total reserved time of the section
     def len(self) -> float:
         total = 0.0
         for l in [note["reserved_time"] for note in self.notes]:
@@ -147,19 +224,23 @@ class Section:
 
         return self
 
+    # Ergonomic way to end section processing and return to parent
+    def end(self) -> Score:
+        return self.parent
+
 
 def test():
     sco = Score() 
     sec = sco.section()
-    sec.defaults["res"] = 1.0
-    sec.note(1).note(2).until(4.0)
+    sec.defaults["reserved_time"] = 1.0
+    sec.hz_note(1.0).hz_note(2.0).until(4.0)
     assert len(sec.notes) == 4, "Expected len 4, got " + str(len(sec.notes))
     sec.until_total(16.0)
     assert len(sec.notes) == 16, "Expected len 16, got " + str(len(sec.notes))
     assert sec.notes[15]["tone"] == 2.0, "Expected tone 2.0 for last note, got: " + str(sec.notes[15]["tone"]) 
     assert sec.notes[14]["tone"] == 1.0, "Expected tone 1.0 for second last note, got: " + str(sec.notes[14]["tone"]) 
 
-    sec2 = sco.section().note(4).x(4).pad(3.0)
+    sec2 = sco.section().hz_note(4.0).x(4).pad(3.0)
     assert len(sec2.notes) == 5, "Expected 4 notes and one silent note, got: " + str(len(sec2.notes))
     assert sec2.notes[3]["tone"] == 4.0, "Expected second last tone to be 4.0, got: " + str(sec2.notes[3]["tone"])
     assert sec2.notes[4]["amp"] == 0.0, "Expected last note to be silence"
@@ -170,10 +251,19 @@ def test():
     sec3.note(1)
     assert sec3.notes[0]["amp"] == 0.3, "Expected default of 0.3 applied to amp, got: " + str(sec3.notes[0]["amp"])
 
+    # Export testing 
+    note = sco.section().hz_note(9.0).notes[0]
+    exported = _export_note(note, "banana")
+    assert {"name": "freq", "value": 9.0} in exported["values"]
+    assert exported["synth"] == "banana"
 
-print("Script called directly, running tests...")
-test()
-print(">> All tests ok!")
+    # TODO: Tests for transpose, midi-to-hz, scaling...
+
+
+if __name__ == "__main__":
+    print("Script called directly, running tests...")
+    test()
+    print(">> All tests ok!")
 
 
 

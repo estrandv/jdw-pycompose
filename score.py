@@ -12,7 +12,6 @@ import random
 
 def parse(note_string: str) -> List[Dict]:
     notes = jackdaw.parse(note_string)
-    print(notes)
     return notes
 
 class Score:
@@ -68,7 +67,6 @@ class Score:
                 self.play(self._latest_note_string)
                 self.reach(length)
             else:
-                print("Padding: " + self._latest_note_string)
                 self.pad(diff)
         else:
             return self

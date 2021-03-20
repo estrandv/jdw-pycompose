@@ -17,7 +17,6 @@ class Composer:
         for score in self.score_data_list:
             diff = self.len() - score.score.len()
             if diff > 0.0:
-                print("Padding: " + score.id + " with " + str(diff))
                 score.score.pad(diff)
 
     def play(self, *scores):
@@ -34,7 +33,6 @@ class Composer:
     def post_all(self):
         for data in self.score_data_list:
 
-            print("Posting " + data.id + " with len: " + str(data.score.len()))
 
             if data.posting == PostingTypes.PROSC:
                 data.score.post_prosc(data.id, data.instrument)
