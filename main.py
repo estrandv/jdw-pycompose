@@ -58,11 +58,22 @@ import pscore
     # No attributes mandatory (except maybe reserved_time) 
     # Renames and refactoring
 
-score = pscore.Score()
-score.section() \
-        .note(440, 1.0, 1.0, 1.0).note(880).note(340, res=0.5, amp=0.3).x(2).note(460, amp=1.3, custom={"chorus": 1.0, "cutoff": 600.0}) \
-        .note(480).note(280).note(500).note(320)
-post_prosc("blipp", "blipp", score.export("moogBass"))
+s2 = pscore.Score().section() \
+        .def_ovr({"att": 0.03, "sus": 1.3, "amp": 1.2, "reverb": 0.2}) \
+        .in_octave(6) \
+    .note(6, res=0.5).note(8, res=0.5).x(2).note(2, res=0.5).note(8).note(7) \
+    .note(4, res=0.5).note(7, res=0.5).x(2).note(6, res=0.5).note(9).note(7).parent \
+    #.note(0, res=0.1).interpolate({"tone": 182.0}, 39) \
+    #.note(0, res=0.5).note(3, res=0.5).x(2).note(6, res=0.5).note(4).note(5).parent
+
+
+drums = pscore.Score().section() \
+        .def_ovr({"reserved_time": 0.5, "amp": 2.0}).in_octave(0) \
+        .note(4).x(3).note(28).until_total(s2.len()).parent
+
+post_prosc("jupp", "jupp", s2.export("varsaw"))
+#post_prosc("blipp", "blipp", score.export("moogBass"))
+post_sample("dr", "dr", drums.export("KORGER1Samples"))
 
 
 #warsaw.play("(.[bc].. .[bc]a. .b.. .[bc][be]. .g.g .[bc].. .[bc]e. [bc]a..) 6")
@@ -85,7 +96,7 @@ blipp2.scale(scale)
 organ.scale(scale)
 blipp.scale(scale)
 #cmp.post_all()
-reset() ###### RESET CALLED HERE
+#reset() ###### RESET CALLED HERE
 
 # Example simple sequencer usage:
 #Score().play("(d..[.d]d[.e]g2-)!:5 4").scale(scale).post_prosc("c", "blipp")

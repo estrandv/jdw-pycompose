@@ -24,6 +24,13 @@ def tweak(synth_name: str, values):
     rep = requests.post('http://localhost:5000/impl/tweak/' + synth_name, json=values)
     print(str(rep))
 
+def post_sample(name: str, key: str, notes: list):
+    response = requests.post(
+        'http://localhost:8000/queue/prosc_sample/'+ key + '/' + name,
+        json=notes
+    )
+
+
 def post_prosc(name: str, key: str, notes: list):
     response = requests.post(
         'http://localhost:8000/queue/prosc/'+ key + '/' + name,

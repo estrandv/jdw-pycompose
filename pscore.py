@@ -110,6 +110,20 @@ class Section:
         self.scale: list[int] = MAJOR
         self.octave: int = 4
 
+    # Selectively override defaults with only the specified values 
+    def def_ovr(self, custom: dict[str, float]) -> Section:
+        for key in custom:
+            self.defaults[key] = custom[key]
+        return self
+
+    def in_scale(self, scale: list[int]) -> Section:
+        self.scale = scale 
+        return self
+
+    def in_octave(self, octave: int) -> Section:
+        self.octave = octave
+        return self
+
     def _default_fallback(self, values: dict) -> dict[str, float]:
         
         processed: dict[str,float] = {}
@@ -144,6 +158,45 @@ class Section:
         self.notes.append(default_fallback)
         return self
 
+    # Repeat the last note again, but with the specified values overridden
+    def next(self, custom: dict[str, float]) -> Section:
+        if self.notes:
+            last = deepcopy(self.notes[-1])
+            for key in custom:
+                last[key] = custom[key]
+
+            self.notes.append(last)
+
+        return self
+
+    # Play the last note <steps> amount of times, interpolating the given properties 
+    # towards their respective values in <steps> amount of equal increments 
+    def interpolate(self, properties: dict[str, float], steps: int) -> Section:
+        last_note = self.defaults
+        if self.notes:
+            last_note = self.notes[-1]
+
+        step_map = {}
+        for key in properties:
+            start = 0.0
+            if key in last_note:
+                start = last_note[key]
+            diff = properties[key] - start 
+            step = diff / steps
+            step_map[key] = step
+
+        for i in range(0, steps):
+            new_note = self.defaults
+            if self.notes:
+                new_note = deepcopy(self.notes[-1])
+            for key in step_map:
+                if key not in new_note:
+                    new_note[key] = 0.0
+                new_note[key] += step_map[key]
+            self.notes.append(new_note)
+
+        return self
+                    
     # Alternative implementation of the above with auto-scaled midi index as tone arg
     # Mostly ergonimics
     def note(self, midi_tone: int, amp: float = None, sus: float = None, res: float = None, default_set: bool = False, custom: dict[str, float] = {}) -> Section:
@@ -154,7 +207,7 @@ class Section:
 
         extra = 0
         if self.octave > 0:
-            extra = (11 * (self.octave - 1))
+            extra = (12 * (self.octave - 1))
 
         ocatave_tone = extra + midi_tone
         transposed_tone = transpose(ocatave_tone, self.scale)
