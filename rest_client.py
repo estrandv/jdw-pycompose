@@ -30,6 +30,9 @@ def post_sample(name: str, key: str, notes: list):
         json=notes
     )
 
+def post_midi(name: str, key: str, notes: list):
+    print("POST_MIDI not implemented!")
+
 
 def post_prosc(name: str, key: str, notes: list):
     response = requests.post(
