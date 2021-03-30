@@ -46,20 +46,40 @@ drsix = cmp.new("drsix", "DR660", PostingTypes.SAMPLE)
 #tweak("KORGER1Samples", {'att': 0.02, 'rel': 0.02, 'start': 0.2, 'loop': 0, 'rate': 2.0})
 #tweak("DR660", {'att': 0.02, 'rel': 0.02, 'rate': 0.8})
 
-yamaha.section() \
-    .in_octave(0) \
-    .def_ovr({"reserved_time": 0.5}) \
-    .note(14, amp=2.0).note(6).x(3)
+blipp.section().in_octave(6).def_ovr({"reserved_time": 0.5, "rate": 2.0}).in_scale(MINOR) \
+    .note(6, res=0.25).interpolate({"amp": 0.7}, 3).note(6).note(8, res=0.25).x(2) \
+    .note(6, res=0.25).interpolate({"amp": 0.7}, 3).note(6).note(9, res=0.25).x(2) \
+    .note(6, res=0.25).interpolate({"amp": 0.7}, 3).note(6).note(8, res=0.25).x(2) \
+    .note(6, res=0.25).interpolate({"amp": 0.7}, 3).note(6).note(5, res=0.25).x(2)
 
-varsaw.section() \
-    .def_ovr({"att": 0.4, "reverb": 0.8, "rate": 400.0, "fmod": 0.4}) \
-    .note(22, res=2.0, sus=4.0, amp=0.8).note(18, res=1.0, sus=4.0).x(2)
+blipp.repeat_last()
 
-sinepad.section() \
-    .note(18, sus=4.0, res=4.0, amp=1.0)
+cmp.sync()
 
-korger.section() \
-    .pad(2.0).note(1)
+warsaw.section().def_ovr({"reserved_time": 2.0, "sus": 4.0, "amp": 0.25}).in_octave(5).in_scale(MINOR) \
+    .note(8) \
+    .note(6) \
+    .note(5) \
+    .note(9, res=0.5).pad(0.5).note(8, res=0.5, sus=2.0, amp=0.3).note(9, res=0.5) \
+
+cmp.play(blipp, 2).play(warsaw).sync()
+
+#yamaha.section().in_octave(0).note(6, res=8.0, amp=1.2)
+
+#cmp.play(blipp, 2).play(warsaw, 2).play(yamaha).sync()
+
+rhodes.section().in_octave(7).def_ovr({"amp": 2.0}).in_scale(MINOR) \
+    .note(6).x(2).pad(0.5).note(8, res=0.5).note(4) \
+    .note(6).x(2).pad(0.5).note(11, res=0.5).note(4) \
+
+cmp.play(blipp, 2).play(warsaw, 2).play(rhodes).sync()
+
+
+#korger.section().in_octave(0).note(4, res=0.5).interpolate({"amp": 1.4}, 14).note(14, res=0.5)
+
+cmp.sync()
+
+#yamaha.section().in_octave(0).note(8, sus=0.5).x(3).note(7, sus=0.5)
 
 
 
@@ -74,7 +94,7 @@ korger.section() \
 
 
 cmp.post_all()
-#reset() ###### RESET CALLED HERE
+reset() ###### RESET CALLED HERE
 
 # Example simple sequencer usage:
 #Score().play("(d..[.d]d[.e]g2-)!:5 4").scale(scale).post_prosc("c", "blipp")

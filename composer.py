@@ -21,9 +21,11 @@ class Composer:
             if diff > 0.0:
                 score.score.pad(diff)
 
-    def play(self, *scores):
-        for score in scores:
-            score.play_latest().reach(self.len())
+        return self 
+
+    def play(self, score: pscore.Score, times=1) -> Self:
+        score.repeat_last(times)
+        return self 
 
     def len(self):
         longest = 0.0
@@ -34,6 +36,8 @@ class Composer:
 
     def post_all(self):
         for data in self.score_data_list:
+
+            print(data.id + ": " + data.score.illustrate())
 
             if data.posting == PostingTypes.PROSC:
                 rest_client.post_prosc(data.id, data.instrument, data.score.export(data.instrument))

@@ -72,7 +72,14 @@ class Score:
     def pad(self, beats) -> Score:
         new = Section(self)
         new.pad(beats)
+        self.sections.append(new)
         return self
+
+    def repeat_last(self, times=1) -> Score:
+
+        for i in range(0, times):
+            self.sections.append(deepcopy(self.last_section))
+        return self 
 
     def section(self) -> Section:
         section = Section(self)
@@ -99,6 +106,9 @@ class Score:
                 exported.append(_export_note(note, synth_name))
 
         return exported
+    
+    def illustrate(self) -> str:
+        return str([section.illustrate() for section in self.sections])
 
 class Section:
 
@@ -280,6 +290,9 @@ class Section:
     # Ergonomic way to end section processing and return to parent
     def end(self) -> Score:
         return self.parent
+
+    def illustrate(self) -> str:
+        return str([note["amp"] for note in self.notes])
 
 
 def test():
