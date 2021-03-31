@@ -23,6 +23,10 @@ class Composer:
 
         return self 
 
+    def mute(self, *scores):
+        for score in scores:
+            score.mute()
+
     def play(self, score: pscore.Score, times=1) -> Self:
         score.repeat_last(times)
         return self 

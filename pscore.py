@@ -75,6 +75,10 @@ class Score:
         self.sections.append(new)
         return self
 
+    def mute(self) -> Score:
+        self.sections = []
+        return self 
+
     def repeat_last(self, times=1) -> Score:
 
         for i in range(0, times):
@@ -213,6 +217,24 @@ class Section:
         hz_tone = note_number_to_hz(self._midi_format(midi_tone))
         return self.hz_note(hz_tone, amp, sus, res, default_set, custom)
 
+    # Ergonomy / Readability implementation of note attribute typing 
+    # See parsing.py 
+    def txt(self, note_string: str) -> Section:
+        from parsing import parse_note
+        
+        note = parse_note(note_string)
+
+        tone = note["tone"]
+        hz_tone = note_number_to_hz(tone)
+        note["tone"] = hz_tone
+
+        default_fallback = self._default_fallback(note)
+
+        self.notes.append(default_fallback)
+
+        return self 
+        
+
     def _midi_format(self, midi_tone: int) -> int:
 
         extra = 0
@@ -322,6 +344,12 @@ def test():
     exported = _export_note(note, "banana")
     assert {"name": "freq", "value": 9.0} in exported["values"]
     assert exported["synth"] == "banana"
+
+    # Parse testing 
+    note = sco.section().txt("11 res10 sus15 amp20").notes[0]
+    assert note["sus"] == 1.5
+    assert note["amp"] == 2.0
+    assert note["reserved_time"] == 1.0
 
     # TODO: Tests for transpose, midi-to-hz, scaling...
 
