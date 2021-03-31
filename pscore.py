@@ -34,7 +34,7 @@
 #
 from __future__ import annotations
 from copy import deepcopy
-from scales import MAJOR, transpose
+from scales import CHROMATIC, MAJOR, transpose
 
 from pretty_midi.utilities import note_number_to_hz
 
@@ -61,6 +61,15 @@ class Score:
     def __init__(self):
         self.sections: list[Section] = []
         self.saved_sections: dict[str, list[Section]] = {}
+
+        self.octave_default = 4
+        self.scale_default = CHROMATIC
+
+    def set_defaults(self, octave=None, scale=None):
+        if octave:
+            self.octave_default = octave
+        if scale:
+            self.scale_default = scale
 
 
     def len(self) -> float:
@@ -91,7 +100,12 @@ class Score:
         section.defaults["amp"] = 1.0
         section.defaults["sus"] = 1.0
         section.defaults["reserved_time"] = 1.0
+
+        section.scale = self.scale_default
+        section.octave = self.octave_default
+
         self.last_section = section
+
         return section
 
     def save_last(self, name, steps_back = 1) -> Score:
@@ -225,7 +239,7 @@ class Section:
         note = parse_note(note_string)
 
         tone = note["tone"]
-        hz_tone = note_number_to_hz(tone)
+        hz_tone = note_number_to_hz(self._midi_format(int(tone)))
         note["tone"] = hz_tone
 
         default_fallback = self._default_fallback(note)
@@ -348,7 +362,7 @@ def test():
     # Parse testing 
     note = sco.section().txt("11 res10 sus15 amp20").notes[0]
     assert note["sus"] == 1.5
-    assert note["amp"] == 2.0
+    assert note["amp"] == 2.0, "Bad amp: " + str(note["amp"])
     assert note["reserved_time"] == 1.0
 
     # TODO: Tests for transpose, midi-to-hz, scaling...
