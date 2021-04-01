@@ -46,15 +46,21 @@ drsix = cmp.new("drsix", "DR660", PostingTypes.SAMPLE)
 #tweak("KORGER1Samples", {'att': 0.02, 'rel': 0.02, 'start': 0.2, 'loop': 0, 'rate': 2.0})
 #tweak("DR660", {'att': 0.02, 'rel': 0.02, 'rate': 0.8})
 
+yamaha.section().in_octave(0).in_scale(CHROMATIC).txt("18 =05 #02").txt("38 =20 #05").cut(2).txt("6 =15 #07 >20").cut(2) \
+        .txt("18 =10 #02").cut(2).txt("39 =05 #08").cut(2).pad(2.0).txt("35 =05 #10").until(16.0)
 
-# Next up: What do we do about section ergonomics? 
-# x. Autofill parenthesis is a must 
-# x. Default scale and octave should be score level set  
-# 3. Not ergonomics but dear god can we get a beat that doesn't sound off already??  
+moog.section().in_scale(MINOR).txt("20 =30 >40 pan08").txt("21 =05 >10").cut(2).txt("19 =10 >20").txt("24 =35 >10") \
+        .txt("16 =15").txt("8 =10").cut(2).txt("22 =05 >05").txt("24 =50 >55 #07").cut(2)
 
-moog.section().txt("10 =10 >20 #12 cutoff2400").txt("15 =10 >05 #10").x(2).txt("16 =15").txt("18 =05")
-moog2.section().in_octave(5).txt("13 =20 >30 #09").txt("10 =20 >30 #07")
-sinepad.section().in_octave(7).txt("15 =05 >40").txt("26 =15 ").x(3)
+rhodes.section().in_scale(MINOR).txt("23 =15 >55 lfoDepth22 #28").cut(2).txt("33 =65 >70 #28")
+
+sinepad.section().in_octave(6).in_scale(MINOR).pad(4.0).txt("4 =20 >40 #05 att02").txt("5 =20 >40 #03")
+
+warsaw.section().in_octave(5).in_scale(MINOR).txt("0 =05 att10").interpolate({"tone": 44.0, "att": 0.5}, 8)
+
+korger.section().in_octave(0).txt("14 #14")
+
+
 cmp.sync()
 
 #yamaha.section().in_octave(0).note(8, sus=0.5).x(3).note(7, sus=0.5)

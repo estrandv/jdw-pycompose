@@ -199,7 +199,7 @@ class Section:
 
     # Play the last note <steps> amount of times, interpolating the given properties 
     # towards their respective values in <steps> amount of equal increments 
-    def interpolate(self, properties: dict[str, float], steps: int) -> Section:
+    def interpolate(self, properties: dict[str, float], steps: int, hz_tone=False) -> Section:
         last_note = self.defaults
         if self.notes:
             last_note = self.notes[-1]
@@ -209,7 +209,13 @@ class Section:
             start = 0.0
             if key in last_note:
                 start = last_note[key]
-            diff = properties[key] - start 
+            
+            end = properties[key]
+
+            if not hz_tone and key == "tone":
+                end = note_number_to_hz(self._midi_format(int(end)))
+
+            diff = end - start 
             step = diff / steps
             step_map[key] = step
 
@@ -258,6 +264,21 @@ class Section:
         ocatave_tone = extra + midi_tone
         transposed_tone = transpose(ocatave_tone, self.scale)
         return transposed_tone
+
+    # Split the last registered note into <amount> of evenly distributes res time notes 
+    # Other attributes remain the same 
+    def cut(self, amount: int) -> Section:
+        if len(self.notes) > 0:
+            last_note = self.notes[-1]
+            
+            self.notes.pop()
+            
+            last_note["reserved_time"] = last_note["reserved_time"] / float(amount)
+
+            for i in range(0, amount):
+                self.notes.append(last_note)
+
+        return self
 
     # Play last registered note <times> amount of times - x(1) effectively does nothing 
     def x(self, times: int) -> Section:

@@ -10,19 +10,15 @@ def parse_note(string: str) -> dict[str, float]:
 
     string = string.replace(" ", "")
 
-    tone: int = int(string[0:2])
+    parsed_values: dict[str, float] = {}
 
-    post_tone: str = string[2:]
-    
-    parsed_values: dict[str, float] = {"tone": tone}
-
-    current_symbol = ""
+    current_symbol = "tone" # Tone is implicit first symbol
 
     parsing_number = ""
 
-    for i in range( len(post_tone) ):
+    for i in range( len(string) ):
 
-        char = post_tone[i]
+        char = string[i]
         if char.isdigit():
 
             if current_symbol == "":
@@ -32,11 +28,15 @@ def parse_note(string: str) -> dict[str, float]:
             if current_symbol in symbols:
                 current_symbol = symbols[current_symbol]
             
-            parsing_number += post_tone[i]
+            parsing_number += string[i]
 
         else:
             if parsing_number != "":
-                parsed_values[current_symbol] = float(parsing_number) / 10.0
+                if current_symbol != "tone":
+                    parsed_values[current_symbol] = float(parsing_number) / 10.0
+                else:
+                    parsed_values[current_symbol] = float(parsing_number) # Tone is not split 
+
                 current_symbol = ""
                 parsing_number = ""
 
@@ -44,7 +44,11 @@ def parse_note(string: str) -> dict[str, float]:
 
 
     if parsing_number != "":
-        parsed_values[current_symbol] = float(parsing_number) / 10.0
+        if current_symbol != "tone":
+            parsed_values[current_symbol] = float(parsing_number) / 10.0
+        else:
+            parsed_values[current_symbol] = float(parsing_number)
+
         current_symbol = ""
         parsing_number = ""
    
