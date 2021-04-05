@@ -5,14 +5,32 @@ from scales import CHROMATIC, transpose
 from parsing import parse_note
 from copy import deepcopy
 from pretty_midi.utilities import note_number_to_hz
+import rest_client
+
+# Transform the local note dict into the api expected format 
+# TODO: name/value should probably be renamed to key/value
+# name/value format is needed to work with the strict typing requirements of the current
+# sequencer Rust JSON API. 
+def _export_note(note: dict[str, float], synth_name: str):
+    exported = {"synth": synth_name, "values": []}
+
+    for key in note:
+
+        # TODO: Dirty hack until harmonized
+        if key == "tone":
+            val = {"name": "freq", "value": note["tone"]}
+        else:
+            val = {"name": key, "value": note[key]}
+        exported["values"].append(val)
+
+    return exported
+
 
 # Transform any set of integer lists into the sheet-standard of "0 0 0 . 1 0 1" etc. 
 # Each list is another chunk separated by a dot, the above would be the same as: [0,0,0], [1,0,1]
 # Useful if you want to utilize python list generators such as range()
 def arr_fmt(*lists: Iterable[int]) -> str:
-    ret_str = ""
-    string_lists = [[str(i) for i in lst] for lst in lists]
-    return " . ".join([" ".join(slst) for slst in string_lists])
+    return " . ".join([" ".join(slst) for slst in [[str(i) for i in lst] for lst in lists]])
 
 def _merge_note(under: dict[str, float], over: dict[str, float]) -> dict[str, float]:
     
@@ -30,29 +48,80 @@ def _parse_note(string: str) -> dict[str, float]:
     note.pop("tone", None)
     return note
 
+# Helper class for managing multiple MetaSheets. Plays the role of a "timeline" in composition as 
+# well as main UI for quickly changing large parts of the composition (e.g. mute everything)
+# All metaSheets added via reg() are affected by composer calls. 
+class Composer:
+    def __init__(self) -> None:
+        self.meta_sheets: list[MetaSheet] = []
+
+    def reg(self, meta_sheet: MetaSheet) -> MetaSheet:
+        self.meta_sheets.append(meta_sheet)
+        return meta_sheet
+    
+    # Pad all sheets with silence until everything is the same length 
+    def sync(self) -> Composer:
+        for meta_sheet in self.meta_sheets:
+            diff = self.len() - meta_sheet.len()
+            if diff > 0.0:
+                meta_sheet.pad(diff)
+
+        return self 
+
+    # Return the end point of the composer timeline; the length of the longest contained metasheet 
+    def len(self) -> float:
+        return max([ms.len() for ms in self.meta_sheets])
+
+    # Post export and post everything to jdw-sequencer 
+    def post_all(self):
+        for meta_sheet in self.meta_sheets:
+
+            bits = [note["values"][0] for note in meta_sheet.export_all()]
+
+            print("Sheet: " + meta_sheet.sequencer_id + ": " + str(bits))
+
+            if meta_sheet.posing_type == PostingTypes.PROSC:
+                rest_client.post_prosc(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
+            if meta_sheet.posing_type == PostingTypes.MIDI:
+                rest_client.post_midi(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
+            if meta_sheet.posing_type == PostingTypes.SAMPLE:
+                rest_client.post_sample(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
+
+
+
+
 class MetaSheet:
 
     # Args outline data needed to post to the jdw-sequencer and, ultimately, to PROSC or MIDI 
-    def __init__(self, instrument: str, sequencer_id: str, posting: PostingType):
+    # Note the pass-along "to_hz", which should typically be set to false for SAMPLE posting 
+    def __init__(self, sequencer_id: str, instrument: str, posting: PostingType, to_hz = True):
         self.posing_type: PostingType = posting
         self.instrument: str = instrument
         self.sequencer_id: str = sequencer_id
         self.sheets: list[Sheet] = []
+        self.to_hz = to_hz
 
     # Create and save a new sheet 
     def sheet(self, source: str, scale: list[int] = CHROMATIC, octave: int = 4) -> Sheet:
-        sheet = Sheet(self, source)
+        sheet = Sheet(self, source, scale, octave)
         self.sheets.append(sheet)
         return sheet
    
     # Add a silent sheet of <time> length 
     def pad(self, time: float) -> MetaSheet:
-        self.sheet("0", CHROMATIC, 0).all("amp0 res" + str(time))
+        # Bit hacky to use the native string parse method (note the *10) but it works for now...
+        self.sheet("0", CHROMATIC, 0).all("#0 =" + str(time * 10))
         return self
 
     # Returns total length of all sheets 
     def len(self) -> float:
         return sum([sheet.len() for sheet in self.sheets])
+
+    # Get all notes from all sheets in order and make them sequencer-compatible
+    def export_all(self) -> list[dict]:
+        all_notes: list[dict[str,float]] = [note for sublist in [sheet.to_notes(self.to_hz) for sheet in self.sheets] for note in sublist]
+        return [_export_note(note, self.instrument) for note in all_notes]
+        
 
 class Sheet:
     # Accepts the syntax "0 1 3 0 . 0 1 1 1" where dots are used to separate sections of tones
@@ -120,7 +189,9 @@ class Sheet:
     # Apply scale and octave to all contained notes and change midi-tones to actual corresponding note hz 
     def to_notes(self, to_hz = True) -> list[dict[str, float]]:
         
-        def midi_format(note: dict[str, float]):
+        def midi_format(input_note: dict[str, float]):
+
+            note = deepcopy(input_note)
 
             midi_tone = note["tone"]
             extra = 0
@@ -130,17 +201,29 @@ class Sheet:
             ocatave_tone = extra + midi_tone
             transposed_tone = transpose(int(ocatave_tone), self.scale)
 
-            if to_hz:
+            if not to_hz:
                 note["tone"] = transposed_tone
             else:
                 note["tone"] = note_number_to_hz(transposed_tone)
 
+            return note 
+
         exported = []
 
         for note in self.notes:
-            new = deepcopy(note)
-            midi_format(new)
-            exported.append(new)
+            formatted = midi_format(note)
+            
+            # Force existance of "required" attributes
+            # This might be subject to change later 
+            def require(attr: str):
+                if attr not in formatted:
+                    formatted[attr] = 1.0 
+
+            require("amp")
+            require("sus")
+            require("reserved_time")
+
+            exported.append(midi_format(note))
 
         return exported
 
@@ -169,4 +252,3 @@ len_sheet = meta_sheet.sheet("0 0 0 0").all("=15")
 assert len_sheet.len() == 6.0, "Unexpected total res: " + str(len_sheet.len())
 
 assert arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) == "0 1 22 . 0 2 0 . 0 0 1 0", "Bad arr_fmt: " + arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) 
-print(arr_fmt(range(0, 14), range(0,3)))
