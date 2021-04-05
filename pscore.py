@@ -382,7 +382,7 @@ def test():
 
     # Parse testing 
     note = sco.section().txt("11 res10 sus15 amp20").notes[0]
-    assert note["sus"] == 1.5
+    assert note["sus"] == 1.5, "Bad sus: " + str(note["sus"])
     assert note["amp"] == 2.0, "Bad amp: " + str(note["amp"])
     assert note["reserved_time"] == 1.0
 
@@ -392,7 +392,3 @@ def test():
 if __name__ == "__main__":
     print("Script called directly, running tests...")
     test()
-    print(">> All tests ok!")
-
-
-

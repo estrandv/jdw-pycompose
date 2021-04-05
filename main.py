@@ -46,24 +46,52 @@ drsix = cmp.new("drsix", "DR660", PostingTypes.SAMPLE)
 #tweak("KORGER1Samples", {'att': 0.02, 'rel': 0.02, 'start': 0.2, 'loop': 0, 'rate': 2.0})
 #tweak("DR660", {'att': 0.02, 'rel': 0.02, 'rate': 0.8})
 
-yamaha.section().in_octave(0).in_scale(CHROMATIC).txt("18 =05 #02").txt("38 =20 #05").cut(2).txt("6 =15 #07 >20").cut(2) \
-        .txt("18 =10 #02").cut(2).txt("39 =05 #08").cut(2).pad(2.0).txt("35 =05 #10").until(16.0)
 
-moog.section().in_scale(MINOR).txt("20 =30 >40 pan08").txt("21 =05 >10").cut(2).txt("19 =10 >20").txt("24 =35 >10") \
-        .txt("16 =15").txt("8 =10").cut(2).txt("22 =05 >05").txt("24 =50 >55 #07").cut(2)
+# TODO:
+# x. Add stop and reset keybinds to i3 
+# 2. Add better decimal conversion to parsed numbers starting with 0 
 
-rhodes.section().in_scale(MINOR).txt("23 =15 >55 lfoDepth22 #28").cut(2).txt("33 =65 >70 #28")
+bpm(140)
 
-sinepad.section().in_octave(6).in_scale(MINOR).pad(4.0).txt("4 =20 >40 #05 att02").txt("5 =20 >40 #03")
+from sheet import Sheet
 
-warsaw.section().in_octave(5).in_scale(MINOR).txt("0 =05 att10").interpolate({"tone": 44.0, "att": 0.5}, 8)
+sht = Sheet("0 2 4 2 . 0 2 6 2 . 0 2 10 2 . 0 2 11 2 . 0 2 4 2 . 0 2 6 2 . 0 2 10 2 . 0 2 9 2")
+sht.part_step([3,4], "=10 >25")
+sht.part_step([1], ">025 #15")
+sht.part_step([4], "chorus08")
+longsaw.section().in_scale(MINOR).in_octave(5).def_ovr({"reserved_time": 0.5}).absorb(sht)
 
-korger.section().in_octave(0).txt("14 #14")
 
+s2 = Sheet("2 0 2 4 9 11")
+s2.part_step([4,5,6], "=20 >45 #06 fmod10")
+s2.part_step([6], "reverb07 #08")
+varsaw.section().def_ovr({"reserved_time": 6.0, "sus": 9.0, "amp": 0.7}).in_scale(MINOR).in_octave(6) \
+        .absorb(s2)
+
+#korger.section().txt("58").pad(1.0).txt("111")
+
+s3 = Sheet("0 1 1 0 1 1 2 1 1 2 1 1 2 3")
+s3.part_step([13,14], "=60 >60 #06")
+warsaw.section().in_scale(MINOR).in_octave(8).absorb(s3)
+
+s4 = Sheet("4")
+s4.part_step([1], ">240 =240 #02 att20 chorus10")
+moog.section().in_octave(8).in_scale(MINOR).absorb(s4)
+
+yamaha.section().in_octave(0).txt("14 #08").x(2).txt("95").until(longsaw.len())
+
+#blipp.section().in_octave(5).in_scale(MAJOR).note(5, sus=0.5).x(3).note(11, sus=0.5)
+
+cmp.mute(
+    warsaw,
+    moog,
+    yamaha,
+    varsaw,
+    longsaw
+)
 
 cmp.sync()
 
-#yamaha.section().in_octave(0).note(8, sus=0.5).x(3).note(7, sus=0.5)
 
 
 
@@ -76,8 +104,12 @@ cmp.sync()
     # No attributes mandatory (except maybe reserved_time) 
     # Renames and refactoring
 
+#cmp.stop()
 
+#reset()
 cmp.post_all()
+#reset()
+
 #reset() ###### RESET CALLED HERE
 
 # Example simple sequencer usage:
