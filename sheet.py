@@ -11,17 +11,18 @@ import rest_client
 # TODO: name/value should probably be renamed to key/value
 # name/value format is needed to work with the strict typing requirements of the current
 # sequencer Rust JSON API. 
-def _export_note(note: dict[str, float], synth_name: str):
-    exported = {"synth": synth_name, "values": []}
+def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str):
+    exported = {"target": synth_name, "alias": sequencer_id, "args": {}}
 
     for key in note:
 
         # TODO: Dirty hack until harmonized
         if key == "tone":
-            val = {"name": "freq", "value": note["tone"]}
+            exported["args"]["freq"] = note[key]
+        elif key == "reserved_time": # TODO: Also clumsy 
+            exported["time"] = note[key]
         else:
-            val = {"name": key, "value": note[key]}
-        exported["values"].append(val)
+            exported["args"][key] = note[key]
 
     return exported
 
@@ -76,10 +77,6 @@ class Composer:
     def post_all(self):
         for meta_sheet in self.meta_sheets:
 
-            bits = [note["values"][0] for note in meta_sheet.export_all()]
-
-            print("Sheet: " + meta_sheet.sequencer_id + ": " + str(bits))
-
             if meta_sheet.posing_type == PostingTypes.PROSC:
                 rest_client.post_prosc(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
             if meta_sheet.posing_type == PostingTypes.MIDI:
@@ -120,7 +117,7 @@ class MetaSheet:
     # Get all notes from all sheets in order and make them sequencer-compatible
     def export_all(self) -> list[dict]:
         all_notes: list[dict[str,float]] = [note for sublist in [sheet.to_notes(self.to_hz) for sheet in self.sheets] for note in sublist]
-        return [_export_note(note, self.instrument) for note in all_notes]
+        return [_export_note(note, self.instrument, self.sequencer_id) for note in all_notes]
         
 
 class Sheet:
@@ -223,7 +220,7 @@ class Sheet:
             require("sus")
             require("reserved_time")
 
-            exported.append(midi_format(note))
+            exported.append(formatted)
 
         return exported
 
