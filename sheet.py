@@ -66,6 +66,9 @@ class Composer:
     def __init__(self) -> None:
         self.meta_sheets: list[MetaSheet] = []
         self.client = zmq_client.PublisherClient()
+        self.last_sync_time = 0.0
+        self.restart_sheet_indices: dict[str, int] = {}
+
 
     def reg(self, meta_sheet: MetaSheet) -> MetaSheet:
         self.meta_sheets.append(meta_sheet)
@@ -78,6 +81,45 @@ class Composer:
             if diff > 0.0:
                 meta_sheet.pad(diff)
 
+        self.last_sync_time = self.len()
+        return self 
+
+    def cont(self, mss: list[MetaSheet]) -> Composer:
+        for ms in mss:
+            ms.cont()
+
+        return self
+
+    # Convenience call to be placed in the middle of active compositions 
+    # See usage of restart indices in post_all; effectively says not to play anything up until this point
+    def restart(self) -> Composer:
+        for ms in self.meta_sheets:
+            if len(ms.sheets) > 0:
+                self.restart_sheet_indices[ms.sequencer_id] = len(ms.sheets)
+
+        return self
+
+    # Detects which sheets were played since last sync() call and repeats 
+    # those to match the longest one (i.e. "play and repeat together")
+    def smart_sync(self, exclude: list[MetaSheet]=[]) -> Composer:
+        
+        played_since_sync = [meta_sheet for meta_sheet in self.meta_sheets if meta_sheet.len() > self.last_sync_time]
+        longest_recent = [ms for ms in self.meta_sheets if ms.len() == self.len()][0]
+
+        ex_alias = [ms.sequencer_id for ms in exclude]
+
+        for ms in played_since_sync:
+            if ms.sequencer_id not in ex_alias:
+                ms.reach(self.len()) 
+            else: 
+                print("excluding " + ms.sequencer_id)
+
+        self.sync()
+
+        print("AFTER SYNC: " + str(self.len()))
+        for note_set in [ms.sequencer_id + str(ms.sheets[-1].notes) for ms in self.meta_sheets if len(ms.sheets) > 0]:
+            print("   - " + note_set)
+
         return self 
 
     # Return the end point of the composer timeline; the length of the longest contained metasheet 
@@ -87,7 +129,9 @@ class Composer:
     # Post export and post everything to jdw-sequencer 
     def post_all(self):
         for meta_sheet in self.meta_sheets:
-            
+
+            if meta_sheet.sequencer_id in self.restart_sheet_indices:
+                meta_sheet.sheets = meta_sheet.sheets[self.restart_sheet_indices[meta_sheet.sequencer_id]:]
 
             # TODO: MIDI 
             if meta_sheet.posing_type == PostingTypes.PROSC:
@@ -113,6 +157,32 @@ class MetaSheet:
         sheet = Sheet(self, source, scale, octave)
         self.sheets.append(sheet)
         return sheet
+
+    # Play the latest sheet again if exists 
+    def cont(self, times=1) -> MetaSheet:
+        if len(self.sheets) > 0:
+            for i in range(0, times):
+                self.sheets.append(deepcopy(self.sheets[-1]))
+
+        return self
+
+    # Repeat latest registered sheet until total length matches <length>, padding any remains
+    def reach(self, length: float) -> MetaSheet:
+        diff = length - self.len()
+        if len(self.sheets) > 0:
+            latest = deepcopy(self.sheets[-1])
+            if latest.len() <= diff:
+                self.sheets.append(latest)
+            elif diff > 0.0:
+                self.pad(diff)
+
+            if self.len() < length:
+                return self.reach(length)
+
+        elif diff > 0.0:
+            self.pad(diff)
+
+        return self 
    
     # Add a silent sheet of <time> length 
     def pad(self, time: float) -> MetaSheet:
@@ -191,7 +261,7 @@ class Sheet:
         return self
 
     def len(self) -> float:
-        return sum([note["reserved_time"] for note in self.notes])
+        return sum([note["reserved_time"] for note in self.notes]) if len(self.notes) > 0 else 0.0
    
     # Apply scale and octave to all contained notes and change midi-tones to actual corresponding note hz 
     def to_notes(self, to_hz = True) -> list[dict[str, float]]:
@@ -259,3 +329,12 @@ len_sheet = meta_sheet.sheet("0 0 0 0").all("=15")
 assert len_sheet.len() == 6.0, "Unexpected total res: " + str(len_sheet.len())
 
 assert arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) == "0 1 22 . 0 2 0 . 0 0 1 0", "Bad arr_fmt: " + arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) 
+
+mscont = MetaSheet("", "", PostingTypes.PROSC)
+cont_s = mscont.sheet("2 3 4 5").all("=10").on_note([1], "=50")
+mscont.cont()
+assert len(mscont.sheets) == 2
+assert mscont.sheets[-1].notes[0]["reserved_time"] == 5.0
+assert mscont.sheets[-2].notes[0]["reserved_time"] == 5.0
+
+

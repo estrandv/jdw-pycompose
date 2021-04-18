@@ -10,13 +10,13 @@ warsaw = cmp.reg(MetaSheet("warsaw", "warsawBass", PostingTypes.PROSC))
 warsaw2 = cmp.reg(MetaSheet("warsaw2", "warsawBass", PostingTypes.PROSC))
 moog = cmp.reg(MetaSheet("moog", "moogBass", PostingTypes.PROSC))
 moog2 = cmp.reg(MetaSheet("moog2", "moogBass", PostingTypes.PROSC))
-yamaha = cmp.reg(MetaSheet("drum", "YHDX200", PostingTypes.SAMPLE))
-yamaha2 = cmp.reg(MetaSheet("drum4", "YHDX200", PostingTypes.SAMPLE))
-korger = cmp.reg(MetaSheet("drum2", "KORGER1Samples", PostingTypes.SAMPLE))
-korger2 = cmp.reg(MetaSheet("drum3", "KORGER1Samples", PostingTypes.SAMPLE))
+yamaha = cmp.reg(MetaSheet("yamaha", "YHDX200", PostingTypes.SAMPLE))
+yamaha2 = cmp.reg(MetaSheet("yamaha2", "YHDX200", PostingTypes.SAMPLE))
+korger = cmp.reg(MetaSheet("korger", "KORGER1Samples", PostingTypes.SAMPLE))
+korger2 = cmp.reg(MetaSheet("korger2", "KORGER1Samples", PostingTypes.SAMPLE))
 simple_korg = cmp.reg(MetaSheet("simple_korg", "KORGER1", PostingTypes.SAMPLE))
-longsaw = cmp.reg(MetaSheet("lead", "longsaw", PostingTypes.PROSC))
-longsaw2 = cmp.reg(MetaSheet("lead2", "longsaw", PostingTypes.PROSC))
+longsaw = cmp.reg(MetaSheet("longsaw", "longsaw", PostingTypes.PROSC))
+longsaw2 = cmp.reg(MetaSheet("longsaw2", "longsaw", PostingTypes.PROSC))
 varsaw = cmp.reg(MetaSheet("varsaw1", "varsaw", PostingTypes.PROSC))
 varsaw2 = cmp.reg(MetaSheet("varsaw2", "varsaw", PostingTypes.PROSC))
 sinepad = cmp.reg(MetaSheet("sinepad1", "sinepad", PostingTypes.PROSC))
@@ -24,22 +24,44 @@ rhodes = cmp.reg(MetaSheet("FMRhodes1", "FMRhodes1", PostingTypes.PROSC))
 borch = cmp.reg(MetaSheet("BorchBattery", "BorchBattery", PostingTypes.MIDI))
 drsix = cmp.reg(MetaSheet("drsix", "DR660", PostingTypes.SAMPLE))
 
-#bpm(140)
 
-#moog.sheet("0 3 0 4 . 0 3 0 5", MAJOR, 6).all("=10 >10 #10").part_step([1], "=20 >20 chorus03").part_step([2,4], "=05 >20")
-yamaha.sheet("1 4 1 8 . 1 4 17 8", CHROMATIC, 0).part_step([1,3], "#35")
-yamaha2.sheet("31 31 12 12 31 31 14 14 . 31 31 18 18 31 31 22 22 ", CHROMATIC, 0).all("=05")
-drsix.sheet("35 28", CHROMATIC, 0).all("#30 =40")
-sinepad.sheet("0 2 4 2", MAJOR, 8)
-#moog.sheet("1 4 2 2 4", MINOR, 5).all("=20 >30").part_step([3,4], "=10")
-#blipp.sheet("1 2 1 2 1 4 1 4", MINOR, 7).all("=05 >10")
+rhodes.sheet("0 3 2 4 3", MAJOR, 5).all(">20 =10 #15").part_step([3,4], "=05 >15 #16")
+rhodes.cont(3)
 
-#drsix.sheet("0 5 18 3 1. 14 80 19 43 41", CHROMATIC, 0).all("=05 >10 #10").part_step([3,4], "=025 #08")
-# TODO: This goes out of rane for the part step 4 thingie. 
-#rhodes.sheet("1 1 1 2. 3 3 3 2", MAJOR, 6).all("=05 >20 #80").part_step([4], "=25 >25")
-#warsaw.sheet("0 ", MAJOR, 5).all("=40 >80 #05").on_note([1], "#0")
+cmp.smart_sync()
 
-#cmp.sync()
+# 30 05 30 05 05 05 30
+longsaw.sheet("0 0 2 4 0 2 5 4 3", MAJOR, 6).all(">20 =05 #06").part_step([1, 4, 7], ">35 =30")
+rhodes.cont(7)
+
+cmp.smart_sync()
+
+rhodes.cont(4)
+korger2.sheet("24", CHROMATIC, 0).all("=025 #06")
+korger.sheet("39 36 35 36 36", CHROMATIC, 0).all("=05 #05").part_step([1,2], "=025, #03")
+cmp.smart_sync([korger2])
+
+rhodes.cont(4)
+longsaw.cont()
+yamaha.sheet("19", CHROMATIC, 0).all("=10 #20 >40")
+warsaw.sheet("0 0 0 4 . 0 0 0 2", MAJOR, 4).all("=025 >10 #10")
+
+cmp.smart_sync([yamaha])
+
+
+moog.sheet("2 3 2 5 2 3 2 0", MAJOR, 7).all("=40 >45 #05")
+longsaw.cont()
+rhodes.cont()
+warsaw.cont()
+
+cmp.smart_sync() 
+
+yamaha.sheet("0", CHROMATIC, 0).all("=10")
+#korger.sheet("39 36", CHROMATIC, 0).all("=05 #05")
+cmp.cont([longsaw, rhodes, warsaw, korger]).smart_sync()
+
+korger2.sheet("24", CHROMATIC, 0).all("=025 #06")
+cmp.cont([longsaw, rhodes, warsaw, korger, moog]).smart_sync([korger2])
 
 
 cmp.post_all()
