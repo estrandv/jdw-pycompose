@@ -1,3 +1,9 @@
-# Composer libraries for jackdaw in python
-- Currently requires jackdaw.so compiled jdw-lang library manually placed in
-	root folder.
+# JDW-PYCOMPOSE
+
+## What does it do
+
+## Why does it do it 
+
+## How does it do it 
+
+## How do I do it 

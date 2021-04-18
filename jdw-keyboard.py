@@ -5,6 +5,8 @@ from rest_client import play
 from pretty_midi import note_number_to_hz
 import pandas as pd 
 
+print("WARNING: Script is old and won't work")
+
 print("Press enter to record a sequence or display the last one")
 
 keys =       ['a','b','c','d','e','f','g','h','i','j','k']

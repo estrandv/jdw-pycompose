@@ -1,9 +1,5 @@
-from rest_client import *
 from scales import *
-from score import Score
 from random import randint
-import pscore
-from composer import PostingTypes
 from sheet import *
 
 cmp = Composer()

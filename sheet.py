@@ -1,13 +1,21 @@
 from __future__ import annotations
 from typing import Iterable
-from composer import PostingType, PostingTypes
 from scales import CHROMATIC, transpose
 from parsing import parse_note
 from copy import deepcopy
 from pretty_midi.utilities import note_number_to_hz
-import rest_client
 import zmq_client 
 
+
+
+class PostingType:
+    def __init__(self, id: int):
+        self.id = id
+
+class PostingTypes:
+    PROSC = PostingType(0)
+    SAMPLE = PostingType(1)
+    MIDI = PostingType(2)
 
 # Transform the local note dict into the api expected format 
 # TODO: name/value should probably be renamed to key/value
