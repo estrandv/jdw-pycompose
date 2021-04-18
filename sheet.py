@@ -6,6 +6,8 @@ from parsing import parse_note
 from copy import deepcopy
 from pretty_midi.utilities import note_number_to_hz
 import rest_client
+import zmq_client 
+
 
 # Transform the local note dict into the api expected format 
 # TODO: name/value should probably be renamed to key/value
@@ -55,6 +57,7 @@ def _parse_note(string: str) -> dict[str, float]:
 class Composer:
     def __init__(self) -> None:
         self.meta_sheets: list[MetaSheet] = []
+        self.client = zmq_client.PublisherClient()
 
     def reg(self, meta_sheet: MetaSheet) -> MetaSheet:
         self.meta_sheets.append(meta_sheet)
@@ -76,15 +79,14 @@ class Composer:
     # Post export and post everything to jdw-sequencer 
     def post_all(self):
         for meta_sheet in self.meta_sheets:
+            
 
+            # TODO: MIDI 
             if meta_sheet.posing_type == PostingTypes.PROSC:
-                rest_client.post_prosc(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
-            if meta_sheet.posing_type == PostingTypes.MIDI:
-                rest_client.post_midi(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
+                self.client.queue_synth(meta_sheet.export_all())
             if meta_sheet.posing_type == PostingTypes.SAMPLE:
-                rest_client.post_sample(meta_sheet.sequencer_id, meta_sheet.instrument, meta_sheet.export_all())
-
-
+                self.client.queue_sample(meta_sheet.export_all())
+        
 
 
 class MetaSheet:
