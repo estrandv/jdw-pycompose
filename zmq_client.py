@@ -16,3 +16,9 @@ class PublisherClient:
     def queue_sample(self, notes: list[dict]):
         self.socket.send_string("JDW.SEQ.QUE.SAMPLES::" + json.dumps(notes))
         self.socket.recv()
+
+    def queue_midi(self, notes: list[dict]):
+        print("Sending midi...")
+        self.socket.send_string("JDW.SEQ.QUE.MIDI::" + json.dumps(notes))
+        print("Awaiting response...")
+        self.socket.recv()

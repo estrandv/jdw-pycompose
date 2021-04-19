@@ -23,45 +23,10 @@ sinepad = cmp.reg(MetaSheet("sinepad1", "sinepad", PostingTypes.PROSC))
 rhodes = cmp.reg(MetaSheet("FMRhodes1", "FMRhodes1", PostingTypes.PROSC))
 borch = cmp.reg(MetaSheet("BorchBattery", "BorchBattery", PostingTypes.MIDI))
 drsix = cmp.reg(MetaSheet("drsix", "DR660", PostingTypes.SAMPLE))
+nintendo = cmp.reg(MetaSheet("nintendo_soundfont1", "nintendo_soundfont", PostingTypes.MIDI, False))
+nintendo2 = cmp.reg(MetaSheet("nintendo_soundfont2", "nintendo_soundfont", PostingTypes.MIDI, False))
 
-
-rhodes.sheet("0 3 2 4 3", MAJOR, 5).all(">20 =10 #15").part_step([3,4], "=05 >15 #16")
-rhodes.cont(3)
 
 cmp.smart_sync()
-
-# 30 05 30 05 05 05 30
-longsaw.sheet("0 0 2 4 0 2 5 4 3", MAJOR, 6).all(">20 =05 #06").part_step([1, 4, 7], ">35 =30")
-rhodes.cont(7)
-
-cmp.smart_sync()
-
-rhodes.cont(4)
-korger2.sheet("24", CHROMATIC, 0).all("=025 #06")
-korger.sheet("39 36 35 36 36", CHROMATIC, 0).all("=05 #05").part_step([1,2], "=025, #03")
-cmp.smart_sync([korger2])
-
-rhodes.cont(4)
-longsaw.cont()
-yamaha.sheet("19", CHROMATIC, 0).all("=10 #20 >40")
-warsaw.sheet("0 0 0 4 . 0 0 0 2", MAJOR, 4).all("=025 >10 #10")
-
-cmp.smart_sync([yamaha])
-
-
-moog.sheet("2 3 2 5 2 3 2 0", MAJOR, 7).all("=40 >45 #05")
-longsaw.cont()
-rhodes.cont()
-warsaw.cont()
-
-cmp.smart_sync() 
-
-yamaha.sheet("0", CHROMATIC, 0).all("=10")
-#korger.sheet("39 36", CHROMATIC, 0).all("=05 #05")
-cmp.cont([longsaw, rhodes, warsaw, korger]).smart_sync()
-
-korger2.sheet("24", CHROMATIC, 0).all("=025 #06")
-cmp.cont([longsaw, rhodes, warsaw, korger, moog]).smart_sync([korger2])
-
 
 cmp.post_all()

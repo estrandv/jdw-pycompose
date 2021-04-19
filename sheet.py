@@ -133,12 +133,12 @@ class Composer:
             if meta_sheet.sequencer_id in self.restart_sheet_indices:
                 meta_sheet.sheets = meta_sheet.sheets[self.restart_sheet_indices[meta_sheet.sequencer_id]:]
 
-            # TODO: MIDI 
             if meta_sheet.posing_type == PostingTypes.PROSC:
                 self.client.queue_synth(meta_sheet.export_all())
             if meta_sheet.posing_type == PostingTypes.SAMPLE:
                 self.client.queue_sample(meta_sheet.export_all())
-        
+            if meta_sheet.posing_type == PostingTypes.MIDI:
+                self.client.queue_midi(meta_sheet.export_all())
 
 
 class MetaSheet:
