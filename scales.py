@@ -10,11 +10,10 @@ MINOR_PENTATONIC=[0,3,5,7,10]
 EGYPTIAN=[0,2,5,7,10]
 HUNGARIAN_MINOR=[0,2,3,6,7,8,11]
 
-def transpose(tone_index: int, scale: List[int]) -> int:
+def transpose(tone_index: int, scale: list[int]) -> int:
 
     # A MIDI Octave is 12 notes, starting with note 0 and ending with 11.
     octave_len = len(CHROMATIC) + 1
-
 
     scale_indices = len(scale)
 

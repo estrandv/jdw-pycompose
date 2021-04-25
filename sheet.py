@@ -136,6 +136,8 @@ class Composer:
             if meta_sheet.posing_type == PostingTypes.PROSC:
                 self.client.queue_synth(meta_sheet.export_all())
             if meta_sheet.posing_type == PostingTypes.SAMPLE:
+                for note in meta_sheet.export_all():
+                    print("DEBUG: " + meta_sheet.instrument + "=>" +str(int(note["args"]["freq"])))
                 self.client.queue_sample(meta_sheet.export_all())
             if meta_sheet.posing_type == PostingTypes.MIDI:
                 self.client.queue_midi(meta_sheet.export_all())
@@ -151,11 +153,13 @@ class MetaSheet:
         self.sequencer_id: str = sequencer_id
         self.sheets: list[Sheet] = []
         self.to_hz = to_hz
-
+        
     # Create and save a new sheet 
-    def sheet(self, source: str, scale: list[int] = CHROMATIC, octave: int = 4) -> Sheet:
+    def sheet(self, source: str, scale: list[int] = CHROMATIC, octave: int = 0) -> Sheet:
         sheet = Sheet(self, source, scale, octave)
         self.sheets.append(sheet)
+        # TODO: Check that we don't add defaults anywhere else 
+        sheet.all("=10 >10 #10")
         return sheet
 
     # Play the latest sheet again if exists 
