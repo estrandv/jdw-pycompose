@@ -1,7 +1,6 @@
 import zmq
 import json
 
-
 class PublisherClient:
     def __init__(self) -> None:
         ctx = zmq.Context()
@@ -9,16 +8,6 @@ class PublisherClient:
         self.socket.connect("tcp://localhost:5559")
 
     # Each note must contain {"target", "alias", "time", "args":{}}
-    def queue_synth(self, notes: list[dict]):
-        self.socket.send_string("JDW.SEQ.QUE.NOTES::" + json.dumps(notes))
-        self.socket.recv()
-
-    def queue_sample(self, notes: list[dict]):
-        self.socket.send_string("JDW.SEQ.QUE.SAMPLES::" + json.dumps(notes))
-        self.socket.recv()
-
-    def queue_midi(self, notes: list[dict]):
-        print("Sending midi...")
-        self.socket.send_string("JDW.SEQ.QUE.MIDI::" + json.dumps(notes))
-        print("Awaiting response...")
+    def queue(self, notes: list[dict]):
+        self.socket.send_string("JDW.SEQ.QUEUE::" + json.dumps(notes))
         self.socket.recv()

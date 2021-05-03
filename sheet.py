@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Iterable
+import json
+from typing import Any, Iterable
 from scales import CHROMATIC, transpose
 from parsing import parse_note
 from copy import deepcopy
@@ -18,11 +19,13 @@ class PostingTypes:
     MIDI = PostingType(2)
 
 # Transform the local note dict into the api expected format 
-# TODO: name/value should probably be renamed to key/value
-# name/value format is needed to work with the strict typing requirements of the current
-# sequencer Rust JSON API. 
-def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str):
-    exported = {"target": synth_name, "alias": sequencer_id, "args": {}}
+# TODO: Bit of a mess, but the end goal is to transform notes into the zeromq sequencer format
+def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str, posting_type: PostingType):
+    # {alias, time, "msg: XXX::{target, args}"}
+    sequencer_message: dict[str, Any] = {"alias": sequencer_id}
+    exported = {"target": synth_name, "args": {}}
+
+    amp = 0.0
 
     for key in note:
 
@@ -30,11 +33,27 @@ def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str):
         if key == "tone":
             exported["args"]["freq"] = note[key]
         elif key == "reserved_time": # TODO: Also clumsy 
-            exported["time"] = note[key]
+            sequencer_message["time"] = note[key]            
         else:
             exported["args"][key] = note[key]
+            if key == "amp":
+                amp = note[key]
 
-    return exported
+    payload = json.dumps(exported)
+
+    # Don't order sequencer to actually play any "silent" notes
+    if amp == 0.0:
+        payload = "{}"
+
+    if posting_type == PostingTypes.PROSC:
+        sequencer_message["msg"] = "JDW.PLAY.NOTE::" + payload
+    elif posting_type == PostingTypes.SAMPLE:
+        sequencer_message["msg"] = "JDW.PLAY.SAMPLE::" + payload
+    elif posting_type == PostingTypes.MIDI:
+        # TODO: Malformed, needs a lot more processing, including real time sus
+        sequencer_message["msg"] = "JDW.PLAY.MIDI::" + payload
+
+    return sequencer_message
 
 
 # Transform any set of integer lists into the sheet-standard of "0 0 0 . 1 0 1" etc. 
@@ -133,14 +152,7 @@ class Composer:
             if meta_sheet.sequencer_id in self.restart_sheet_indices:
                 meta_sheet.sheets = meta_sheet.sheets[self.restart_sheet_indices[meta_sheet.sequencer_id]:]
 
-            if meta_sheet.posing_type == PostingTypes.PROSC:
-                self.client.queue_synth(meta_sheet.export_all())
-            if meta_sheet.posing_type == PostingTypes.SAMPLE:
-                for note in meta_sheet.export_all():
-                    print("DEBUG: " + meta_sheet.instrument + "=>" +str(int(note["args"]["freq"])))
-                self.client.queue_sample(meta_sheet.export_all())
-            if meta_sheet.posing_type == PostingTypes.MIDI:
-                self.client.queue_midi(meta_sheet.export_all())
+            self.client.queue(meta_sheet.export_all())
 
 
 class MetaSheet:
@@ -148,7 +160,7 @@ class MetaSheet:
     # Args outline data needed to post to the jdw-sequencer and, ultimately, to PROSC or MIDI 
     # Note the pass-along "to_hz", which should typically be set to false for SAMPLE posting 
     def __init__(self, sequencer_id: str, instrument: str, posting: PostingType, to_hz = True):
-        self.posing_type: PostingType = posting
+        self.posting_type: PostingType = posting
         self.instrument: str = instrument
         self.sequencer_id: str = sequencer_id
         self.sheets: list[Sheet] = []
@@ -201,7 +213,7 @@ class MetaSheet:
     # Get all notes from all sheets in order and make them sequencer-compatible
     def export_all(self) -> list[dict]:
         all_notes: list[dict[str,float]] = [note for sublist in [sheet.to_notes(self.to_hz) for sheet in self.sheets] for note in sublist]
-        return [_export_note(note, self.instrument, self.sequencer_id) for note in all_notes]
+        return [_export_note(note, self.instrument, self.sequencer_id, self.posting_type) for note in all_notes]
         
 
 class Sheet:
@@ -228,22 +240,6 @@ class Sheet:
         for tone in all_tones:
             self.notes.append({"tone": tone})
 
-
-    # on_note, all and part_step all overwrite the notes at the given positions 
-    # with the provided attributes, e.g. "res20 amp35"
-    # human-read based, ie starts on "1" as first note 
-    def on_note(self, note_nums: list[int], attributes: str) -> Sheet:
-
-        override = _parse_note(attributes)
-
-        for i in note_nums:
-            if i < 1:
-                print("Error: note count starts at 1")
-                break
-            self.notes[i - 1] = _merge_note(self.notes[i - 1], override)
-
-        return self
-
     def all(self, attributes: str) -> Sheet:
         override = _parse_note(attributes)
 
@@ -253,7 +249,7 @@ class Sheet:
         return self
     
     # Similar to above but based on the dot-defined "parts" in the sheet 
-    def part_step(self, note_nums: list[int], attributes: str) -> Sheet:
+    def dots(self, note_nums: list[int], attributes: str) -> Sheet:
         override = _parse_note(attributes)
 
         for p in self.part_indices:
@@ -312,8 +308,7 @@ class Sheet:
 meta_sheet = MetaSheet("", "", PostingTypes.PROSC)
 sheet = meta_sheet.sheet("0 13 4 3 . 8 6 2 1 . 0 4 22 4")
 
-sheet.on_note([1, 5, 9], "=20")
-sheet.part_step([1], ">40")
+sheet.dots([1], ">40")
 
 def attr_assert(index: int, attr: str, target: float):
     assert sheet.notes[index][attr] == target, "Wrong " + attr + ": " + str(sheet.notes[index][attr])
@@ -321,9 +316,6 @@ def attr_assert(index: int, attr: str, target: float):
 attr_assert(0, "tone", 0.0)
 attr_assert(1, "tone", 13.0)
 attr_assert(10, "tone", 22.0)
-
-attr_assert(0, "reserved_time", 2.0)
-attr_assert(4, "reserved_time", 2.0)
 
 attr_assert(8, "sus", 4.0)
 attr_assert(0, "sus", 4.0)
@@ -335,7 +327,7 @@ assert len_sheet.len() == 6.0, "Unexpected total res: " + str(len_sheet.len())
 assert arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) == "0 1 22 . 0 2 0 . 0 0 1 0", "Bad arr_fmt: " + arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) 
 
 mscont = MetaSheet("", "", PostingTypes.PROSC)
-cont_s = mscont.sheet("2 3 4 5").all("=10").on_note([1], "=50")
+cont_s = mscont.sheet("2 3 4 5").all("=10").dots([1], "=50")
 mscont.cont()
 assert len(mscont.sheets) == 2
 assert mscont.sheets[-1].notes[0]["reserved_time"] == 5.0
