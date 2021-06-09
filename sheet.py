@@ -165,6 +165,7 @@ class MetaSheet:
         self.sequencer_id: str = sequencer_id
         self.sheets: list[Sheet] = []
         self.to_hz = to_hz
+        self.clipboard: dict[str, Sheet] = {}
         
     # Create and save a new sheet 
     def sheet(self, source: str, scale: list[int] = CHROMATIC, octave: int = 0) -> Sheet:
@@ -173,6 +174,17 @@ class MetaSheet:
         # TODO: Check that we don't add defaults anywhere else 
         sheet.all("=10 >10 #10")
         return sheet
+
+    # Grab a previously copy():d sheet by name and add it to the end of sheet (returning it)
+    # Note deepcopy() - it's a copy of the copy, not the original sheet instance 
+    def paste(self, clipboard_name: str) -> Sheet:
+        if clipboard_name in self.clipboard:
+            sheet = deepcopy(self.clipboard[clipboard_name])
+            self.sheets.append(sheet)
+            return sheet
+
+        print("ERROR: Copied sheet with name", clipboard_name, "not found")
+        return Sheet(self, "")
 
     # Play the latest sheet again if exists 
     def cont(self, times=1) -> MetaSheet:
@@ -225,11 +237,40 @@ class Sheet:
         self.octave = octave
 
         self.part_indices: list[int] = [0]
+        
+        # Typing e.g. "18a 12boo" will tag the first note as "a" and the second as "boo"
+        # See the tagged() call 
+        self.tagged_indices: dict[str, list[int]] = {}
+
         all_tones: list[float] = []
 
         for chunk in source.split(" "):
-            if chunk.isdigit():
-                all_tones.append(float(chunk))
+            if any(char.isdigit() for char in chunk):
+
+                first = chunk[0]
+
+                if first.isdigit():
+                    
+                    # Scan until whole unbroken digit found 
+                    digit_part = ""
+                    for char in chunk:
+                        if char.isdigit():
+                            digit_part += char
+                        else:
+                            break
+
+                    # Add the tone 
+                    all_tones.append(float(digit_part))
+
+                    # The following part becomes the tag 
+                    tag = chunk.replace(digit_part, "")
+                    if tag not in self.tagged_indices:
+                        self.tagged_indices[tag] = []
+                    self.tagged_indices[tag].append(len(all_tones) - 1) # Index of the tone we just added
+
+                else:
+                    print("ERROR: note chunk", chunk, "must have digit as first char!")
+
             elif chunk == ".":
                 self.part_indices.append(len(all_tones))
             else:
@@ -247,8 +288,20 @@ class Sheet:
             self.notes[i] = _merge_note(self.notes[i], override)
 
         return self
+
+    def tagged(self, tag: str, attributes: str) -> Sheet:
+        override = _parse_note(attributes)
+        
+        if tag in self.tagged_indices:
+            for index in self.tagged_indices[tag]:
+                self.notes[index] = _merge_note(self.notes[index], override)
+        else:
+            print("WARN: Tag missing:", tag)
+
+        return self 
+
     
-    # Similar to above but based on the dot-defined "parts" in the sheet 
+    # Modify dots by their ordinal since last dot, e.g. [2] = "0 1 0 0 . 0 1 0 0"
     def dots(self, note_nums: list[int], attributes: str) -> Sheet:
         override = _parse_note(attributes)
 
@@ -258,6 +311,26 @@ class Sheet:
                     print("Error: note count starts at 1")
                 self.notes[p + i - 1] = _merge_note(self.notes[p + i - 1], override)
 
+        return self
+
+    # See MetaSheet.paste() 
+    def copy(self, name: str) -> Sheet:
+        self.meta_sheet.clipboard[name] = deepcopy(self)
+        return self
+
+    # Like copy, but removing itself from the meta_sheet
+    def cut(self, name: str) -> Sheet:
+        self.copy(name)
+        self.meta_sheet.sheets.remove(self)
+        return self
+
+    # Double own notes <times> amount of times
+    # TODO: Does not account for part sections or tags, dangerous!
+    def stretch(self, times: int) -> Sheet:
+        appenders = deepcopy(self.notes)
+
+        for i in range(0, times):
+            self.notes += appenders
         return self
 
     def len(self) -> float:
@@ -299,6 +372,7 @@ class Sheet:
             require("amp")
             require("sus")
             require("reserved_time")
+            
 
             exported.append(formatted)
 

@@ -1,6 +1,8 @@
-from scales import *
 from random import randint
+
+from scales import *
 from sheet import *
+from zmq_client import PublisherClient
 
 cmp = Composer()
 padder = cmp.reg(MetaSheet("padder", "blipp", PostingTypes.PROSC))
@@ -27,20 +29,40 @@ borch = cmp.reg(MetaSheet("BorchBattery", "BorchBattery", PostingTypes.MIDI))
 drsix = cmp.reg(MetaSheet("drsix", "DR660", PostingTypes.SAMPLE, False))
 nintendo = cmp.reg(MetaSheet("nintendo_soundfont1", "nintendo_soundfont", PostingTypes.MIDI, False))
 nintendo2 = cmp.reg(MetaSheet("nintendo_soundfont2", "nintendo_soundfont", PostingTypes.MIDI, False))
+xtndo = cmp.reg(MetaSheet("xtndo1", "xtndo", PostingTypes.SAMPLE, False))
+modeAudio = cmp.reg(MetaSheet("modeAudio1", "ModeAudio", PostingTypes.SAMPLE, False))
+# lfomul, hpf, lfow, pan
+modulOSC = cmp.reg(MetaSheet("mosc1", "modulOSC", PostingTypes.PROSC))
+# attT, susL, decT, relT, hpf, lpf 
+stockSaw = cmp.reg(MetaSheet("ssaw1", "stockSaw", PostingTypes.PROSC))
+stockSaw2 = cmp.reg(MetaSheet("ssaw2", "stockSaw", PostingTypes.PROSC))
 
-# TODO: taggable sheets like sheet("0a 0a 1b 2b").tag("b", "=05 >05")
-# Could be expanded to cmp level, so that there are "global tags", or just by metadata
-# Another approach is to allow in-line attributes like sheet("0 2 3(=05 >20) 4"), which is a little messier but nice for shorthand 
+# TODO: Currently dealing with buses 
+# "gentle intro to supercollider" touches uppon it best
+# Basically, only the first two buses produce sound, 0 being a sort of "master out"
+# To properly apply things selectively, "routing" appears to be the answer 
+# This would mean sending a synth to a buffer (e.g. 55) and then
+# having an effect take 55 as input, apply its effect and then output to 0
+# In fact they do this with reverb in the "The Bus Object" chapter
+# Buses 0-15 are reserved for sound card slots, so you can grab any from 16-127
+# Below example of blipp/reverb should demonstrate this effect, but not also that 
+# re-applying the same effect will fuck the sound up since you get multiple reads 
+# (there might be something here about order of execution for the subsequent reverbs)
 
-yamaha.sheet("79 28").all("=80 >05")
-rhodes.sheet("2 3 2 2 5 6 5 7 5 3 4 2", MINOR, 7).all(">20").dots([3,7], "=35").dots([1,2,4,5], "=05")
-drsix.sheet("26 26 26 26 . 26 26 26 12")
-korger.sheet("8 7 8 9").all("#30 >05 =20").dots([1,3], "=05").dots([2,4], "=15")
-warsaw.sheet("0 2 0 3 . 0 2 4 3 . 0 2 0 3 . 0 2 1 0", MINOR, 7).all("=20 >40 #03")
-#longsaw.sheet("2 4 6 4 6 4 6 4 . 3 4 6 4 6 4 6 4", MINOR, 5).all("=025 >0")
-#chaoscillator.sheet("0 1 0 3 0 . 0 1 3 4 1 . 4 1 0 3 0 . 1 2 3 4 0", MINOR, 6).all("=05 >20").dots([3,4], "=025")
-#rhodes.sheet("4 4 4 6 . 4 4 2 6 . 4 5 3 6 . 4 4 2 6", MINOR, 5).all(">10 #40 =025")
 
-cmp.smart_sync([varsaw])
+#warsaw.sheet("5 6 2 4", MINOR, 4).all("#08 >60 =20")
+#moog.sheet("6 2t 7 2t 6 2t 5 2t", MINOR, 4).all(">80 =80 att03 #12 att02").tagged("t", "=00 >50 att04")
+blipp.sheet("0 5g 0 4g 3 2g 0 4g 0 6g 0 1g 2 3g 0 5g", MINOR, 7).all(">30 bus0").tagged("g", ">20 att02")
+#stockSaw.sheet("0 2 0 2 0 4 0 4 0 3 0 3 0 4 0 4", MINOR, 6).all("#20 =05 attT03 decT03 susL20 lpf44 hpf33")
+#modeAudio.sheet("0 8 0 4s 4s").all("#15").tagged("s", "=05")
+#yamaha.sheet("26").all("#80")
+
+#client = PublisherClient()
+#client.add_effect([{"target": "reverb", "args": {"bus":20, "room": 0.7, "mix":0.8}}])
+
+
+#client.update_synths()
+
+cmp.smart_sync([yamaha])
 
 cmp.post_all()

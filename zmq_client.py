@@ -11,3 +11,11 @@ class PublisherClient:
     def queue(self, notes: list[dict]):
         self.socket.send_string("JDW.SEQ.QUEUE::" + json.dumps(notes))
         self.socket.recv()
+
+    def update_synths(self):
+        self.socket.send_string("JDW.PROSC.SYNDEF.UPDATE")
+        self.socket.recv()
+
+    def add_effect(self, events: list[dict]):
+        self.socket.send_string("JDW.ADD.EFFECT::" + json.dumps(events))
+        self.socket.recv()
