@@ -50,15 +50,16 @@ stockSaw2 = cmp.reg(MetaSheet("ssaw2", "stockSaw", PostingTypes.PROSC))
 # (there might be something here about order of execution for the subsequent reverbs)
 
 
-#warsaw.sheet("5 6 2 4", MINOR, 4).all("#08 >60 =20")
-#moog.sheet("6 2t 7 2t 6 2t 5 2t", MINOR, 4).all(">80 =80 att03 #12 att02").tagged("t", "=00 >50 att04")
-blipp.sheet("0 5g 0 4g 3 2g 0 4g 0 6g 0 1g 2 3g 0 5g", MINOR, 7).all(">30 bus0").tagged("g", ">20 att02")
-#stockSaw.sheet("0 2 0 2 0 4 0 4 0 3 0 3 0 4 0 4", MINOR, 6).all("#20 =05 attT03 decT03 susL20 lpf44 hpf33")
-#modeAudio.sheet("0 8 0 4s 4s").all("#15").tagged("s", "=05")
-#yamaha.sheet("26").all("#80")
+#warsaw.sheet("5 6 2 4", MINOR, 8).all("#.3 >6.0 =8.0 bus20")
+#moog.sheet("6 2t 7 2t 6 2t 5 2t", MINOR, 5).all(">8.0 =4.0 att.3 #.6 att.2").tagged("t", "=0 >5.0 att.4")
+#blipp.sheet("4g 3 2g 0 4g 0 6g 0 1g 2 3g 0 5g 0 5g 0", MINOR, 7).all("#.5 >3.0 bus20").tagged("g", ">2.0 att.2")
+stockSaw.sheet("0 2 0 2 0 4 0 4 0 3 0 3 0 4 0 4", MINOR, 5).all("bus40 #.8 =.5 attT.3 decT.3 susL2.0 lpf530 hpf300")
+modeAudio.sheet("4s 4s 0 8 0").all("#1.5 bus40").tagged("s", "=.5")
+#yamaha.sheet("26").all("#4.0 bus40")
 
-#client = PublisherClient()
-#client.add_effect([{"target": "reverb", "args": {"bus":20, "room": 0.7, "mix":0.8}}])
+client = PublisherClient()
+client.add_effect([{"target": "effect_reverb", "args": {"inBus":20, "outBus": 0, "room": 0.2, "mix":0.7}}])
+client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 1.0, "mix":0.4}}])
 
 
 #client.update_synths()

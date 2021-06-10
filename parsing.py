@@ -17,52 +17,18 @@ def parse_note(string: str) -> dict[str, float]:
     parsing_number = ""
 
     def is_num(char: str) -> bool:
-        return char.isdigit() or char == "-"
-
-
-    # 11 = 1.1 (/10) (len 2)
-    # 011 = 0.11 (/100) (len 3)
-    # 89 = 8.9 (/10) (len 2)
-    # 089 = 0.89 (/100) (len 3)
-    # 1 = 1.0 (no split) (len 1)
-
-    # Exponent = len - 1
-    
-    # 890 = 89.0 # len 3 
-    # 089 = 0.89 # len 3 
-    # 89 = 8.9 
+        return char.isdigit() or char == "-" or char == "."
 
     def parse_number(num: str) -> float:
 
         negate = "-" in num
         num = num.replace("-", "")
 
-        leading_zeros = 0
-        for char in num: 
-            if char == "0":
-                leading_zeros += 1
-            else: 
-                break
-
-        length = len(num)
-        exponent = 1
-        if leading_zeros > 0:
-            exponent = length - 1
-
         base = float(num)
-        denominator = 10.0 ** exponent
 
-        if denominator < 1.0:
-            denominator = 1.0
+        dimension = -1.0 if negate else 1.0
 
-        dimension = 1.0
-        if negate:
-            dimension = -1.0
-
-        if base == 0.0 or length == 1:
-            return base 
-        else:
-            return (base / denominator) * dimension
+        return base * dimension if base != 0.0 else base
 
     for i in range( len(string) ):
 
@@ -107,9 +73,10 @@ if __name__ == "__main__":
         result = parse_note("1 " + string)
         assert expected_sus == result["sus"], "Bad sus: " + str(result["sus"])
 
-    sus_assert(">015", 0.15)
-    sus_assert(">15", 1.5)
-    sus_assert(">10", 1.0)
-    sus_assert(">0111", 0.111)
+    sus_assert(">0.15", 0.15)
+    sus_assert(">1.5", 1.5)
+    sus_assert(">1.0", 1.0)
+    sus_assert(">0.111", 0.111)
     sus_assert(">1", 1.0)
     sus_assert(">0", 0.0)
+    sus_assert(">.2", 0.2)

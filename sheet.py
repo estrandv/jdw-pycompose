@@ -172,7 +172,7 @@ class MetaSheet:
         sheet = Sheet(self, source, scale, octave)
         self.sheets.append(sheet)
         # TODO: Check that we don't add defaults anywhere else 
-        sheet.all("=10 >10 #10")
+        sheet.all("=1.0 >1.0 #1.0")
         return sheet
 
     # Grab a previously copy():d sheet by name and add it to the end of sheet (returning it)
@@ -215,7 +215,7 @@ class MetaSheet:
     # Add a silent sheet of <time> length 
     def pad(self, time: float) -> MetaSheet:
         # Bit hacky to use the native string parse method (note the *10) but it works for now...
-        self.sheet("0", CHROMATIC, 0).all("#0 =" + str(time * 10))
+        self.sheet("0", CHROMATIC, 0).all("#0 =" + str(time))
         return self
 
     # Returns total length of all sheets 
@@ -382,7 +382,7 @@ class Sheet:
 meta_sheet = MetaSheet("", "", PostingTypes.PROSC)
 sheet = meta_sheet.sheet("0 13 4 3 . 8 6 2 1 . 0 4 22 4")
 
-sheet.dots([1], ">40")
+sheet.dots([1], ">4.0")
 
 def attr_assert(index: int, attr: str, target: float):
     assert sheet.notes[index][attr] == target, "Wrong " + attr + ": " + str(sheet.notes[index][attr])
@@ -394,14 +394,14 @@ attr_assert(10, "tone", 22.0)
 attr_assert(8, "sus", 4.0)
 attr_assert(0, "sus", 4.0)
 
-len_sheet = meta_sheet.sheet("0 0 0 0").all("=15")
+len_sheet = meta_sheet.sheet("0 0 0 0").all("=1.5")
 
 assert len_sheet.len() == 6.0, "Unexpected total res: " + str(len_sheet.len())
 
 assert arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) == "0 1 22 . 0 2 0 . 0 0 1 0", "Bad arr_fmt: " + arr_fmt([0,1,22], [0,2,0], [0,0,1,0]) 
 
 mscont = MetaSheet("", "", PostingTypes.PROSC)
-cont_s = mscont.sheet("2 3 4 5").all("=10").dots([1], "=50")
+cont_s = mscont.sheet("2 3 4 5").all("=1.0").dots([1], "=5.0")
 mscont.cont()
 assert len(mscont.sheets) == 2
 assert mscont.sheets[-1].notes[0]["reserved_time"] == 5.0
