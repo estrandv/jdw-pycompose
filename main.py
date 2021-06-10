@@ -49,21 +49,23 @@ stockSaw2 = cmp.reg(MetaSheet("ssaw2", "stockSaw", PostingTypes.PROSC))
 # re-applying the same effect will fuck the sound up since you get multiple reads 
 # (there might be something here about order of execution for the subsequent reverbs)
 
-
-#warsaw.sheet("5 6 2 4", MINOR, 8).all("#.3 >6.0 =8.0 bus20")
-#moog.sheet("6 2t 7 2t 6 2t 5 2t", MINOR, 5).all(">8.0 =4.0 att.3 #.6 att.2").tagged("t", "=0 >5.0 att.4")
-#blipp.sheet("4g 3 2g 0 4g 0 6g 0 1g 2 3g 0 5g 0 5g 0", MINOR, 7).all("#.5 >3.0 bus20").tagged("g", ">2.0 att.2")
-stockSaw.sheet("0 2 0 2 0 4 0 4 0 3 0 3 0 4 0 4", MINOR, 5).all("bus40 #.8 =.5 attT.3 decT.3 susL2.0 lpf530 hpf300")
-modeAudio.sheet("4s 4s 0 8 0").all("#1.5 bus40").tagged("s", "=.5")
-#yamaha.sheet("26").all("#4.0 bus40")
+chaoscillator.sheet("0s 1s 2s 1s 1s 8s 1", MAJOR, 4).all("#1.5 >2 pan05 bus40").tagged("s", "=.5")
+organReed.sheet("4z 2z 0 4 5 4 . 8z 3z 1 4 3 4", MAJOR, 7).all("=4.0 >8.0").tagged("z", "=0")
+#sinepad.sheet("0 1s 3 0s 1 . 0 2s 3 2s 1", MAJOR, 6).tagged("s", "=.5 >1").all("bus40")
+#rhodes.sheet("4s 4s 5 3l . 4t 4s 5t 6 7l . 4s 4s 5 3l . 4t 6s 4t 7 2l", MAJOR, 7).all("#2 =2.0 >4.0 bus20").tagged("t", "=.5").tagged("s", "=1.0").tagged("l", "=4.0")
+#yamaha.sheet("14 16s 16s").all("bus20").tagged("s", "=.5")
+#drsix.sheet("58 2 2 59").all("bus40 #1.5")
+#moog.sheet("8 5", MAJOR, 7).all("=16 >6 #.4 pan-0.5")
 
 client = PublisherClient()
 client.add_effect([{"target": "effect_reverb", "args": {"inBus":20, "outBus": 0, "room": 0.2, "mix":0.7}}])
-client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 1.0, "mix":0.4}}])
+client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 1.0, "mix":0.5}}])
+client.set_bpm(176)
 
 
 #client.update_synths()
 
-cmp.smart_sync([yamaha])
+cmp.smart_sync([])
 
 cmp.post_all()
+

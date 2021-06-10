@@ -19,3 +19,7 @@ class PublisherClient:
     def add_effect(self, events: list[dict]):
         self.socket.send_string("JDW.ADD.EFFECT::" + json.dumps(events))
         self.socket.recv()
+
+    def set_bpm(self, bpm: int):
+        self.socket.send_string("JDW.SEQ.BPM::" + json.dumps(bpm))
+        self.socket.recv()
