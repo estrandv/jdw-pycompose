@@ -5,6 +5,7 @@ from scales import CHROMATIC, transpose
 from parsing import parse_note
 from copy import deepcopy
 from pretty_midi.utilities import note_number_to_hz
+from notifypy import Notify # Desktop notifications for debug
 import zmq_client 
 
 
@@ -50,8 +51,13 @@ def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str, pos
     elif posting_type == PostingTypes.SAMPLE:
         sequencer_message["msg"] = "JDW.PLAY.SAMPLE::" + payload
     elif posting_type == PostingTypes.MIDI:
-        # TODO: Malformed, needs a lot more processing, including real time sus
-        sequencer_message["msg"] = "JDW.PLAY.MIDI::" + payload
+        # TODO: sus Ms in actual sus ms 
+        midi_msg = {"target": exported["target"],"tone": exported["args"]["freq"], "sus_ms": exported["args"]["sus"], "amp": exported["args"]["amp"]}
+        midi_payload = json.dumps(midi_msg)
+
+        # TODO: Dont play on 0 amp 
+
+        sequencer_message["msg"] = "JDW.PLAY.MIDI::" + midi_payload
 
     return sequencer_message
 
@@ -87,10 +93,13 @@ class Composer:
         self.client = zmq_client.PublisherClient()
         self.last_sync_time = 0.0
         self.restart_sheet_indices: dict[str, int] = {}
+        # Tags for sheets, triggered on sync 
+        self.pre_tagged: list[str] = []
 
 
     def reg(self, meta_sheet: MetaSheet) -> MetaSheet:
         self.meta_sheets.append(meta_sheet)
+        meta_sheet.set_callback(self.tag_all)
         return meta_sheet
     
     # Pad all sheets with silence until everything is the same length 
@@ -118,9 +127,32 @@ class Composer:
 
         return self
 
+    def pre_tag(self, tag: str) -> Composer: 
+        self.pre_tagged.append(tag)
+        return self 
+
+    def tag_all(self) -> Composer:
+        for meta_sheet in self.meta_sheets:
+            for sheet in meta_sheet.sheets:
+                for tag in self.pre_tagged:
+                    sheet.tag(tag)
+
+        return self
+
+    def debug(self) -> Composer:
+        for meta_sheet in self.meta_sheets:
+            for sheet in meta_sheet.sheets:
+                if sheet.debug_mark != "":                
+                    sheet.debug(sheet.debug_mark)
+
+        return self 
+
     # Detects which sheets were played since last sync() call and repeats 
     # those to match the longest one (i.e. "play and repeat together")
     def smart_sync(self, exclude: list[MetaSheet]=[]) -> Composer:
+
+        # Make sure tagged values are up to date
+        self.tag_all()
         
         played_since_sync = [meta_sheet for meta_sheet in self.meta_sheets if meta_sheet.len() > self.last_sync_time]
         longest_recent = [ms for ms in self.meta_sheets if ms.len() == self.len()][0]
@@ -166,13 +198,19 @@ class MetaSheet:
         self.sheets: list[Sheet] = []
         self.to_hz = to_hz
         self.clipboard: dict[str, Sheet] = {}
+        self.new_sheet_callback = None # Changes to actual callback if set_callback() called
         
+    def set_callback(self, callback):
+        self.new_sheet_callback = callback
+
     # Create and save a new sheet 
     def sheet(self, source: str, scale: list[int] = CHROMATIC, octave: int = 0) -> Sheet:
         sheet = Sheet(self, source, scale, octave)
         self.sheets.append(sheet)
         # TODO: Check that we don't add defaults anywhere else 
         sheet.all("=1.0 >1.0 #1.0")
+        if self.new_sheet_callback != None:
+            self.new_sheet_callback()
         return sheet
 
     # Grab a previously copy():d sheet by name and add it to the end of sheet (returning it)
@@ -242,6 +280,9 @@ class Sheet:
         # See the tagged() call 
         self.tagged_indices: dict[str, list[int]] = {}
 
+        # When debug is called on the composer level, this is used to display a debug message if non-blank
+        self.debug_mark = ""
+
         all_tones: list[float] = []
 
         for chunk in source.split(" "):
@@ -288,6 +329,21 @@ class Sheet:
             self.notes[i] = _merge_note(self.notes[i], override)
 
         return self
+
+    # Like so: "s: =.5 >2"
+    def tag(self, instructions: str) -> Sheet:
+        parts = instructions.split(":")
+        key_section = parts[0]
+        info_section = ":".join(parts[1:])
+        return self.tagged(key_section, info_section)
+
+    # Print length
+    def debug(self, name: str) -> Sheet:
+        n = Notify()
+        n.title = name 
+        n.message = "Len: " + str(self.len())
+        n.send()
+        return self 
 
     def tagged(self, tag: str, attributes: str) -> Sheet:
         override = _parse_note(attributes)
