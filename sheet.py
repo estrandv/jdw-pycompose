@@ -25,9 +25,25 @@ class Sheet:
         # When debug is called on the composer level, this is used to display a debug message if non-blank
         self.debug_mark = ""
 
-        all_tones: list[float] = []
+        self.notes: list[dict[str, float]] = []
 
-        for chunk in source.split(" "):
+        # Count non-bracketed spaces as "note splits"
+        # Basically: "0 0[=.5 >.4]" -> "0<DIVIDE>0[=.5 >.4]"
+        # Prone to silliness if you don't close your brackets.
+        # Just close your damn brackets. 
+        space_scan = ""
+        bracket_open = False
+        for letter in source:
+            if letter == " " and not bracket_open:
+                space_scan += "<DIVIDE>"
+            else:
+                if letter == "[" and not bracket_open:
+                    bracket_open = True
+                elif letter == "]":
+                    bracket_open = False
+                space_scan += letter
+
+        for chunk in space_scan.split("<DIVIDE>"):
             if any(char.isdigit() for char in chunk):
 
                 first = chunk[0]
@@ -42,27 +58,37 @@ class Sheet:
                         else:
                             break
 
-                    # Add the tone 
-                    all_tones.append(float(digit_part))
+                    # Add the tone
+                    self.notes.append({"tone": float(digit_part), "amp": 1.0, "sus": 1.0, "reserved_time": 1.0})
 
-                    # The following part becomes the tag 
-                    tag = chunk.replace(digit_part, "")
-                    if tag not in self.tagged_indices:
-                        self.tagged_indices[tag] = []
-                    self.tagged_indices[tag].append(len(all_tones) - 1) # Index of the tone we just added
+                    # Process the part after the digits (inline or tag)
+                    after_digits = chunk.replace(digit_part, "")
+                    if after_digits != "":
+                        # Brackets are effectiely an inline tag
+                        if after_digits[0] == "[":
+                            if "]" in after_digits:
+                                contained = "".join("".join(after_digits.split("[")[1:]).split("]")[:-1])
+                                override = _parse_note(contained)
+
+                                # Note defaults are applied here
+                                self.notes[-1] = _merge_note(self.notes[-1], override)
+
+                            else:
+                                print("Error: Unclosed brackets tag")
+                        # Non-brackets act as tags, even in cases when they contain brackets
+                        else:
+                            if after_digits not in self.tagged_indices:
+                                self.tagged_indices[after_digits] = []
+                            self.tagged_indices[after_digits].append(len(self.notes) - 1) # Index of the tone we just added
 
                 else:
                     print("ERROR: note chunk", chunk, "must have digit as first char!")
 
             elif chunk == ".":
-                self.part_indices.append(len(all_tones))
+                self.part_indices.append(len(self.notes))
             else:
                 print("ERROR: Bad symbol(s): " + chunk)
                 break
-
-        self.notes: list[dict[str, float]] = []
-        for tone in all_tones:
-            self.notes.append({"tone": tone})
 
     def all(self, attributes: str) -> Sheet:
         override = _parse_note(attributes)
@@ -77,7 +103,7 @@ class Sheet:
         parts = instructions.split(":")
         key_section = parts[0]
         info_section = ":".join(parts[1:])
-        return self.tagged(key_section, info_section)
+        return self._tagged(key_section, info_section)
 
     # Print length
     def debug(self, name: str) -> Sheet:
@@ -87,7 +113,7 @@ class Sheet:
         n.send()
         return self 
 
-    def tagged(self, tag: str, attributes: str) -> Sheet:
+    def _tagged(self, tag: str, attributes: str) -> Sheet:
         override = _parse_note(attributes)
         
         if tag in self.tagged_indices:
@@ -209,4 +235,5 @@ if __name__ == "__main__":
     assert mscont.sheets[-1].notes[0]["reserved_time"] == 5.0
     assert mscont.sheets[-2].notes[0]["reserved_time"] == 5.0
 
-
+    inline_sheet = meta_sheet.sheet("0 2[=.5 >.5 #2]")
+    assert inline_sheet.notes[1]["reserved_time"] == 0.5, "Inline tag not applied " + str(inline_sheet.notes[1]["reserved_time"])

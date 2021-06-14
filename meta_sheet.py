@@ -23,8 +23,6 @@ class MetaSheet:
     def sheet(self, source: str, scale: list[int] = CHROMATIC, octave: int = 0) -> Sheet:
         sheet = Sheet(self, source, scale, octave)
         self.sheets.append(sheet)
-        # TODO: Check that we don't add defaults anywhere else 
-        sheet.all("=1.0 >1.0 #1.0")
         if self.new_sheet_callback != None:
             self.new_sheet_callback()
         return sheet
