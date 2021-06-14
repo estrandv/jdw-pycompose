@@ -2,6 +2,8 @@ from random import randint
 
 from scales import *
 from sheet import *
+from meta_sheet import *
+from composer import *
 from zmq_client import PublisherClient
 
 cmp = Composer()
@@ -52,13 +54,11 @@ client.add_effect([{"target": "effect_combDelay", "args": {"inBus": 16, "outBus"
 
 client.set_bpm(150)
 
-cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0")
+cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5")
 
-borchBattery.sheet("18").all("bus40")
-moog.sheet("3q 6q 1 2 2 3 2 2 3 2 . 3q 7q 1 2 2 4 3 4 3 3 . 3q 6q 1 2 2 3 2 2 3 2 . 3q 5q 1 2 2 4 3 4 3 3", MAJOR, 5) \
-    .all("=.5").dots([2,4,6,8], "#.8 >1.8")
-modeAudio.sheet("13s 13s 15t 15s 19t").dots([1,3,5], "#.8")
-rhodes.sheet("2l 0l 2l 4l", MAJOR, 8).all("#2 bus20").tag("l:=8.0 >10.0")
+modeAudio.sheet("29 46z 29 35 . 29 46z 29 33s 35s").tag("z:#.7")
+moog.sheet("8s 8s 9 8 7 . 8 9 8 11 . 8 9 8 7 . 8 9 8 6", MAJOR, 6).all("#.6 bus20")
+blipp.sheet("6xl 4xl 2xl 8xl", MAJOR, 7).all("#.3 bus40")
 
 cmp.smart_sync([])
 #client.update_synths()

@@ -43,8 +43,8 @@ def transpose(tone_index: int, scale: list[int]) -> int:
     return final
 
 # Test to verify tones as expected for major scale
-def test_scales():
-
+if __name__ == "__main__":
+    print("Testing...")
     # The tones are as decoded from parsing lib, starting at A
     # A should be the first note in the third or fourth octave
     
