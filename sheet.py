@@ -63,6 +63,7 @@ class Sheet:
 
                     # Process the part after the digits (inline or tag)
                     after_digits = chunk.replace(digit_part, "")
+                    tag = after_digits
                     if after_digits != "":
                         # Brackets are effectiely an inline tag
                         if after_digits[0] == "[":
@@ -72,14 +73,14 @@ class Sheet:
 
                                 # Note defaults are applied here
                                 self.notes[-1] = _merge_note(self.notes[-1], override)
+                                tag = after_digits.replace("[" + contained + "]", "")
 
                             else:
                                 print("Error: Unclosed brackets tag")
-                        # Non-brackets act as tags, even in cases when they contain brackets
-                        else:
-                            if after_digits not in self.tagged_indices:
-                                self.tagged_indices[after_digits] = []
-                            self.tagged_indices[after_digits].append(len(self.notes) - 1) # Index of the tone we just added
+                    
+                    if tag not in self.tagged_indices:
+                        self.tagged_indices[tag] = []
+                    self.tagged_indices[tag].append(len(self.notes) - 1) # Index of the tone we just added
 
                 else:
                     print("ERROR: note chunk", chunk, "must have digit as first char!")
@@ -202,7 +203,6 @@ class Sheet:
 
         return exported
 
-# Testing
 if __name__ == "__main__":
 
     import meta_sheet as ms_lib
@@ -235,5 +235,5 @@ if __name__ == "__main__":
     assert mscont.sheets[-1].notes[0]["reserved_time"] == 5.0
     assert mscont.sheets[-2].notes[0]["reserved_time"] == 5.0
 
-    inline_sheet = meta_sheet.sheet("0 2[=.5 >.5 #2]")
+    inline_sheet = meta_sheet.sheet("0 2[=0.5 >.5 #2]s")
     assert inline_sheet.notes[1]["reserved_time"] == 0.5, "Inline tag not applied " + str(inline_sheet.notes[1]["reserved_time"])

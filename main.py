@@ -45,7 +45,7 @@ stockSaw2 = cmp.reg(MetaSheet("ssaw2", "stockSaw", PostingTypes.PROSC))
 # to actually make sound. This is done by using the outBus of effects. 
 client = PublisherClient()
 client.add_effect([{"target": "effect_reverb", "args": {"inBus":20, "outBus": 0, "room": 0.4, "mix":0.4}}])
-client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.8, "mix":0.5}}])
+client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.8, "mix":0.9}}])
 
 client.add_effect([{"target": "effect_distortion", "args": {"inBus": 44, "outBus": 0, "dist": 0.25}}])
 client.add_effect([{"target": "effect_reverb", "args": {"inBus": 50, "outBus": 0, "room": 0.4, "mix":0.2}}])
@@ -56,9 +56,14 @@ client.set_bpm(150)
 
 cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5")
 
-modeAudio.sheet("29 46z 29 35 . 29 46z 29 33s 35s").tag("z:#.7")
-moog.sheet("8s 8s 9 8 7 . 8 9 8 11 . 8 9 8 7 . 8 9 8 6", MAJOR, 6).all("#.6 bus20")
-blipp.sheet("6xl 4xl 2xl 8xl", MAJOR, 7).all("#.3 bus40")
+sinepad.sheet("2 4[>2 #1.5] 1 0[>3 #1.3] 6 0[>2 #1.3] 3[#1.3] 6 2 6[>2 #1.5] 1 0[>3 #1.3] 7 0[>2 #1.3] 3[#1.3] 4", MINOR, 6).tag("s:>1").all("bus40")
+yamaha.sheet("20[#2]s 5[#0.8]s 8[#0.8]t 8t 26[#2]s").all("bus20")
+warsaw.sheet("0 0 0 0 0 0 0 2 1 1 1 1 1 1 1 2 0 0 0 0 0 0 0 3 1 1 1 1 1 1 1 2", MINOR, 5).all("=.5 >2 bus20")
+
+
+#modeAudio.sheet("29 46z 29 35 . 29 46z 29 33s 35s").tag("z:#.7")
+#moog.sheet("8s 8s 9 8 7 . 8 9 8 11 . 8 9 8 7 . 8 9 8 6", MAJOR, 6).all("#.6 bus20")
+#blipp.sheet("6xl 4xl 2xl 8xl", MAJOR, 7).all("#.3 bus40")
 
 cmp.smart_sync([])
 #client.update_synths()
