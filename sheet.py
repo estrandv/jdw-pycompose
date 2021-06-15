@@ -6,9 +6,49 @@ from notifypy import Notify # Desktop notifications for debug
 import zmq_client 
 from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note, arr_fmt
 from copy import deepcopy
+import re #Bracket scanning
+
+
 
 def copy_sheet(sheet: 'Sheet') -> 'Sheet':
-    return Sheet(sheet.meta_sheet, sheet.source, sheet.scale, sheet.octave)
+    copy = Sheet(sheet.meta_sheet, sheet.source, sheet.scale, sheet.octave)
+    copy.notes = deepcopy(sheet.notes)
+    copy.part_indices = sheet.part_indices
+    copy.tagged_indices = sheet.tagged_indices
+    copy.debug_mark = sheet.debug_mark
+
+    return copy
+
+
+# "0 (hello) 0 0" -> list["(hello)"]
+def extract_bracketed(string: str, bracket_open: str, bracket_close: str) -> list[str]:
+    regex = r"{}(.*?){}".format("\\" + bracket_open, "\\" + bracket_close)
+    return re.findall(regex, string)
+
+# "0 (0/1/2) (3/4) 0" -> "0 0 3 0 0 1 4 0 0 2 3 0"
+def compile_sheet(string: str) -> str:
+    bracketed_parts = extract_bracketed(string, "(", ")")
+
+    if bracketed_parts:
+        contents_map = {}
+        for part in bracketed_parts:
+            contents_map[part] = part.split("/")
+        longest = max([len(contents_map[part]) for part in contents_map])
+
+        expanded_parts = [string] * longest
+        compiled_parts = []
+        part_index = 0
+        for part in expanded_parts:
+            wip = part 
+            for tag in contents_map:
+                # Circular index fetch 
+                wip = wip.replace(tag, contents_map[tag][part_index % len(contents_map[tag])])
+            compiled_parts.append(wip)
+            part_index += 1
+
+        return " ".join(compiled_parts).replace("(", "").replace(")", "")
+    
+    return string
 
 
 class Sheet:
@@ -39,7 +79,7 @@ class Sheet:
         # Just close your damn brackets. 
         space_scan = ""
         bracket_open = False
-        for letter in source:
+        for letter in compile_sheet(source):
             if letter == " " and not bracket_open:
                 space_scan += "<DIVIDE>"
             else:
@@ -243,3 +283,8 @@ if __name__ == "__main__":
 
     inline_sheet = meta_sheet.sheet("0 2[=0.5 >.5 #2]s")
     assert inline_sheet.notes[1]["reserved_time"] == 0.5, "Inline tag not applied " + str(inline_sheet.notes[1]["reserved_time"])
+
+    # Special compile thingies 
+    testcompile = compile_sheet("0 (1/2[=.5]s/3) 0 (1/2)")
+    expected = "0 1 0 1 0 2[=.5]s 0 2 0 3 0 1"
+    assert testcompile == expected, "String compilation failure, expected {} but got {}".format(expected, testcompile)

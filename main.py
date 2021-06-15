@@ -47,7 +47,7 @@ stockSine = cmp.reg(MetaSheet("ssine1", "stockSine", PostingTypes.PROSC))
 # to actually make sound. This is done by using the outBus of effects. 
 client = PublisherClient()
 client.add_effect([{"target": "effect_reverb", "args": {"inBus":20, "outBus": 0, "room": 0.4, "mix":0.4}}])
-client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.8, "mix":0.9}}])
+client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.8, "mix":0.5}}])
 
 client.add_effect([{"target": "effect_distortion", "args": {"inBus": 44, "outBus": 0, "dist": 0.25}}])
 client.add_effect([{"target": "effect_reverb", "args": {"inBus": 50, "outBus": 0, "room": 0.4, "mix":0.2}}])
@@ -58,11 +58,18 @@ client.set_bpm(150)
 
 cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5")
 
-stockSine.sheet("2q 0 1 6[#.5] 1 . 4q 2 6[#.5] 0 1 . 6[#.5] 3 1 6[#.5] . 0 1 0 4", MINOR, 7) \
-    .all("=8 >2 attT.4 relT1 decT.4 susL.5 phase0.02 bus20")
-stockSquare.sheet("0 0[width.8]", MINOR, 6).all("#.8 bus16 >2")
-warsaw.sheet("2 4", MINOR, 5).all("=16 >16 #1 width.4 slideTime.4 bus40")
-drsix.sheet("0 0 0 2s 2[#.6]s").all("#.2")
+#stockSine.sheet("2q 0 1 6[#.5] 1 . 4q 2 6[#.5] 0 1 . 6[#.5] 3 1 6[#.5] . 0 1 0 4", MINOR, 7) \
+ #   .all("=8 >2 attT.4 relT1 decT.4 susL.5 phase0.02 bus20")
+#stockSquare.sheet("0 0[width.8] 2 (2/4/8/4)", MINOR, 5).all("#.3 >1")
+#stockSine.sheet("0 0 0 0 0 0 0 (2/4/2/6)", MINOR, 7).all("=.5 #.5 bus16 hpf1200")
+#stockSine.sheet("0 1 1 0 . 2 2 0 3 . 1 2 1 2 . 4 3 1 2", MINOR, 8).all("phase0.02 hpf1200")
+#warsaw.sheet("2 4", MINOR, 5).all("=16 >16 #1 width.4 slideTime.4 bus40")
+#drsix.sheet("22 8 (22/26)[#0.2] (8/3/6/35[#.8]t 33t)").all("=0.5 bus20")
+modeAudio.sheet("0 (22/24)").all("bus40 =.25")
+moog.sheet("0 0[#0.8 >1.3 bus16] 0 (4/2)[#0.8 >2]", MINOR, 6)
+stockSine.sheet("0 0 0 0 0 0 0 (2/8)", MINOR, 7).all("=.5")
+
+#borchBattery.sheet("2 3 4 2").all("#3 =2")
 
 #sinepad.sheet("2 4[>2 #1.5] 1 0[>3 #1.3] 6 0[>2 #1.3] 3[#1.3] 6 2 6[>2 #1.5] 1 0[>3 #1.3] 7 0[>2 #1.3] 3[#1.3] 4", MINOR, 6).tag("s:>1").all("bus40")
 #yamaha.sheet("20[#2]s 5[#0.8]s 8[#0.8]t 8t 26[#2]s").all("bus20")
