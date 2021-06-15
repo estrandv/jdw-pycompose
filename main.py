@@ -40,6 +40,8 @@ modulOSC = cmp.reg(MetaSheet("mosc1", "modulOSC", PostingTypes.PROSC))
 # attT, susL, decT, relT, hpf, lpf 
 stockSaw = cmp.reg(MetaSheet("ssaw1", "stockSaw", PostingTypes.PROSC))
 stockSaw2 = cmp.reg(MetaSheet("ssaw2", "stockSaw", PostingTypes.PROSC))
+stockSquare = cmp.reg(MetaSheet("ssquare1", "stockSquare", PostingTypes.PROSC))
+stockSine = cmp.reg(MetaSheet("ssine1", "stockSine", PostingTypes.PROSC))
 
 # Note on BUS: 16-127 are virtual buses; anything played there must be routed to bus 0 
 # to actually make sound. This is done by using the outBus of effects. 
@@ -56,15 +58,23 @@ client.set_bpm(150)
 
 cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5")
 
-sinepad.sheet("2 4[>2 #1.5] 1 0[>3 #1.3] 6 0[>2 #1.3] 3[#1.3] 6 2 6[>2 #1.5] 1 0[>3 #1.3] 7 0[>2 #1.3] 3[#1.3] 4", MINOR, 6).tag("s:>1").all("bus40")
-yamaha.sheet("20[#2]s 5[#0.8]s 8[#0.8]t 8t 26[#2]s").all("bus20")
-warsaw.sheet("0 0 0 0 0 0 0 2 1 1 1 1 1 1 1 2 0 0 0 0 0 0 0 3 1 1 1 1 1 1 1 2", MINOR, 5).all("=.5 >2 bus20")
+stockSine.sheet("2q 0 1 6[#.5] 1 . 4q 2 6[#.5] 0 1 . 6[#.5] 3 1 6[#.5] . 0 1 0 4", MINOR, 7) \
+    .all("=8 >2 attT.4 relT1 decT.4 susL.5 phase0.02 bus20")
+stockSquare.sheet("0 0[width.8]", MINOR, 6).all("#.8 bus16 >2")
+warsaw.sheet("2 4", MINOR, 5).all("=16 >16 #1 width.4 slideTime.4 bus40")
+drsix.sheet("0 0 0 2s 2[#.6]s").all("#.2")
+
+#sinepad.sheet("2 4[>2 #1.5] 1 0[>3 #1.3] 6 0[>2 #1.3] 3[#1.3] 6 2 6[>2 #1.5] 1 0[>3 #1.3] 7 0[>2 #1.3] 3[#1.3] 4", MINOR, 6).tag("s:>1").all("bus40")
+#yamaha.sheet("20[#2]s 5[#0.8]s 8[#0.8]t 8t 26[#2]s").all("bus20")
+#warsaw.sheet("0 0 0 0 0 0 0 2 1 1 1 1 1 1 1 2 0 0 0 0 0 0 0 3 1 1 1 1 1 1 1 2", MINOR, 5).all("=.5 >2 bus20")
 
 
 #modeAudio.sheet("29 46z 29 35 . 29 46z 29 33s 35s").tag("z:#.7")
 #moog.sheet("8s 8s 9 8 7 . 8 9 8 11 . 8 9 8 7 . 8 9 8 6", MAJOR, 6).all("#.6 bus20")
 #blipp.sheet("6xl 4xl 2xl 8xl", MAJOR, 7).all("#.3 bus40")
 
+
+# TODO: Smart sync takes forever 
 cmp.smart_sync([])
 #client.update_synths()
 

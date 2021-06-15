@@ -1,7 +1,6 @@
 from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note
 from scales import *
-from sheet import Sheet
-from copy import deepcopy
+from sheet import Sheet, copy_sheet
 
 class MetaSheet:
 
@@ -28,10 +27,10 @@ class MetaSheet:
         return sheet
 
     # Grab a previously copy():d sheet by name and add it to the end of sheet (returning it)
-    # Note deepcopy() - it's a copy of the copy, not the original sheet instance 
+    # Note copy() - it's a copy of the copy, not the original sheet instance 
     def paste(self, clipboard_name: str) -> Sheet:
         if clipboard_name in self.clipboard:
-            sheet = deepcopy(self.clipboard[clipboard_name])
+            sheet = copy_sheet(self.clipboard[clipboard_name])
             self.sheets.append(sheet)
             return sheet
 
@@ -42,7 +41,7 @@ class MetaSheet:
     def cont(self, times=1) -> 'MetaSheet':
         if len(self.sheets) > 0:
             for i in range(0, times):
-                self.sheets.append(deepcopy(self.sheets[-1]))
+                self.sheets.append(copy_sheet(self.sheets[-1]))
 
         return self
 
@@ -50,7 +49,7 @@ class MetaSheet:
     def reach(self, length: float) -> 'MetaSheet':
         diff = length - self.len()
         if len(self.sheets) > 0:
-            latest = deepcopy(self.sheets[-1])
+            latest = copy_sheet(self.sheets[-1])
             if latest.len() <= diff:
                 self.sheets.append(latest)
             elif diff > 0.0:

@@ -86,10 +86,6 @@ class Composer:
 
             self.sync()
 
-            print("AFTER SYNC: " + str(self.len()))
-            for note_set in [ms.sequencer_id + str(ms.sheets[-1].notes) for ms in self.meta_sheets if len(ms.sheets) > 0]:
-                print("   - " + note_set)
-
         return self 
 
     # Return the end point of the composer timeline; the length of the longest contained metasheet 

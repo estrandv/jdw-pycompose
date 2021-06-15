@@ -7,11 +7,17 @@ import zmq_client
 from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note, arr_fmt
 from copy import deepcopy
 
+def copy_sheet(sheet: 'Sheet') -> 'Sheet':
+    return Sheet(sheet.meta_sheet, sheet.source, sheet.scale, sheet.octave)
+
 
 class Sheet:
     # Accepts the syntax "0 1 3 0 . 0 1 1 1" where dots are used to separate sections of tones
     def __init__(self, meta_sheet: 'MetaSheet', source: str, scale: list[int] = CHROMATIC, octave: int = 4):
-        
+
+        # save the source in case you need it for making copies
+        self.source = source
+
         self.meta_sheet = meta_sheet
         self.scale = scale
         self.octave = octave
@@ -120,8 +126,8 @@ class Sheet:
         if tag in self.tagged_indices:
             for index in self.tagged_indices[tag]:
                 self.notes[index] = _merge_note(self.notes[index], override)
-        else:
-            print("WARN: Tag missing:", tag)
+        #else:
+            #print("WARN: No notes available with given tag:", tag)
 
         return self 
 
@@ -140,7 +146,7 @@ class Sheet:
 
     # See MetaSheet.paste() 
     def copy(self, name: str) -> Sheet:
-        self.meta_sheet.clipboard[name] = deepcopy(self)
+        self.meta_sheet.clipboard[name] = copy_sheet(self)
         return self
 
     # Like copy, but removing itself from the meta_sheet
