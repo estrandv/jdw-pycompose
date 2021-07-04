@@ -47,44 +47,39 @@ stockSine = cmp.reg(MetaSheet("ssine1", "stockSine", PostingTypes.PROSC))
 # to actually make sound. This is done by using the outBus of effects. 
 client = PublisherClient()
 client.add_effect([{"target": "effect_reverb", "args": {"inBus":20, "outBus": 0, "room": 0.4, "mix":0.4}}])
-client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.8, "mix":0.5}}])
+client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.9, "mix":0.8}}])
 
-client.add_effect([{"target": "effect_distortion", "args": {"inBus": 44, "outBus": 0, "dist": 0.25}}])
+client.add_effect([{"target": "effect_distortion", "args": {"inBus": 44, "outBus": 0, "dist": 0.05}}])
 client.add_effect([{"target": "effect_reverb", "args": {"inBus": 50, "outBus": 0, "room": 0.4, "mix":0.2}}])
 
-client.add_effect([{"target": "effect_combDelay", "args": {"inBus": 16, "outBus":20, "echo": 0.55, "beat_dur": 0.2, "echotime": 0.4}}])
+client.add_effect([{"target": "effect_combDelay", "args": {"inBus": 16, "outBus":40, "echo": 0.55, "beat_dur": 0.2, "echotime": 0.4}}])
 
-client.set_bpm(150)
+client.set_bpm(140)
 
-cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5")
+# TODO: Should be a better way 
+cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5").pre_tag("_:#0")
 
-#stockSine.sheet("2q 0 1 6[#.5] 1 . 4q 2 6[#.5] 0 1 . 6[#.5] 3 1 6[#.5] . 0 1 0 4", MINOR, 7) \
- #   .all("=8 >2 attT.4 relT1 decT.4 susL.5 phase0.02 bus20")
-#stockSquare.sheet("0 0[width.8] 2 (2/4/8/4)", MINOR, 5).all("#.3 >1")
-#stockSine.sheet("0 0 0 0 0 0 0 (2/4/2/6)", MINOR, 7).all("=.5 #.5 bus16 hpf1200")
-#stockSine.sheet("0 1 1 0 . 2 2 0 3 . 1 2 1 2 . 4 3 1 2", MINOR, 8).all("phase0.02 hpf1200")
-#warsaw.sheet("2 4", MINOR, 5).all("=16 >16 #1 width.4 slideTime.4 bus40")
-#drsix.sheet("22 8 (22/26)[#0.2] (8/3/6/35[#.8]t 33t)").all("=0.5 bus20")
-modeAudio.sheet("0 (22/24)").all("bus40 =.25")
-moog.sheet("0 0[#0.8 >1.3 bus16] 0 (4/2)[#0.8 >2]", MINOR, 6)
-stockSine.sheet("0 0 0 0 0 0 0 (2/8)", MINOR, 7).all("=.5")
+# TODO: Sample listing is still tricky 
+#   - Include name on every line for grepping
+#   - Sort samples by kick,cymbal etc 
 
-#borchBattery.sheet("2 3 4 2").all("#3 =2")
+stockSaw.sheet("0s 0s 0 0 (4t 4t 3t 4t/5/6)", MAJOR, 6).all(">1.2 lfoS1.2 lfoD2")
 
-#sinepad.sheet("2 4[>2 #1.5] 1 0[>3 #1.3] 6 0[>2 #1.3] 3[#1.3] 6 2 6[>2 #1.5] 1 0[>3 #1.3] 7 0[>2 #1.3] 3[#1.3] 4", MINOR, 6).tag("s:>1").all("bus40")
-#yamaha.sheet("20[#2]s 5[#0.8]s 8[#0.8]t 8t 26[#2]s").all("bus20")
-#warsaw.sheet("0 0 0 0 0 0 0 2 1 1 1 1 1 1 1 2 0 0 0 0 0 0 0 3 1 1 1 1 1 1 1 2", MINOR, 5).all("=.5 >2 bus20")
+#stockSaw.sheet("0s 0t 0t (1s/3s/6s/2s) 0t 0t", MINOR, 5).all("#1.2 lfoS6 lfoD0.4 pan-0.3 >0.2")
+stockSine.sheet("1 (2/4) 0q 3 7q 4 4 8q 3 2 (1/1q 6)", MAJOR, 6).all("=4 #0.8 attT0.1 relT4 lfoD0.4 lfoS2 susL0.8 decT0.1 hpf800 pan0.2")
+#moog.sheet("0 (0/0_) 0[pan0.5] (0/3/0/5) (0[bus40]/0) 0[bus40] 0[pan-0.5] (2/6/4/8)[bus20]", MAJOR, 6).all("#0.7").tag("_:#0")
+moog.sheet("0t 0t 4s (7xxl/9xxl/6xxl/2xxl)", MAJOR, 6).all("#0.5").tag("xxl:=7 >5 pan0.5")
+#moog.sheet("2[=7 >6] 3[=0.5 >2] 4[=3.5 >4] 7[=0.5] (9/5/6/12)[=4.5 >5]", MAJOR, 6).all("#0.4 chorus0.1")
+#stockSaw.sheet("0 0 0 0 0 0 0 (8/9/12/14)", MAJOR, 6).all("=0.5 lpf2800 hpf400 lfoD4.8 lfoS1.5 >0.125 attT0.1 relT0.2 decT0.0 susL0.5")#.tag("g:=0.125 relT2 bus16")
+modeAudio.sheet("12s 12s 12 (12s 12s 12/12 12s 12s/12 12/1t 1t 1t 1t 4)").all("#4 bus20 pan0.8")
 
-
-#modeAudio.sheet("29 46z 29 35 . 29 46z 29 33s 35s").tag("z:#.7")
-#moog.sheet("8s 8s 9 8 7 . 8 9 8 11 . 8 9 8 7 . 8 9 8 6", MAJOR, 6).all("#.6 bus20")
-#blipp.sheet("6xl 4xl 2xl 8xl", MAJOR, 7).all("#.3 bus40")
-
-
-# TODO: Smart sync takes forever 
-cmp.smart_sync([])
+warsaw.sheet("0t 0t 0t 0t 0t 0t 0t 8t", MINOR, 8).all("#0.5 =0.5 pan0.8 bus16")
+cmp.smart_sync([yamaha])
 #client.update_synths()
 
 
-cmp.post_all()
+
+client.nrt_record(stockSaw.to_nrt(), 140, "test_emil.wav")
+
+#cmp.post_all()
 

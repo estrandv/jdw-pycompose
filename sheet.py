@@ -115,6 +115,7 @@ class Sheet:
                         if after_digits[0] == "[":
                             if "]" in after_digits:
                                 contained = "".join("".join(after_digits.split("[")[1:]).split("]")[:-1])
+                                print(contained)
                                 override = _parse_note(contained)
 
                                 # Note defaults are applied here

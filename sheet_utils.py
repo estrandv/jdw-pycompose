@@ -13,6 +13,30 @@ class PostingTypes:
     SAMPLE = PostingType(1)
     MIDI = PostingType(2)
 
+# Mostly because I'm too lazy to rename across the board ... 
+def _streamline(note: dict[str, float]):
+    exported = {}
+    for key in note:
+
+        # TODO: Dirty hack until harmonized
+        if key == "tone":
+            exported["freq"] = note[key]
+        elif key == "reserved_time": # TODO: Also clumsy 
+            exported["time"] = note[key]            
+        else:
+            exported[key] = note[key]
+
+    return exported
+
+def export_nrt(note: dict[str, float], target: str):
+    exported = {"target": target, "args": {}}
+
+    for key in _streamline(note):
+        exported["args"][key] = _streamline(note)[key]
+
+    return exported 
+        
+
 # Transform the local note dict into the api expected format 
 # TODO: Bit of a mess, but the end goal is to transform notes into the zeromq sequencer format
 def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str, posting_type: PostingType):
@@ -20,19 +44,13 @@ def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str, pos
     sequencer_message: dict[str, Any] = {"alias": sequencer_id}
     exported = {"target": synth_name, "args": {}}
 
-    amp = 0.0
+    amp = note["args"]["amp"] if "amp" in note["args"] else 0.0
 
-    for key in note:
+    # Should throw error if missing; mandatory 
+    sequencer_message["time"] = note["args"]["time"]
 
-        # TODO: Dirty hack until harmonized
-        if key == "tone":
-            exported["args"]["freq"] = note[key]
-        elif key == "reserved_time": # TODO: Also clumsy 
-            sequencer_message["time"] = note[key]            
-        else:
-            exported["args"][key] = note[key]
-            if key == "amp":
-                amp = note[key]
+    for key in _streamline(note):
+        exported["args"][key] = _streamline(note)[key]
 
     payload = json.dumps(exported)
 

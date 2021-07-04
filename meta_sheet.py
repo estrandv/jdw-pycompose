@@ -1,4 +1,4 @@
-from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note
+from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note, export_nrt
 from scales import *
 from sheet import Sheet, copy_sheet
 
@@ -77,7 +77,12 @@ class MetaSheet:
     def export_all(self) -> list[dict]:
         all_notes: list[dict[str,float]] = [note for sublist in [sheet.to_notes(self.to_hz) for sheet in self.sheets] for note in sublist]
         return [_export_note(note, self.instrument, self.sequencer_id, self.posting_type) for note in all_notes]
-        
+    
+    # Same as above but for NRT PROSC posting 
+    def to_nrt(self) -> list[dict]:
+        all_notes: list[dict[str,float]] = [note for sublist in [sheet.to_notes(self.to_hz) for sheet in self.sheets] for note in sublist]
+        return [export_nrt(note, self.instrument) for note in all_notes]
+
 
 if __name__ == "__main__":
     meta_sheet = MetaSheet("sequencer_id", "instrument", PostingTypes.PROSC)
