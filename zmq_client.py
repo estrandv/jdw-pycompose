@@ -12,8 +12,8 @@ class PublisherClient:
         self.socket.send_string("JDW.SEQ.QUEUE::" + json.dumps(notes))
         self.socket.recv()
 
-    def nrt_record(self, notes: list[dict], bpm: int, filename: str):
-        message = {"payload": notes, "bpm": bpm, "filename": filename}
+    def nrt_record(self, notes: list[dict], bpm: int, filename: str, instrument_type: str):
+        message = {"payload": notes, "bpm": bpm, "filename": filename, "type": instrument_type}
         self.socket.send_string("JDW.PROSC.NRT.RECORD::" + json.dumps(message))
         self.socket.recv()
 

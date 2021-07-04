@@ -63,15 +63,18 @@ cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_ta
 #   - Include name on every line for grepping
 #   - Sort samples by kick,cymbal etc 
 
-stockSaw.sheet("0s 0s 0 0 (4t 4t 3t 4t/5/6)", MAJOR, 6).all(">1.2 lfoS1.2 lfoD2")
+#stockSaw.sheet("0s 0s 0 0 (4t 4t 3t 4t/5/6)", MAJOR, 6).all(">1.2 lfoS1.2 lfoD2")
 
-#stockSaw.sheet("0s 0t 0t (1s/3s/6s/2s) 0t 0t", MINOR, 5).all("#1.2 lfoS6 lfoD0.4 pan-0.3 >0.2")
-stockSine.sheet("1 (2/4) 0q 3 7q 4 4 8q 3 2 (1/1q 6)", MAJOR, 6).all("=4 #0.8 attT0.1 relT4 lfoD0.4 lfoS2 susL0.8 decT0.1 hpf800 pan0.2")
+stockSaw.sheet("0s 0t 0t (1s/3s/6s/2s) 0t 0t", MINOR, 5).all("#1.2 lfoS6 lfoD0.4 pan-0.3 >0.2")
+#stockSine.sheet("1 (2/4) 0q 3 7q 4 4 8q 3 2 (1/1q 6)", MAJOR, 6).all("=4 #0.8 attT0.1 relT4 lfoD0.4 lfoS2 susL0.8 decT0.1 hpf800 pan0.2")
 #moog.sheet("0 (0/0_) 0[pan0.5] (0/3/0/5) (0[bus40]/0) 0[bus40] 0[pan-0.5] (2/6/4/8)[bus20]", MAJOR, 6).all("#0.7").tag("_:#0")
-moog.sheet("0t 0t 4s (7xxl/9xxl/6xxl/2xxl)", MAJOR, 6).all("#0.5").tag("xxl:=7 >5 pan0.5")
+#moog.sheet("0t 0t 4s (7xxl/9xxl/6xxl/2xxl)", MAJOR, 6).all("#0.5").tag("xxl:=7 >5 pan0.5")
 #moog.sheet("2[=7 >6] 3[=0.5 >2] 4[=3.5 >4] 7[=0.5] (9/5/6/12)[=4.5 >5]", MAJOR, 6).all("#0.4 chorus0.1")
+
+moog.sheet("0g 6q 2 0g 8q 4 0g 11q (6/2/4/2) 0g 8q 4", MAJOR, 6).all("=2 >1.5").tag("q:>6 #0.5 chorus0.2 cutoff200").tag("g:pan-0.2 #0.8 >4")
+
 #stockSaw.sheet("0 0 0 0 0 0 0 (8/9/12/14)", MAJOR, 6).all("=0.5 lpf2800 hpf400 lfoD4.8 lfoS1.5 >0.125 attT0.1 relT0.2 decT0.0 susL0.5")#.tag("g:=0.125 relT2 bus16")
-modeAudio.sheet("12s 12s 12 (12s 12s 12/12 12s 12s/12 12/1t 1t 1t 1t 4)").all("#4 bus20 pan0.8")
+modeAudio.sheet("0s 0s 16t 16t 13t 12t 8 36").all("#4 bus0 pan0.8")
 
 warsaw.sheet("0t 0t 0t 0t 0t 0t 0t 8t", MINOR, 8).all("#0.5 =0.5 pan0.8 bus16")
 cmp.smart_sync([yamaha])
@@ -79,7 +82,7 @@ cmp.smart_sync([yamaha])
 
 
 
-client.nrt_record(stockSaw.to_nrt(), 140, "test_emil.wav")
+client.nrt_record(modeAudio.to_nrt(), 120, "test_emil.wav", "sample")
 
 #cmp.post_all()
 
