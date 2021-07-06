@@ -1,14 +1,12 @@
 from __future__ import annotations
 from typing import Any, Iterable
+from parsing import compile_sheet, parse_args
 from scales import CHROMATIC, transpose
 from pretty_midi.utilities import note_number_to_hz
 from notifypy import Notify # Desktop notifications for debug
 import zmq_client 
-from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note, arr_fmt
+from sheet_utils import PostingType, PostingTypes, _merge_note, _export_note, arr_fmt
 from copy import deepcopy
-import re #Bracket scanning
-
-
 
 def copy_sheet(sheet: 'Sheet') -> 'Sheet':
     copy = Sheet(sheet.meta_sheet, sheet.source, sheet.scale, sheet.octave)
@@ -18,38 +16,6 @@ def copy_sheet(sheet: 'Sheet') -> 'Sheet':
     copy.debug_mark = sheet.debug_mark
 
     return copy
-
-
-# "0 (hello) 0 0" -> list["(hello)"]
-def extract_bracketed(string: str, bracket_open: str, bracket_close: str) -> list[str]:
-    regex = r"{}(.*?){}".format("\\" + bracket_open, "\\" + bracket_close)
-    return re.findall(regex, string)
-
-# "0 (0/1/2) (3/4) 0" -> "0 0 3 0 0 1 4 0 0 2 3 0"
-def compile_sheet(string: str) -> str:
-    bracketed_parts = extract_bracketed(string, "(", ")")
-
-    if bracketed_parts:
-        contents_map = {}
-        for part in bracketed_parts:
-            contents_map[part] = part.split("/")
-        longest = max([len(contents_map[part]) for part in contents_map])
-
-        expanded_parts = [string] * longest
-        compiled_parts = []
-        part_index = 0
-        for part in expanded_parts:
-            wip = part 
-            for tag in contents_map:
-                # Circular index fetch 
-                wip = wip.replace(tag, contents_map[tag][part_index % len(contents_map[tag])])
-            compiled_parts.append(wip)
-            part_index += 1
-
-        return " ".join(compiled_parts).replace("(", "").replace(")", "")
-    
-    return string
-
 
 class Sheet:
     # Accepts the syntax "0 1 3 0 . 0 1 1 1" where dots are used to separate sections of tones
@@ -114,9 +80,11 @@ class Sheet:
                         # Brackets are effectiely an inline tag
                         if after_digits[0] == "[":
                             if "]" in after_digits:
+                                # [...] -> ...
                                 contained = "".join("".join(after_digits.split("[")[1:]).split("]")[:-1])
-                                print(contained)
-                                override = _parse_note(contained)
+                                
+                                # Turn contained args into dict
+                                override = parse_args(contained)
 
                                 # Note defaults are applied here
                                 self.notes[-1] = _merge_note(self.notes[-1], override)
@@ -139,7 +107,7 @@ class Sheet:
                 break
 
     def all(self, attributes: str) -> Sheet:
-        override = _parse_note(attributes)
+        override = parse_args(attributes)
 
         for i in range(len(self.notes)):
             self.notes[i] = _merge_note(self.notes[i], override)
@@ -162,7 +130,7 @@ class Sheet:
         return self 
 
     def _tagged(self, tag: str, attributes: str) -> Sheet:
-        override = _parse_note(attributes)
+        override = parse_args(attributes)
         
         if tag in self.tagged_indices:
             for index in self.tagged_indices[tag]:
@@ -175,7 +143,7 @@ class Sheet:
     
     # Modify dots by their ordinal since last dot, e.g. [2] = "0 1 0 0 . 0 1 0 0"
     def dots(self, note_nums: list[int], attributes: str) -> Sheet:
-        override = _parse_note(attributes)
+        override = parse_args(attributes)
 
         for p in self.part_indices:
             for i in note_nums:

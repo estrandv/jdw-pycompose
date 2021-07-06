@@ -1,4 +1,4 @@
-from sheet_utils import PostingType, PostingTypes, _merge_note, _parse_note, _export_note, export_nrt
+from sheet_utils import PostingType, PostingTypes, _merge_note, _export_note, export_nrt
 from scales import *
 from sheet import Sheet, copy_sheet
 

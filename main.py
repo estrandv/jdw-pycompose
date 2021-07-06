@@ -49,14 +49,13 @@ client = PublisherClient()
 client.add_effect([{"target": "effect_reverb", "args": {"inBus":20, "outBus": 0, "room": 0.4, "mix":0.4}}])
 client.add_effect([{"target": "effect_reverb", "args": {"inBus": 40, "outBus": 0, "room": 0.9, "mix":0.8}}])
 
-client.add_effect([{"target": "effect_distortion", "args": {"inBus": 44, "outBus": 0, "dist": 0.05}}])
+client.add_effect([{"target": "effect_distortion", "args": {"inBus": 44, "outBus": 0, "dist": 0.08}}])
 client.add_effect([{"target": "effect_reverb", "args": {"inBus": 50, "outBus": 0, "room": 0.4, "mix":0.2}}])
 
 client.add_effect([{"target": "effect_combDelay", "args": {"inBus": 16, "outBus":40, "echo": 0.55, "beat_dur": 0.2, "echotime": 0.4}}])
 
-client.set_bpm(140)
+client.set_bpm(180)
 
-# TODO: Should be a better way 
 cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5").pre_tag("_:#0")
 
 # TODO: Sample listing is still tricky 
@@ -65,24 +64,29 @@ cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_ta
 
 #stockSaw.sheet("0s 0s 0 0 (4t 4t 3t 4t/5/6)", MAJOR, 6).all(">1.2 lfoS1.2 lfoD2")
 
-stockSaw.sheet("0s 0t 0t (1s/3s/6s/2s) 0t 0t", MINOR, 5).all("#1.2 lfoS6 lfoD0.4 pan-0.3 >0.2")
+#stockSaw.sheet("0s 0t 0t (1s/3s/6s/2s) 0t 0t", MINOR, 5).all("#1.2 lfoS6 lfoD0.4 pan-0.3 >0.2")
 #stockSine.sheet("1 (2/4) 0q 3 7q 4 4 8q 3 2 (1/1q 6)", MAJOR, 6).all("=4 #0.8 attT0.1 relT4 lfoD0.4 lfoS2 susL0.8 decT0.1 hpf800 pan0.2")
 #moog.sheet("0 (0/0_) 0[pan0.5] (0/3/0/5) (0[bus40]/0) 0[bus40] 0[pan-0.5] (2/6/4/8)[bus20]", MAJOR, 6).all("#0.7").tag("_:#0")
-#moog.sheet("0t 0t 4s (7xxl/9xxl/6xxl/2xxl)", MAJOR, 6).all("#0.5").tag("xxl:=7 >5 pan0.5")
+#moog.sheet("0t 0t 4s (7xxl/9xxl/6xxl/2xxl)", MAJOR, 6).all("#0.5 bus44").tag("xxl:=7 >5 pan0.5")
 #moog.sheet("2[=7 >6] 3[=0.5 >2] 4[=3.5 >4] 7[=0.5] (9/5/6/12)[=4.5 >5]", MAJOR, 6).all("#0.4 chorus0.1")
 
-moog.sheet("0g 6q 2 0g 8q 4 0g 11q (6/2/4/2) 0g 8q 4", MAJOR, 6).all("=2 >1.5").tag("q:>6 #0.5 chorus0.2 cutoff200").tag("g:pan-0.2 #0.8 >4")
+#moog.sheet("0g 6q 2 0g 8q 4 0g 11q (6/2/4/2) 0g 8q 4", MAJOR, 6).all("=2 >1.5").tag("q:>6 #0.5 chorus0.2 cutoff200").tag("g:pan-0.2 #0.8 >4")
 
 #stockSaw.sheet("0 0 0 0 0 0 0 (8/9/12/14)", MAJOR, 6).all("=0.5 lpf2800 hpf400 lfoD4.8 lfoS1.5 >0.125 attT0.1 relT0.2 decT0.0 susL0.5")#.tag("g:=0.125 relT2 bus16")
-modeAudio.sheet("0s 0s 16t 16t 13t 12t 8 36").all("#4 bus0 pan0.8")
+#yamaha.sheet("9[pan0.3] 10[#1.4 pan0.2]t 10t 10s 10[pan-0.3] (11/22s 23s/11/51s 22t 16t)").all("bus20 #6 pan0.8 rate1.4 pan0.5").tag("t:pan-0.3").tag("s:pan0.3")
 
-warsaw.sheet("0t 0t 0t 0t 0t 0t 0t 8t", MINOR, 8).all("#0.5 =0.5 pan0.8 bus16")
-cmp.smart_sync([yamaha])
+padder.pad(64.0)
+#drsix.sheet("72q 10[#0.7]s 10[bus20]s 10[#1.2]s 10s 67q 10[#0.8]s 10s 10[#0.4]s 10s").all("start200")
+drsix.sheet("10[#1.8 pan0.3]s 10[#2.2 pan0.2]s (66[#0.8]/66[#1.2]s 66s) (23/24)[pan-0.2] 66").all("start0.2 rate1.1")
+#korger.sheet("7[#4]q 66[#0.8]h 66h 10[#2]q 66[#0.8]h 66h (23q/21q) 66[#0.9]h 66h 19q 66[#0.8]h 66h").all("att0.3 rate1.1").tag("h:=0.5")
+
+#warsaw.sheet("0t 0t 0t 0t 0t 0t 0t 8t", MINOR, 8).all("#0.5 =0.5 pan0.8 bus16")
+cmp.smart_sync([])
 #client.update_synths()
 
 
 
-client.nrt_record(modeAudio.to_nrt(), 120, "test_emil.wav", "sample")
+client.nrt_record(drsix.to_nrt(), 180, "test_emil.wav", "sample")
 
 #cmp.post_all()
 

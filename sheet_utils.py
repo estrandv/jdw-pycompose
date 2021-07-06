@@ -1,8 +1,6 @@
 from typing import Iterable
-from parsing import parse_note
 from copy import deepcopy
 import json
-
 
 class PostingType:
     def __init__(self, id: int):
@@ -44,10 +42,10 @@ def _export_note(note: dict[str, float], synth_name: str, sequencer_id: str, pos
     sequencer_message: dict[str, Any] = {"alias": sequencer_id}
     exported = {"target": synth_name, "args": {}}
 
-    amp = note["args"]["amp"] if "amp" in note["args"] else 0.0
+    amp = note["amp"] if "amp" in note else 0.0
 
     # Should throw error if missing; mandatory 
-    sequencer_message["time"] = note["args"]["time"]
+    sequencer_message["time"] = note["reserved_time"]
 
     for key in _streamline(note):
         exported["args"][key] = _streamline(note)[key]
@@ -88,10 +86,3 @@ def _merge_note(under: dict[str, float], over: dict[str, float]) -> dict[str, fl
         merged[attr] = over[attr]
 
     return merged
-
-# Note: This is a hack. For convenience, the original parse_note expects tone as first arg
-# but we don't in this scenario. Will probably support this natively soon...
-def _parse_note(string: str) -> dict[str, float]:
-    note = parse_note("0 " + string)
-    note.pop("tone", None)
-    return note
