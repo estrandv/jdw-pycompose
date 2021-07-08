@@ -3,7 +3,7 @@ import json
 from sheet_note import SheetNote
 
 symbols = {
-    "=":"reserved_time",
+    "=":"time",
     ">":"sus",
     "#": "amp"
 }
@@ -129,19 +129,15 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
                         else:
                             print("ERROR: Missing digit string")
                 if phases[p] == "brackets":
-                    if char == "[":
+                    if char == "[" or char == "]":
                         bracket_part += char
-                    elif char == "]":
-                        # Closing bracket means end of bracketed part phase
-                        bracket_part += char
-                        p += 1
                     else:
-                        if bracket_part != "":
+                        if bracket_part != "" and "]" not in bracket_part:
                             bracket_part += char
                         else:
                             # If regular char follows without an opened bracket, the phase ends with blank
                             p += 1
-                if phases[p] == "suffix":
+                if phases[p] == "suffix": # TODO: Still on the same char, not workable
                     # Everything in final phase added to suffix
                     suffix_part += char
             
@@ -184,7 +180,7 @@ def compile_sheet(string: str) -> str:
 
 
 if __name__ == "__main__":
-    print(parse_args("arg-333 bot0087 >15 amp08"))
+    #print(parse_args("arg-333 bot0087 >15 amp08"))
     
     def sus_assert(string: str, expected_sus: float):
         result = parse_args(string)
@@ -203,10 +199,10 @@ if __name__ == "__main__":
     compiled = compile_sheet("0 0 (0/2/4) 0")
     assert compiled == "0 0 0 0 0 0 2 0 0 0 4 0", "Unexpected compile result " + compiled
 
-    notes = parse_sheet("hi22fish a2[tank2 no4] 6")
+    notes = parse_sheet("hi22fish a2[tank2 no4] 6lip")
     
-    for note in notes:
-        print(json.dumps(note.__dict__))
+    #for note in notes:
+        #print(json.dumps(note.__dict__))
 
     assert 3 == len(notes)
     assert "hi" == notes[0].prefix
@@ -215,3 +211,9 @@ if __name__ == "__main__":
     
     assert 2.0 == notes[1].master_args["tank"]
     assert 6.0 == notes[2].tone_value
+
+    assert "lip" == notes[2].suffix
+
+    notes2 = parse_sheet("0tag 0 0[=2]tagz 0")
+    assert "tag" == notes2[0].suffix, notes[0].suffix
+    assert "tagz" == notes2[2].suffix, notes[1].suffix

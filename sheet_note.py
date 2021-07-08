@@ -16,3 +16,6 @@ class SheetNote:
 
     def set_arg(self, arg: str, value: float):
         self.base_args[arg] = value
+
+    def get_time(self):
+        return self.get_args()["time"] if "time" in self.get_args() else 0.0

@@ -84,7 +84,7 @@ class Sheet:
                                 contained = "".join("".join(after_digits.split("[")[1:]).split("]")[:-1])
                                 
                                 # Turn contained args into dict
-                                override = parse_args(contained)
+                                override = eargs(contained)
 
                                 # Note defaults are applied here
                                 self.notes[-1] = _merge_note(self.notes[-1], override)
