@@ -51,4 +51,6 @@ if __name__ == "__main__":
     assert 2.0 == sheet.notes[2].get_time(), sheet.notes[0].__dict__
     assert 4.0 == sheet.notes[3].get_time(), sheet.notes[0].__dict__
 
-
+    assert 13.0 == sheet.len(), sheet.len()
+    sheet.stretch(1)
+    assert 26.0 == sheet.len(), sheet.len()
