@@ -40,21 +40,19 @@ def to_sequencer_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_tag:
     return sequencer_messages
 
 def to_sequencer_synth_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> list[dict]:
+    return [_sequencer_wrap(sequencer_tag, msg["args"]["time"], "JDW.PLAY.NOTE", json.dumps(msg)) \
+        for msg in to_synth_notes(meta_sheet, target)]
 
-    sequencer_messages = []
+def to_synth_notes(meta_sheet: MetaSheet, target: str) -> list[dict]:
+    notes = []
     for data in meta_sheet.sheets:
         for note in data.sheet.notes:
             octave_tone = note.get_tone_in_oct(data.octave)
-            #print("octave tone", str(octave_tone))
             transposed_tone = transpose(int(octave_tone), data.scale)
-            #print("transposed tone", str(transposed_tone))
             tone_frequency = note_number_to_hz(transposed_tone)
-            #print("tone frequency", str(tone_frequency))
             note.set_arg("freq", tone_frequency)
-            synth_message = {"target": target, "args": note.get_args()}
-            sequencer_messages.append(_sequencer_wrap(sequencer_tag, note.get_args()["time"], "JDW.PLAY.NOTE", json.dumps(synth_message)))
-
-    return sequencer_messages
+            notes.append({"target": target, "args": note.get_args()})
+    return notes 
 
 if __name__ == "__main__":
 

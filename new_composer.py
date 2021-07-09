@@ -56,6 +56,10 @@ class Composer:
             all_notes.append(data.exporter_func(data.meta_sheet, data.name, data.sequencer_tag))
         return all_notes
 
+    def nrt_export(self, sequencer_tag: str, exp_method) -> list[dict]:
+        ms = [ms for ms in self.meta_sheets if ms.sequencer_tag == sequencer_tag][0]
+        return exp_method(ms.meta_sheet, ms.name)
+
 if __name__ == "__main__":
     exported = []
     
@@ -78,3 +82,8 @@ if __name__ == "__main__":
     assert 9.0 == msh2.len()
     assert 1.0 == msh2.sheets[-1].sheet.len()
     assert 1.0 == msh2.sheets[-1].sheet.notes[0].get_args()["amp"]
+
+    def test_nrt(sheet, name):
+        exported.append(name)
+
+    cmp.nrt_export("st1", test_nrt)
