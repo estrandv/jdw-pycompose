@@ -1,6 +1,7 @@
 from new_sheet import Sheet
 from scales import *
 from copy import deepcopy
+from sheet_note import SheetNote
 
 class SheetData:
     def __init__(self, sheet: Sheet, octave: int, scale: list[int]):

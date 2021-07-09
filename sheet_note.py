@@ -19,3 +19,7 @@ class SheetNote:
 
     def get_time(self):
         return self.get_args()["time"] if "time" in self.get_args() else 0.0
+
+    def get_tone_in_oct(self, octave: int) -> float:
+        extra = (12 * (octave - 1)) if octave > 0 else 0
+        return self.tone_value + extra
