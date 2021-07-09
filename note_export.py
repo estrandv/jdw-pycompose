@@ -30,7 +30,6 @@ def to_sequencer_midi_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: s
 
 def to_sequencer_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> list[dict]:
     sequencer_messages = []
-    time = 0.0
     for data in meta_sheet.sheets:
         for note in data.sheet.notes:
             octave_tone = note.get_tone_in_oct(data.octave)

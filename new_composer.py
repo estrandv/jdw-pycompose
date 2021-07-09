@@ -9,7 +9,7 @@ class MetaSheetData:
 
 class Composer:
     def __init__(self):
-        self.meta_sheets = list[MetaSheetData]
+        self.meta_sheets: list[MetaSheetData] = [] 
         self.last_sync_time = 0.0
 
     def meta_sheet(self, name: str, sequencer_tag: str, exporter_func) -> MetaSheet:
@@ -35,14 +35,13 @@ class Composer:
     # those to match the longest one (i.e. "play and repeat together")
     def smart_sync(self, exclude: list[str]=[]) -> 'Composer':
         
-        played_since_sync = [data.meta_sheet for data in self.meta_sheets if data.meta_sheet.len() > self.last_sync_time]
+        played_since_sync = [data for data in self.meta_sheets if data.meta_sheet.len() > self.last_sync_time]
         
         top_length = [data.meta_sheet for data in self.meta_sheets if data.meta_sheet.len() == self.len()]
         if top_length:
-
             for ms in played_since_sync:
                 if ms.sequencer_tag not in exclude:
-                    ms.reach(self.len()) 
+                    ms.meta_sheet.reach(self.len()) 
                 else: 
                     print("excluding " + ms.sequencer_tag)
 
@@ -56,3 +55,26 @@ class Composer:
         for data in self.meta_sheets:
             all_notes.append(data.exporter_func(data.meta_sheet, data.name, data.sequencer_tag))
         return all_notes
+
+if __name__ == "__main__":
+    exported = []
+    
+    def test_exp(sheet, name, tag):
+        exported.append(name)
+    
+    cmp = Composer()
+    msh = cmp.meta_sheet("flute", "fl1", test_exp)
+    msh.sheet("0 0 0 0")
+    assert 4.0 == cmp.len(), cmp.len()
+    msh2 = cmp.meta_sheet("strings", "st1", test_exp)
+    msh2.sheet("0 0 0 0 0")
+    assert 5.0 == cmp.len(), cmp.len()
+    cmp.sync()
+    assert 5.0 == msh.len()
+    assert 0.0 == msh.sheets[-1].sheet.notes[0].get_args()["amp"]
+    msh.sheet("1 1 0 0")
+    msh2.sheet("4")
+    cmp.smart_sync()
+    assert 9.0 == msh2.len()
+    assert 1.0 == msh2.sheets[-1].sheet.len()
+    assert 1.0 == msh2.sheets[-1].sheet.notes[0].get_args()["amp"]
