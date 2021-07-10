@@ -10,6 +10,9 @@ from zmq_client import PublisherClient
 cmp = Composer()
 #padder = cmp.reg(MetaSheet("padder", "blipp", PostingTypes.PROSC))
 blipp = cmp.meta_sheet("blipp", "blipp1", to_sequencer_synth_notes)
+moog = cmp.meta_sheet("moogBass", "moog1", to_sequencer_synth_notes)
+warsaw = cmp.meta_sheet("warsawBass", "warsaw1", to_sequencer_synth_notes)
+korger1 = cmp.meta_sheet("KORGER1Samples", "korg1", to_sequencer_sample_notes)
 #blipp2 = cmp.reg(MetaSheet("bass_assist", "blipp", PostingTypes.PROSC))
 #warsaw = cmp.reg(MetaSheet("warsaw", "warsawBass", PostingTypes.PROSC))
 #warsaw2 = cmp.reg(MetaSheet("warsaw2", "warsawBass", PostingTypes.PROSC))
@@ -55,13 +58,23 @@ client.add_effect([{"target": "effect_reverb", "args": {"inBus": 50, "outBus": 0
 
 client.add_effect([{"target": "effect_combDelay", "args": {"inBus": 16, "outBus":40, "echo": 0.55, "beat_dur": 0.2, "echotime": 0.4}}])
 
-client.set_bpm(180)
+client.set_bpm(140)
 
-cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5").pre_tag("_:#0")
+#cmp.pre_tag("t:=.25").pre_tag("s:=.5").pre_tag("q:=0").pre_tag("l:=2 >2").pre_tag("xl:=4 >5").pre_tag("_:#0")
 
+blipp.sheet("4 5 6 4", 4, MINOR).all("=8 >12 #0.2")
+moog.sheet("0[=0.5] 0[chorus0.4] 0[=1.5] (4/8/2/6)", 5, MINOR).all("#0.5 >2 pan0.4")
+warsaw.sheet("0 0 0 0 0 0 0 (1/2/1/3)", 3, MINOR).all("=0.5 #0.5 pan-0.2 >2 bus20")
+#blipp.sheet("0 0 0 3 5 6 0 (1/2/3/4)", 4, MAJOR).all("bus20 =0.25 #0.4")
+korger1.sheet("bd2[rate0.5 #2 bus40] to0 bd2 (hh5/hh5/hh5/cy8)").all("=0.5")
+#korger1.sheet("bd1 (cy2[=0]/0[=0 #0]/0[=0 #0]/0[=0 #0]) bd2 bd3 (mi18/sh8)").all("#4 =0.5")
 
+cmp.smart_sync()
 
 #client.nrt_record(drsix.to_nrt(), 180, "test_emil.wav", "sample")
+
+for note_set in cmp.export_all():
+    client.queue(note_set)
 
 #cmp.post_all()
 
