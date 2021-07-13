@@ -22,6 +22,15 @@ import json
 # SAMPLE_PLAY: {"target": "dr660", "family": "BASS(0)", "index": 4, "args": {...}}
 # S_NEW: {"target": "moog", "args": {...}}
 
+# Workaround for ergonmics that is a bit of a code smell
+# Gets rid of previously applied sequencer message wrapping by parsing the contained message object
+def de_wrap(sequencer_notes: list[dict]) -> list[dict]:
+    def dw(note):
+        msg = "".join(note["msg"].split("::")[1])
+        return json.loads(msg)
+
+    return [dw(n) for n in sequencer_notes]
+
 def _sequencer_wrap(alias: str, time: float, msg_handle: str, msg: str) -> dict:
     return {"alias": alias, "time": time, "msg": msg_handle + "::" + msg}
  
@@ -82,3 +91,7 @@ if __name__ == "__main__":
     assert "freq" not in message["args"]
     assert "d1" == samres[0]["alias"]
 
+    msg = {"Hello": "World!"}
+    seq_msg = _sequencer_wrap("foo", 0.0, "MY.MESSAGE", json.dumps(msg))
+    msg_re = de_wrap([seq_msg])
+    assert "World!" == msg_re[0]["Hello"], msg_re[0]

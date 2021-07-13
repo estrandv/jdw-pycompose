@@ -1,4 +1,5 @@
 from new_meta_sheet import MetaSheet
+from note_export import de_wrap
 
 class MetaSheetData:
     def __init__(self, name: str, sequencer_tag: str, meta_sheet: MetaSheet, exporter_func):
@@ -56,9 +57,13 @@ class Composer:
             all_notes.append(data.exporter_func(data.meta_sheet, data.name, data.sequencer_tag))
         return all_notes
 
-    def nrt_export(self, sequencer_tag: str, exp_method) -> list[dict]:
+    def nrt_export(self, sequencer_tag: str) -> list[dict]:
         ms = [ms for ms in self.meta_sheets if ms.sequencer_tag == sequencer_tag][0]
-        return exp_method(ms.meta_sheet, ms.name)
+
+        notes = ms.exporter_func(ms.meta_sheet, ms.name, ms.sequencer_tag)
+        dw = de_wrap(notes)
+
+        return dw 
 
 if __name__ == "__main__":
     exported = []
