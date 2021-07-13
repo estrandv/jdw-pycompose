@@ -222,4 +222,4 @@ if __name__ == "__main__":
     assert "tagz" == notes2[2].suffix, notes[1].suffix
 
     notes3 = parse_sheet("_ _ 4 _")
-    print([note.__dict__ for note in notes3])
+    #print([note.__dict__ for note in notes3])
