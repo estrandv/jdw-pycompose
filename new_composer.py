@@ -83,6 +83,19 @@ if __name__ == "__main__":
     assert 1.0 == msh2.sheets[-1].sheet.len()
     assert 1.0 == msh2.sheets[-1].sheet.notes[0].get_args()["amp"]
 
+
+    ncmp = Composer()
+    ms1 = ncmp.meta_sheet("flute", "flute", test_exp)
+    ms1.sheet("0 _ _ 3 4 5 _ _")
+    ms2 = ncmp.meta_sheet("vio", "vo", test_exp)
+    ms2.sheet("bd3 _ _ _ bd2 _ _ _ bd7 _ sh4 _ _ hh1 hh2 _").all("=0.25")
+    assert 4.0 == ms2.len(), ms2.len()
+    assert 8.0 == ms1.len(), ms1.len()
+    ncmp.smart_sync()
+    assert 8.0 == ncmp.len(), ncmp.len()
+    assert 8.0 == ms1.len(), ms1.len()
+    assert 8.0 == ms2.len(), ms2.len()
+
     def test_nrt(sheet, name):
         exported.append(name)
 

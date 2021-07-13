@@ -99,7 +99,10 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
 
     notes: list['SheetNote'] = []
 
-    for chunk in _split_notes(sheet):
+    # _ marks a break (silent), while | can be used as a readability sign that does nothing
+    break_parsed = sheet.replace("_", "0[#0]").replace("|", "")
+
+    for chunk in _split_notes(break_parsed):
         if any(char.isdigit() for char in chunk):
 
 
@@ -217,3 +220,6 @@ if __name__ == "__main__":
     notes2 = parse_sheet("0tag 0 0[=2]tagz 0")
     assert "tag" == notes2[0].suffix, notes[0].suffix
     assert "tagz" == notes2[2].suffix, notes[1].suffix
+
+    notes3 = parse_sheet("_ _ 4 _")
+    print([note.__dict__ for note in notes3])

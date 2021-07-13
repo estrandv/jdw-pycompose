@@ -164,7 +164,6 @@ class Sheet:
         self.meta_sheet.sheets.remove(self)
         return self
 
-    # Double own notes <times> amount of times
     # TODO: Does not account for part sections or tags, dangerous!
     def stretch(self, times: int) -> Sheet:
         appenders = deepcopy(self.notes)
