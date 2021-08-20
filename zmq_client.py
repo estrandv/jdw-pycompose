@@ -28,3 +28,7 @@ class PublisherClient:
     def set_bpm(self, bpm: int):
         self.socket.send_string("JDW.SEQ.BPM::" + json.dumps(bpm))
         self.socket.recv()
+
+    def wipe_effects(self):
+        self.socket.send_string("JDW.REMOVE.EFFECTS")
+        self.socket.recv()
