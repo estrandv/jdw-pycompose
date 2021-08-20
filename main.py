@@ -66,12 +66,13 @@ borch = cmp.meta_sheet("borch_sample", "borch1", to_sequencer_sample_notes)
 # TODO: EffectChain object for simplifying: chain.add("effect_distortion","dist0.08", 66).reverb("room0.3 mix0.3", 0)
 client = PublisherClient()
 client.wipe_effects()
-#time.sleep(0.1)
 
-EffectChain(16).reverb(0, mix=0.2, room=0.8).send(client)
-EffectChain(44) \
-    .distortion(40) \
-    .reverb(0) \
+EffectChain(16).reverb(0, mix=0.4, room=0.8).send(client)
+#EffectChain(58).bit_crush(0).send(client)
+EffectChain(44)\
+    .distortion(22)\
+    .comb_delay(24, echo=0.1)\
+    .reverb(0, mix=0.2, room=0.4)\
     .send(client)
 
 client.set_bpm(120)
@@ -102,8 +103,9 @@ client.set_bpm(120)
 #warsaw.sheet("1 (12/7)[mono1] 3 4 (6/8)[mono1] 3 4 0", 4, MINOR).all("#0.1 prt0.27")
 #################
 #reed.sheet("4 8", 5, MAJOR).all("=3 >6")
-#stockSaw.sheet("(1 1 2 2/1 1 4 4/2 2 1 2/4 2 4 2)", 4, MINOR).all(">0.1 =0.5 bus16 lfoS2.2 lfoD2.2")
-drsix1.sheet("bd5[#8] sn3").all("bus44 rate0.5")
+guitar.sheet("1 1 2 2 1 1 (4/4/8/2) 4 _ 2 1 2 (4/0) 2 4 2", 4, MINOR).all(">0.15 =0.5 lfoS2.2 lfoD2.2")
+warsaw.sheet("8 8 7 8 9 9 7 (6/_)", 1, MINOR).all("#0.5 mono1 prt0.8 >1.2")
+drsix1.sheet("bd5[#8] (sn3/sn5)").all("=1 bus16")
 #korger1.sheet("cy5[#8] _ _ _ _ _ _").all("bus40")
 
 ############ SAM STUFF

@@ -22,6 +22,7 @@ class PublisherClient:
         self.socket.recv()
 
     def add_effect(self, events: list[dict]):
+        print(events)
         self.socket.send_string("JDW.ADD.EFFECT::" + json.dumps(events))
         self.socket.recv()
 

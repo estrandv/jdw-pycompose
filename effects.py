@@ -32,5 +32,21 @@ class EffectChain:
         eff["args"]["echotime"] = echotime
         return self 
 
+    def bit_crush(self, out_bus: int, bits=4.0, crush=1.0):
+        eff = effect_base("effect_bitCrush", self.current_bus, out_bus)
+        self.effects.append(eff)
+        self.current_bus = out_bus
+        eff["args"]["crush"] = crush   
+        eff["args"]["bits"] = bits  
+        return self 
+
+    def debug(self):
+        print([effect for effect in self.effects])
+        return self 
+
     def send(self, client: PublisherClient):
-        client.add_effect(self.effects)
+        # For some reason the effect chain must be built in reverse for supercollider to respond
+        ordered = self.effects
+        ordered.reverse()
+        for eff in ordered:
+            client.add_effect([eff])
