@@ -35,18 +35,29 @@ class Composer:
     # Detects which sheets were played since last sync() call and repeats 
     # those to match the longest one (i.e. "play and repeat together")
     def smart_sync(self, exclude: list[str]=[]) -> 'Composer':
-        
+
+        # TODO: Activate/Deactivate for meta-sheets
+        # 1. Meta-sheets should keep track of latest non-silent sheets 
+        #   - Needs some kind of tag for sheet() and reach() to register latest live sheet
+        #   - REach should then play this instead 
+        # 2. Meta-sheets should be able to wipe all registered sheets
+        #   - Should be doable to register a latest for syncing while having wiped previously added 
+        # 3. played_since_sync should require sheets to be active() when searching
+        #   - Calling wipe() should deactivate 
+        #   - Calling sheet() should automatically activate 
+        #   - ... or we just add OR is_active to this check and let the len() arg work as before 
         played_since_sync = [data for data in self.meta_sheets if data.meta_sheet.len() > self.last_sync_time]
         
-        top_length = [data.meta_sheet for data in self.meta_sheets if data.meta_sheet.len() == self.len()]
-        if top_length:
-            for ms in played_since_sync:
-                if ms.sequencer_tag not in exclude:
-                    ms.meta_sheet.reach(self.len()) 
-                else: 
-                    print("excluding " + ms.sequencer_tag)
+        # Verify that at least one sheet exists with the total len() - TODO: Why was this added?
+        #top_length = [data.meta_sheet for data in self.meta_sheets if data.meta_sheet.len() == self.len()]
+        #if top_length:
+        for ms in played_since_sync:
+            if ms.sequencer_tag not in exclude:
+                ms.meta_sheet.reach(self.len()) 
+            else: 
+                print("excluding " + ms.sequencer_tag)
 
-            self.sync()
+        self.sync()
 
         return self
 

@@ -40,6 +40,33 @@ class EffectChain:
         eff["args"]["bits"] = bits  
         return self 
 
+    def limiter(self, out_bus: int, level=1.0):
+        eff = effect_base("effect_limiter", self.current_bus, out_bus)
+        self.effects.append(eff)
+        self.current_bus = out_bus
+        eff["args"]["level"] = level
+        return self 
+
+    def bandpass(self, out_bus: int, bpf=1200.0, bpr=0.04, bpnoise=0.2, sus=1.0):
+        eff = effect_base("effect_bandPass", self.current_bus, out_bus)
+        self.effects.append(eff)
+        self.current_bus = out_bus
+        eff["args"]["bpf"] = bpf
+        eff["args"]["bpr"] = bpr
+        eff["args"]["bpnoise"] = bpnoise
+        eff["args"]["sus"] = sus
+        return self 
+
+    def filterswell(self, out_bus: int, swell = 1.0, sus = 1.0, hpr = 1.0):
+        eff = effect_base("effect_filterSwell", self.current_bus, out_bus)
+        self.effects.append(eff)
+        self.current_bus = out_bus
+        eff["args"]["swell"] = swell
+        eff["args"]["sus"] = sus
+        eff["args"]["hpr"] = hpr
+        return self 
+
+
     def debug(self):
         print([effect for effect in self.effects])
         return self 

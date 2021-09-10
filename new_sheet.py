@@ -33,12 +33,58 @@ class Sheet:
         return self 
 
     # Double own notes <times> amount of times
-    def stretch(self, times: int) -> 'Sheet':
+    def stretch(self, times: int = 1) -> 'Sheet':
         appenders = deepcopy(self.notes)
 
         for _ in range(0, times):
             self.notes += appenders
         return self
+    
+    # Add notes as if adding a new sheet, but included in the current one 
+    def extend(self, source_string: str) -> 'Sheet':
+        self.notes += parsing.parse_sheet(source_string)
+        return self 
+
+    # Define the same sheet again, adding the new notes to the previous one from the start of the timeline
+    def para(self, source_string: str) -> 'Sheet':
+        new_notes = parsing.parse_sheet(source_string)
+        original_step = [note.get_time() for note in self.notes]
+
+        # [0.0, 0.5, 1.0, 2.0]
+        # [0.5, 0.5, 2.0, 2.5]
+        # 1. For each NEW_NOTE, determine its relative value
+        # 2. Find the first relative original time that is equal or lesser than the NEW_NOTE rel time 
+        # 3. Set NEW_NOTE time (absolute? best fit for writing?) to the diff (e.g. 0.2 > than the og rel time = 0.2)
+        #   - Regarding which time arg to use:
+        #   * sheet("1 2 3").para("0 2").all("=2")
+        #   * In this case the para notes should NOT get the ALL arg 
+        #   * Problem is that sometimes you might want to apply ALL to para before any funkiness
+        #   * Best way is probably to supply a baked in all_string, possibly also a tag_string (which means tag rework TODO)
+        # 4. Inject the new note right after the old note using index search..? 
+        #   - Another way is to use a custom object with relative times and notes
+        #   - Thus you have an original set of those and keep adding at the end
+        #   - Then you perform a custom sort and create the final note set 
+
+        # Construct the relative start times of the original notes 
+        timeline = 0.0
+        rot = []
+        for time in original_step:
+            rot.append(timeline)
+            timeline += time 
+
+        new_timeline = 0.0
+        for note in new_notes:
+            # new_timeline is the note start time 
+            # Add note to new timeline time at end after checks 
+            print("UNIMPLEMENTED")
+        
+        # TODO: Very much not done 
+        return self 
+
+
+    def mute(self) -> 'Sheet':
+        self.notes = []
+        return self 
 
     def len(self) -> float:
         return sum([note.get_time() for note in self.notes]) if len(self.notes) > 0 else 0.0

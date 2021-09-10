@@ -99,8 +99,8 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
 
     notes: list['SheetNote'] = []
 
-    # _ marks a break (silent), while | can be used as a readability sign that does nothing
-    break_parsed = sheet.replace("_", "0[#0]").replace("|", "")
+    # _ marks a break (silent)
+    break_parsed = sheet.replace("_", "0[#0]")
 
     for chunk in _split_notes(break_parsed):
         if any(char.isdigit() for char in chunk):
@@ -146,12 +146,30 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
             
             # Parse the bracketed section if exists
             master_args = {}
+            rel_args = {}
+            mul_args = {}
             if bracket_part != "":
                 de_bracketed = "".join("".join(bracket_part.split("[")[1:]).split("]")[:-1])
+                # [amp0.2 sus-0.2|lfoD0.5|amp0.9]
+                # | denotes a section, each section in order is [master|relative|multiplier]
+                sections = de_bracketed.split("|")
+                assert len(sections) < 4, "Too many sections splits in bracketed area " + de_bracketed
+                types = ["master", "relative", "multiplier"]
+                type_iter = 0
+                for section in sections:
+                    args = parse_args(section)
+                    if types[type_iter] == "master":
+                        master_args = args
+                    if types[type_iter] == "relative":
+                        rel_args = args
+                    if types[type_iter] == "multiplier":
+                        mul_args = args
+                    type_iter += 1
+
                 master_args = parse_args(de_bracketed)
 
             base_args = {"amp": 1.0, "sus": 1.0, "time": 1.0} # Ensure non-null defaults
-            notes.append(SheetNote(prefix, suffix_part, float(digit_string), master_args, base_args))
+            notes.append(SheetNote(prefix, suffix_part, float(digit_string), master_args, base_args, rel_args, mul_args))
 
     return notes
 
@@ -223,3 +241,12 @@ if __name__ == "__main__":
 
     notes3 = parse_sheet("_ _ 4 _")
     #print([note.__dict__ for note in notes3])
+
+    ### Complex args
+    def test_complex(sheet, arg, value):
+        notes4 = parse_sheet(sheet)
+        assert value == notes4[0].get_args()[arg], "Failure in sheet " + sheet + ", Actual value: " + str(notes4[0].get_args()[arg])
+    
+    test_complex("0[amp0.1|amp1.0|amp1.0]", "amp", 1.1)
+    test_complex("4[||amp0.5]", "amp", 0.5)
+    test_complex("8[|amp-0.7]", "amp", 0.3)
