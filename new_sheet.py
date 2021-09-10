@@ -45,6 +45,31 @@ class Sheet:
         self.notes += parsing.parse_sheet(source_string)
         return self 
 
+    # Adjust the given arg for each note in order by applying add/subtract of amount based on pattern
+    def shape(self, pattern: list[int], arg: str, amount: float) -> 'Sheet':
+        old_total = self.get_total(arg)
+        index = 0
+        for note in self.notes:
+            if pattern[index % len(pattern)] > 0:
+                note.set_relative(arg, amount)
+            else:
+                note.set_relative(arg, amount * -1.0)
+
+            index += 1
+
+        diff = (old_total - self.get_total(arg))
+
+        split_diff = diff / len(self.notes)
+
+        for note in self.notes:
+            note.set_relative(arg, split_diff)
+
+        return self 
+
+
+    def get_total(self, arg_name: str) -> float:
+        return sum([note.get_args()[arg_name] for note in self.notes])
+
     # Define the same sheet again, adding the new notes to the previous one from the start of the timeline
     def para(self, source_string: str) -> 'Sheet':
         new_notes = parsing.parse_sheet(source_string)
@@ -100,3 +125,13 @@ if __name__ == "__main__":
     assert 13.0 == sheet.len(), sheet.len()
     sheet.stretch(1)
     assert 26.0 == sheet.len(), sheet.len()
+
+    # Smart mod 
+    sheet2 = Sheet("1 2 3 4 5 6 7 8").shape([1,0], "time", 0.2)
+
+    assert sheet2.len() == 8.0, sheet2.len()
+    assert sheet2.notes[0].get_args()["time"] == 1.2, sheet2.notes[2].get_args()["time"] 
+    assert sheet2.notes[1].get_args()["time"] == 0.8, sheet2.notes[2].get_args()["time"] 
+
+    sheet3 = Sheet("1 2 3 4 5").shape([1,0,0], "amp", 0.2)
+    assert sheet3.notes[3].get_args()["amp"] == 1.24, sheet3.notes[3].get_args()["amp"] 

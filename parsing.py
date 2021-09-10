@@ -161,7 +161,8 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
                     if types[type_iter] == "master":
                         master_args = args
                     if types[type_iter] == "relative":
-                        rel_args = args
+                        for arg in args:
+                            rel_args[arg] = [args[arg]]
                     if types[type_iter] == "multiplier":
                         mul_args = args
                     type_iter += 1
@@ -250,3 +251,4 @@ if __name__ == "__main__":
     test_complex("0[amp0.1|amp1.0|amp1.0]", "amp", 1.1)
     test_complex("4[||amp0.5]", "amp", 0.5)
     test_complex("8[|amp-0.7]", "amp", 0.3)
+    test_complex("8[sus2.0 amp4.0||sus0.2]", "sus", 0.4)
