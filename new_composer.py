@@ -61,11 +61,19 @@ class Composer:
 
         return self
 
+    def wipe(self):
+        for ms in self.meta_sheets:
+            ms.meta_sheet.wipe()
+
     # Transform all notes in all sheets into export dicts and return as list
     def export_all(self) -> list[dict]:
         all_notes = []
         for data in self.meta_sheets:
-            all_notes.append(data.exporter_func(data.meta_sheet, data.name, data.sequencer_tag))
+            if data.meta_sheet.is_silent():
+                print("Empty sheet will be exported as none: ", data.name)
+                all_notes.append(data.exporter_func(MetaSheet(), data.name, data.sequencer_tag))
+            else:    
+                all_notes.append(data.exporter_func(data.meta_sheet, data.name, data.sequencer_tag))
         return all_notes
 
     def nrt_export(self, sequencer_tag: str) -> list[dict]:

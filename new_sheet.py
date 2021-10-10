@@ -2,17 +2,33 @@ import parsing
 from copy import deepcopy
 from sheet_note import SheetNote
 
+ARG_NORMAL = 0
+ARG_REL = 1
+ARG_MUL = 2
+
 class Sheet:
-    def __init__(self, source_string: str):
-        self.notes: list[SheetNote] = parsing.parse_sheet(source_string)
+    def __init__(self, source_string: str, predefined: list[SheetNote] = []):
+        if source_string != None:
+            self.notes: list[SheetNote] = parsing.parse_sheet(source_string)
+        else: # Alternative constructor 
+            self.notes = predefined
+
+    def __deepcopy__(self, memo):
+        new_notes = [deepcopy(note) for note in self.notes]
+        return Sheet(None, new_notes)
     
     # e.g. "=1.5 >2"
-    def all(self, attributes: str) -> 'Sheet':
+    def all(self, attributes: str, type = ARG_NORMAL) -> 'Sheet':
         override = parsing.parse_args(attributes)
 
         for note in self.notes:
             for arg in override:
-                note.set_arg(arg, override[arg])
+                if type == ARG_NORMAL:
+                    note.set_arg(arg, override[arg])
+                if type == ARG_REL:
+                    note.set_relative(arg, override[arg])
+                if type == ARG_MUL:
+                    note.set_mul(arg, override[arg])
 
         return self
 
@@ -68,15 +84,13 @@ class Sheet:
 
 
     def get_total(self, arg_name: str) -> float:
-        return sum([note.get_args()[arg_name] for note in self.notes])
+        return sum([(note.get_args()[arg_name] if arg_name in note.get_args() else 0.0) for note in self.notes])
 
     # Define the same sheet again, adding the new notes to the previous one from the start of the timeline
     def para(self, source_string: str) -> 'Sheet':
         new_notes = parsing.parse_sheet(source_string)
-        original_step = [note.get_time() for note in self.notes]
 
-        # [0.0, 0.5, 1.0, 2.0]
-        # [0.5, 0.5, 2.0, 2.5]
+        # 
         # 1. For each NEW_NOTE, determine its relative value
         # 2. Find the first relative original time that is equal or lesser than the NEW_NOTE rel time 
         # 3. Set NEW_NOTE time (absolute? best fit for writing?) to the diff (e.g. 0.2 > than the og rel time = 0.2)
@@ -91,25 +105,66 @@ class Sheet:
         #   - Then you perform a custom sort and create the final note set 
 
         # Construct the relative start times of the original notes 
-        timeline = 0.0
-        rot = []
-        for time in original_step:
-            rot.append(timeline)
-            timeline += time 
+        
+        # Dynamic since we will live-insert into original_step 
+        def get_rot():
+            timeline = 0.0
+            rot = [timeline]
+            for note in self.notes:
+                rot.append(timeline)
+                timeline += note.get_time() 
+            return rot
+
 
         new_timeline = 0.0
         for note in new_notes:
-            # new_timeline is the note start time 
-            # Add note to new timeline time at end after checks 
-            print("UNIMPLEMENTED")
+            relative_time = new_timeline
+            new_timeline += note.get_time()
+
+            # Highest original relative time that is lesser than or equal to this 
+            original_index = 0 # Iteration index in self.notes 
+            highest_candidate = 0.0 # Highest matching relative time in self.notes
+            selected_index = 0 # Candidate index in self.notes
+            for time in get_rot():
+                if time <= relative_time:
+                    highest_candidate = time
+                    selected_index = original_index
+                original_index += 1
+            
+            print("Selected index at", selected_index, "with value", highest_candidate, "timeline now", new_timeline)
+
+            # Zero, unless times don't match 
+            diff = abs(relative_time - highest_candidate)
+
+            # If there is no diff, we set the new note time to zero, absorbing it into the old one
+            # (it is thus important that it is later placed BEFORE the old note)
+            note.set_master_arg("time", 0.0)
+
+
+            if diff == 0.0:
+                self.notes.insert(selected_index - 1, note)
+            # If not, we reduce the old note by diff and then place the new note AFTER the old note 
+            else:
+                # TODO: This part isn't really working 
+                self.notes[selected_index].set_master_arg("time", self.notes[selected_index].get_time() - diff)
+                print("Adjusting", diff, "to", self.notes[selected_index].get_time())
+                self.notes.insert(selected_index, note)
+
+        print([note.get_time() for note in self.notes])
         
-        # TODO: Very much not done 
         return self 
 
 
     def mute(self) -> 'Sheet':
         self.notes = []
         return self 
+
+    def is_quiet(self) -> bool:
+        retval = True 
+        for note in self.notes:
+            if note.get_args()["amp"] > 0.0:
+                retval = False 
+        return retval
 
     def len(self) -> float:
         return sum([note.get_time() for note in self.notes]) if len(self.notes) > 0 else 0.0
@@ -135,3 +190,12 @@ if __name__ == "__main__":
 
     sheet3 = Sheet("1 2 3 4 5").shape([1,0,0], "amp", 0.2)
     assert sheet3.notes[3].get_args()["amp"] == 1.24, sheet3.notes[3].get_args()["amp"] 
+
+    sheet4 = Sheet("0 0 0 0 0 0 0 0").all("=2", ARG_REL)
+    assert sheet4.len() == 8 * 3
+
+    sheet5 = Sheet("1[||=0.5] 2 3 4").all("=4")
+    assert sheet5.len() == 14.0
+
+    sheet6 = Sheet("0 0 0 2 4 (5/1) _ 0").all(">0.5 #0.2").all("sus2.5", ARG_REL)
+    assert sheet6.notes[0].get_args()["sus"] == 3.0, sheet6.notes[0].get_args()["sus"] == 3.0

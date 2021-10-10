@@ -32,10 +32,7 @@ def de_wrap(sequencer_notes: list[dict]) -> list[dict]:
     return [dw(n) for n in sequencer_notes]
 
 def _sequencer_wrap(alias: str, time: float, msg_handle: str, msg: str) -> dict:
-    return {"alias": alias, "time": time, "msg": msg_handle + "::" + msg}
- 
-def to_sequencer_midi_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> dict:
-    return {} # TODO 
+    return {"alias": alias, "time": time, "msg": msg_handle + "::" + msg} 
 
 def to_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_notes: str) -> list[dict]:
     notes = []
@@ -46,6 +43,30 @@ def to_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_notes: str) ->
             notes.append({"target": target, "family": note.prefix, "index": transposed_tone, "args": note.get_args()})
 
     return notes
+
+def to_midi_notes(meta_sheet: MetaSheet, target: str, sequencer_notes: str) -> list[dict]:
+    notes = []
+    for data in meta_sheet.sheets:
+        for note in data.sheet.notes:
+            octave_tone = note.get_tone_in_oct(data.octave)
+            transposed_tone: int = transpose(int(octave_tone), data.scale)
+            notes.append({"target": target, "tone": transposed_tone, "sus_ms": note.get_args()["sus"] * 1000.0, "amp": note.get_args()["amp"]})
+
+    return notes
+
+def to_sequencer_midi_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> list[dict]:
+
+    wrapped = []
+
+    index = 0 # A bit ugly due to weird parallel data
+    midi_notes = to_midi_notes(meta_sheet, target, sequencer_tag) 
+    for data in meta_sheet.sheets:
+        for note in data.sheet.notes:
+            wrapped.append(_sequencer_wrap(sequencer_tag, note.get_args()["time"], "JDW.PLAY.MIDI", json.dumps(midi_notes[index])))
+            index += 1
+
+    return wrapped
+
 
 def to_sequencer_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> list[dict]:
     return [_sequencer_wrap(sequencer_tag, msg["args"]["time"], "JDW.PLAY.SAMPLE", json.dumps(msg)) \

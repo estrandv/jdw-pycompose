@@ -13,15 +13,27 @@ class SheetNote:
         self.relative_args: dict[str, list[float]] = rel_args # Arg values added to the final values 
         self.mul_args: dict[str, float] = mul_args # Arg multipliers for the final values
 
+    def __deepcopy__(self, memo):
+        return SheetNote(
+            self.prefix, 
+            self.suffix, 
+            self.tone_value, 
+            dict(self.master_args), 
+            dict(self.base_args), 
+            dict(self.relative_args), 
+            dict(self.mul_args)
+        )
+
     def get_args(self):
-        merged = deepcopy(self.base_args)
+        merged = dict(self.base_args)
         for attr in self.master_args:
             merged[attr] = self.master_args[attr]
         
         if self.relative_args:
             for attr in self.relative_args:
                 for value in self.relative_args[attr]:
-                    merged[attr] = merged[attr] + value
+                    current = merged[attr] if attr in merged else 0.0
+                    merged[attr] = current + value
 
         for attr in self.mul_args:
             merged[attr] = merged[attr] * self.mul_args[attr]
@@ -42,6 +54,9 @@ class SheetNote:
 
     def set_arg(self, arg: str, value: float):
         self.base_args[arg] = value
+
+    def set_master_arg(self, arg: str, value: float):
+        self.master_args[arg] = value
 
     def get_time(self):
         return self.get_args()["time"] if "time" in self.get_args() else 0.0

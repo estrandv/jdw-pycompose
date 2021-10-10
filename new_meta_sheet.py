@@ -13,6 +13,13 @@ class MetaSheet:
     def __init__(self):
         self.sheets: list[SheetData] = []
 
+    def wipe(self):
+        self.sheets = []
+
+    def mix(self, arg_string: str, mode = 2):
+        for sheet in self.sheets:
+            sheet.sheet.all(arg_string, mode) #ARG MUL 
+
     # Returns total length of all sheets 
     def len(self) -> float:
         return sum([data.sheet.len() for data in self.sheets])
@@ -24,6 +31,13 @@ class MetaSheet:
     def pad(self, time: float) -> 'MetaSheet':
         self.sheet("0[=" + str(time) + " amp0]")
         return self
+
+    def is_silent(self) -> bool:
+        reval = True 
+        for sheet_data in self.sheets:
+            if not sheet_data.sheet.is_quiet():
+                reval = False 
+        return reval
 
     # Repeat latest registered sheet until total length matches <length>, padding any remains
     def reach(self, length: float) -> 'MetaSheet':
