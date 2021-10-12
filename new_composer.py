@@ -69,12 +69,14 @@ class Composer:
     def export_all(self) -> list[dict]:
         all_notes = []
         for data in self.meta_sheets:
-            if data.meta_sheet.is_silent():
-                print("Empty sheet will be exported as none: ", data.name)
-                all_notes.append(data.exporter_func(MetaSheet(), data.name, data.sequencer_tag))
-            else:    
+            # Don't export all-silent meta-sheets 
+            if not data.meta_sheet.is_silent():
                 all_notes.append(data.exporter_func(data.meta_sheet, data.name, data.sequencer_tag))
         return all_notes
+
+    # Fetch all explicit "this should be muted" messages for empty/silent meta sheets 
+    def export_wipe_aliases(self) -> list[dict]:
+        return [data.sequencer_tag for data in self.meta_sheets if data.meta_sheet.is_silent()]
 
     def nrt_export(self, sequencer_tag: str) -> list[dict]:
         ms = [ms for ms in self.meta_sheets if ms.sequencer_tag == sequencer_tag][0]
