@@ -1,5 +1,5 @@
 from new_meta_sheet import MetaSheet
-from note_export import de_wrap
+from note_export import *
 
 class MetaSheetData:
     def __init__(self, name: str, sequencer_tag: str, meta_sheet: MetaSheet, exporter_func):
@@ -85,6 +85,13 @@ class Composer:
         dw = de_wrap(notes)
 
         return dw 
+
+    def nrt_export_all(self, client, bpm):
+        for ms in self.meta_sheets:
+            export_type = "synth" if ms.exporter_func == to_sequencer_synth_notes else "sample"
+            if not ms.meta_sheet.is_silent():
+                client.nrt_record(self.nrt_export(ms.sequencer_tag), bpm, ms.sequencer_tag + ".wav", export_type)
+
 
 if __name__ == "__main__":
     exported = []
