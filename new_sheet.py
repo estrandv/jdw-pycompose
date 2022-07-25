@@ -32,7 +32,7 @@ class Sheet:
 
         return self
 
-    # Like so: "s: =.5 >2" will set provided attributes to all notes prefixed "s"
+    # Like so: "s: =.5 >2" will set provided attributes to all notes suffixed "s"
     def tag(self, instructions: str) -> 'Sheet':
         parts = instructions.split(":")
         key_section = parts[0]

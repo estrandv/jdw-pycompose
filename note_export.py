@@ -2,6 +2,7 @@ from sheet_note import SheetNote
 from new_meta_sheet import MetaSheet
 from copy import deepcopy
 from scales import transpose
+import datetime
 from pretty_midi import note_number_to_hz
 import json 
 
@@ -22,6 +23,10 @@ import json
 # SAMPLE_PLAY: {"target": "dr660", "family": "BASS(0)", "index": 4, "args": {...}}
 # S_NEW: {"target": "moog", "args": {...}}
 
+def stamp(handle: str, msg: str) -> str:
+    n = datetime.datetime.now(datetime.timezone.utc)
+    return handle + "::" + n.isoformat() + "::" + msg
+
 # Workaround for ergonmics that is a bit of a code smell
 # Gets rid of previously applied sequencer message wrapping by parsing the contained message object
 def de_wrap(sequencer_notes: list[dict]) -> list[dict]:
@@ -32,7 +37,8 @@ def de_wrap(sequencer_notes: list[dict]) -> list[dict]:
     return [dw(n) for n in sequencer_notes]
 
 def _sequencer_wrap(alias: str, time: float, msg_handle: str, msg: str) -> dict:
-    return {"alias": alias, "time": time, "msg": msg_handle + "::" + msg} 
+
+    return {"alias": alias, "time": time, "msg": stamp(msg_handle, msg)} 
 
 def to_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_notes: str) -> list[dict]:
     notes = []
@@ -72,8 +78,9 @@ def to_sequencer_sample_notes(meta_sheet: MetaSheet, target: str, sequencer_tag:
     return [_sequencer_wrap(sequencer_tag, msg["args"]["time"], "JDW.PLAY.SAMPLE", json.dumps(msg)) \
         for msg in to_sample_notes(meta_sheet, target, sequencer_tag)]
 
+# TODO: Undediced on ADD/PLAY
 def to_sequencer_synth_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> list[dict]:
-    return [_sequencer_wrap(sequencer_tag, msg["args"]["time"], "JDW.PLAY.NOTE", json.dumps(msg)) \
+    return [_sequencer_wrap(sequencer_tag, msg["args"]["time"], "JDW.ADD.NOTE", json.dumps(msg)) \
         for msg in to_synth_notes(meta_sheet, target,sequencer_tag)]
 
 def to_synth_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> list[dict]:
@@ -84,7 +91,7 @@ def to_synth_notes(meta_sheet: MetaSheet, target: str, sequencer_tag: str) -> li
             transposed_tone = transpose(int(octave_tone), data.scale)
             tone_frequency = note_number_to_hz(transposed_tone)
             note.set_arg("freq", tone_frequency)
-            notes.append({"source": sequencer_tag, "target": target, "args": note.get_args()})
+            notes.append({"external_id": sequencer_tag, "target": target, "args": note.get_args()})
     return notes 
 
 if __name__ == "__main__":

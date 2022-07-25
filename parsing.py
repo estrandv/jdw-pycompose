@@ -79,20 +79,26 @@ def _split_notes(sheet: str) -> list[str]:
     # Basically: "0 0[=.5 >.4]" -> "0<DIVIDE>0[=.5 >.4]"
     # Prone to silliness if you don't close your brackets.
     # Just close your damn brackets. 
+    note_list = []
+    
     space_scan = ""
     bracket_open = False
     for letter in compile_sheet(sheet):
+        # Space separates notes unless a square-bracket section is ongoing
         if letter == " " and not bracket_open:
-            space_scan += "<DIVIDE>"
+            note_list.append(space_scan)
+            space_scan = ""
         else:
             if letter == "[" and not bracket_open:
                 bracket_open = True
             elif letter == "]":
                 bracket_open = False
             space_scan += letter
-    
-    # TODO: A bit of a detour, could just build array
-    return space_scan.split("<DIVIDE>")
+
+    # Final unclosed bit (since there is no final space)
+    note_list.append(space_scan)
+
+    return note_list
 
 # "0lo hi0 0[=0.5] 0t" -> SheetNote list
 def parse_sheet(sheet: str) -> list['SheetNote']:
@@ -102,9 +108,9 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
     # _ marks a break (silent)
     break_parsed = sheet.replace("_", "0[#0]")
 
+    # Example chunks: "0", "2[=0.5]", "(0/2/1/0[=0.5])"
     for chunk in _split_notes(break_parsed):
         if any(char.isdigit() for char in chunk):
-
 
             prefix = "" # E.g. "bla"
             digit_string = "" # E.g. "1.2"
@@ -220,6 +226,10 @@ if __name__ == "__main__":
 
     compiled = compile_sheet("0 0 (0/2/4) 0")
     assert compiled == "0 0 0 0 0 0 2 0 0 0 4 0", "Unexpected compile result " + compiled
+
+    compiled = compile_sheet("(0 1 2 3)[att0.5]")
+    print(compiled)
+
 
     notes = parse_sheet("hi22fish a2[tank2 no4] 6lip")
     
