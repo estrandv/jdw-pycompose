@@ -97,7 +97,7 @@ def parse_args(string: str) -> dict[str, float]:
 # Sections separated by "/" constitute an alternation 
 # "0 0 (1/2)" means "Run the whole thing twice, picking 1 on the first and 2 on the second"
 # It gets more complex with nested alternations, hence the recursion...  
-def expand_alternations(section_list):
+def expand_alternations(section_list) -> list["Section"]:
     new_list = []
 
     #print("***** DEBUG: Calling expand on ", " ".join([i.source_text for i in section_list]))
@@ -152,7 +152,7 @@ def expand_alternations(section_list):
 class Section:
 
     # Reconstruct into a similar format as source_string for verification 
-    def rebuild_source(self):
+    def rebuild_source(self) -> str:
         if self.atomic:
             return self.source_text + self.get_arg_string()
         else:
@@ -167,7 +167,9 @@ class Section:
                     base += ")"
             return base.replace("( ", "(") # TODO: REally should be centralized 
 
-    def stringify_full(self):
+    # Create a string for representing both this section and the recursion chain relationships
+    # of its children
+    def stringify_full(self) -> str:
         base = self.source_text 
         
         if self.sections:
@@ -176,14 +178,12 @@ class Section:
         base += self.get_arg_string()
         return base 
 
+    # Create a simple string represenatation of this section without its children 
     def stringify(self):
 
         base = " ".join([i.stringify() for i in self.sections]) + \
             self.get_arg_string()
         return base 
-
-    def to_debug(self):
-        return "'" + self.separator + "'" + "(" + self.stringify() + ")"
 
     # Fetch all variations on this level as list of lists (but no more levels than that!)
     # For example: 0 / 1 / 4 has 3 variations, 0 (1 / 2 / 3) has 1 (parenthesis is next level)
@@ -202,6 +202,7 @@ class Section:
 
         return alternation_list
 
+    # Wrap args dict into a string representation like "[argA0.0, argB1.2, ...]"
     def get_arg_string(self):
         compiled = "" 
         if self.args:
@@ -273,7 +274,6 @@ class Section:
         if self.atomic:
             # Atomic branches need no further step-parsing
             self.atomic_content = text
-            #print("DEBUG: Skipping parsing for atomic element ", text)
         else:
 
             # Example: 0 0 (2/3) 0
@@ -343,7 +343,7 @@ if __name__ == "__main__":
 
     def test_expand(source, expected):
         section = Section(source)
-        expanded_sections = expand_alternations(section.sections)
+        expanded_sections = expand_alternations([section])
         expanded = " ".join([i.source_text for i in expanded_sections]) 
         assert expected == expanded, "bad expand: " + expanded + " != (expected) " + expected
         print(source + " expand-tested OK")
@@ -354,12 +354,14 @@ if __name__ == "__main__":
     test_expand("0 ((1/4)/2)", "0 1 0 2 0 4 0 2")   
     test_expand("0 (1/(2/3))", "0 1 0 2 0 1 0 3")    
     test_expand("0 0 (1/(2/3))", "0 0 1 0 0 2 0 0 1 0 0 3")    
+    test_expand("0 0", "0 0")    
+    test_expand("0", "0")    
 
     
     def test_combo(source, expected):
         seed = Section(source).rebuild_source()
         section = Section(seed)
-        expanded_sections = expand_alternations(section.sections)
+        expanded_sections = expand_alternations([section])
         expanded = " ".join([i.rebuild_source() for i in expanded_sections]) 
         assert expected == expanded, "bad expand/collapse combo: " + expanded + " != (expected) " + expected
         print(source + " expand-tested OK")
