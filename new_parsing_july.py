@@ -2,6 +2,31 @@
 # Plan is to make this a completely self-contained parsing package 
 # with solid, hackless, well-documented and well-tested code
 
+from scales import transpose
+from pretty_midi import note_number_to_hz
+
+# Core class for atomic parts data, such as e.g. a single "note on" with args  
+class Message: 
+
+    # When parsing a section string as a Message:
+    # prefix: any letters before number or symbol, e.g. "fra" in "fra0" or "fra:" or "fra0:"
+    # index: first contained integer, e.g. "12" in "fra12:"
+    # symbol: special char right after first number or prefix, if any, e.g. ":" in "0:"
+    # suffix: any remaining chars after the index and symbol, e.g. ":!g" in "pre::!g"
+    def __init__(self, prefix, index, symbol, suffix, args = {}):
+        self.prefix = prefix # Can be None 
+        self.index = index # Can be None 
+        self.symbol = symbol # Can be None 
+        self.suffix = suffix # Can be None 
+        self.args = args
+    
+    # Use index to add a midi-tone-based "freq"-arg to contained args  
+    def create_freq_arg(scale, octave):
+        if self.index and self.index > 0:
+            extra = (12 * (octave + 1)) if octave > 0 else 0
+            new_index = self.index + extra
+            freq = note_number_to_hz(transpose(new_index, scale))
+            self.args["freq"] = freq
 
 symbols = {
     "=":"time",
@@ -69,13 +94,55 @@ def parse_args(string: str) -> dict[str, float]:
     #print(parsed_values)
     return parsed_values
 
+# TODO: DOcument 
+# TODO: I really think it works now! But it needs to be usable within a section. 
+def expand_alternations(section_list):
+    new_list = []
+
+    highest_nested_alternation_index = -1
+
+    for section in section_list:
+        # Top level alternations serve no purpose; outcome is the same as space
+        if section.separator == "/":
+            section.separator = " "
+        
+        # Highest index of available next-level alternations is the minimum amount
+        # of repetitions we will have to perform to represent everything  
+        if (len(section.get_alternations())-1) > highest_nested_alternation_index:
+            highest_nested_alternation_index = len(section.get_alternations())-1
+
+    if highest_nested_alternation_index == -1:
+        # Bottom of recursion reached; no sections on next level have alternations 
+        return section_list
+    else:
+        # Bit of tweaking with the indices here since modulo behaviour
+        # isn't what we want if dealing with actual indices near zero
+        for i in range(1, highest_nested_alternation_index + 2):
+            for section in section_list:
+                max_index = len(section.get_alternations())
+                if max_index > 0:
+                    rem = (i % max_index) - 1
+                    #print("i", i, "max index", max_index,"rem", rem, "section", section.__str__())
+                    this_alternation = section.get_alternations()[rem]
+                    #print("picked:", [i.__str__() for i in this_alternation])
+                    for alt_sec in this_alternation:
+                        new_list.append(alt_sec)
+                else:
+                    # Some sections have no alternations at all and can be kept as-is
+                    new_list.append(section)
+    
+        #print("Half-way: ", [i.__str__() for i in new_list])    
+        return expand_alternations(new_list)
+        
+
+
 # Sections form a tree structure where the end-node is a single-char representation
 # such as "0" or "0[args...]"
 class Section:
 
     def __str__(self):
 
-        base = "[" + "separator: " + self.separator + ", " + "content: "
+        base = "[\'" + self.separator + "\':"
 
         if self.atomic:
             return base + self.atomic_content + "]"
@@ -84,6 +151,26 @@ class Section:
             for sec in self.sections:
                 ret += ", " + sec.__str__()
             return base + ret + "]"
+
+    # Fetch all variations on this level as list of lists (but no more levels than that!)
+    # For example: 0 / 1 / 4 has 3 variations, 0 (1 / 2 / 3) has 1 (parenthesis is next level)
+    def get_alternations(self):
+        alternation_list = []
+        ongoing_alt = []
+        for section in self.sections:
+            if section.separator == "/":
+                #print("section", section.source_text, "has / as separator", [s.source_text for s in ongoing_alt])
+                #print("/ in source set ", self.source_text ,"saving",[a.source_text for a in ongoing_alt])
+                alternation_list.append(ongoing_alt.copy())
+                ongoing_alt = []
+            ongoing_alt.append(section)
+        if ongoing_alt: 
+            #print("closing source set ", self.source_text ,"saving",[a.source_text for a in ongoing_alt])
+            alternation_list.append(ongoing_alt.copy())
+            #print("final append: ", [s.source_text for s in ongoing_alt])
+
+        #print(self.source_text, "has", [i.__str__() for y in alternation_list for i in y])
+        return alternation_list
 
     # Rebuild the original string with ()-section-wide args moved into the atomic end-branches 
     # (0 0)[arg0.0] => 0[arg0.0] 0[arg0.0]
@@ -136,6 +223,7 @@ class Section:
         text = text.replace("  ", " ").replace(" /", "/").replace("/ ", "/")\
             .replace("( ", "(").replace(" )", ")")
 
+
         # NOTE: private class args for convenience during this function,
         # not actually needed for anything else
 
@@ -154,7 +242,7 @@ class Section:
 
         # Helper function to close save an ongoing section parse in self.sections         
         def close_section():
-            print("Attempting to close section: ", self._ongoing_section, "with sep \'"+ self._latest_found_separator + "\'")
+            #print("Attempting to close section: ", self._ongoing_section, "with sep \'"+ self._latest_found_separator + "\'")
             if self._ongoing_section != "":
                 parsed_args = parse_args(self._ongoing_args) 
                 # TODO: Multi-level provided args combination 
@@ -179,9 +267,13 @@ class Section:
             for ch in text:
 
                 if ch == "(":
+                    if self._opened_section_brackets > 0:
+                        self._ongoing_section += ch
                     self._opened_section_brackets += 1
                 elif ch == ")":
                     self._opened_section_brackets -= 1
+                    if self._opened_section_brackets > 0:
+                        self._ongoing_section += ch
                     # Ongoing section will be ended on next separator, see below
                     if self._opened_section_brackets < 0:
                         print("ERROR: Too many closing )")
@@ -224,5 +316,15 @@ if __name__ == "__main__":
 
     print("\"" + Section("", "0  gg[ arg0.0] 0 ( 0[arp0.2] / 1)[arg1.2]").collapse_arg_tree() + "\"")
 
-    #test1 = Section("", "0 0 (0 1/0 2) 0[yahoo]")
-    #print(test1)
+    # TODO: Seems to work wihtout nested, but something gets messy on lower levels
+    # Probably something to do with "if separator is /"
+    # UPDATE: THink it works now!
+    #print(Section("", "0 0 (0 0/2 (9/8)/4 1)").get_alternation(0))
+    #print("tree", Section("", "0 0 (0 0/2 (9/8)/4 1)").get_alternations())
+    
+    seed = "0 0 (0 0/2 (9/8)/4 1)"
+    #seed = "0 (9/(8/3)) 4 (4/1)"
+    print("0 0 0 0 0 0 2 9 0 0 4 1 0 0 0 0 0 0 2 8 0 0 4 1")
+    test_sec = Section("", seed)
+    expanded = expand_alternations(test_sec.sections)
+    print(" ".join([i.source_text for i in expanded]))
