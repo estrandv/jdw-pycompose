@@ -21,7 +21,7 @@ class Message:
         self.args = args
     
     # Use index to add a midi-tone-based "freq"-arg to contained args  
-    def create_freq_arg(scale, octave):
+    def create_freq_arg(self, scale, octave):
         if self.index and self.index > 0:
             extra = (12 * (octave + 1)) if octave > 0 else 0
             new_index = self.index + extra
@@ -91,13 +91,16 @@ def parse_args(string: str) -> dict[str, float]:
         current_symbol = ""
         parsing_number = ""
    
-    #print(parsed_values)
     return parsed_values
 
-# TODO: DOcument 
-# TODO: I really think it works now! But it needs to be usable within a section. 
+# Recursive function for expanding contained alternations in a sequence (section list)
+# Sections separated by "/" constitute an alternation 
+# "0 0 (1/2)" means "Run the whole thing twice, picking 1 on the first and 2 on the second"
+# It gets more complex with nested alternations, hence the recursion...  
 def expand_alternations(section_list):
     new_list = []
+
+    #print("***** DEBUG: Calling expand on ", " ".join([i.source_text for i in section_list]))
 
     highest_nested_alternation_index = -1
 
@@ -107,31 +110,39 @@ def expand_alternations(section_list):
             section.separator = " "
         
         # Highest index of available next-level alternations is the minimum amount
-        # of repetitions we will have to perform to represent everything  
+        # of repetitions of the source set we will have to perform to represent everything  
         if (len(section.get_alternations())-1) > highest_nested_alternation_index:
             highest_nested_alternation_index = len(section.get_alternations())-1
 
     if highest_nested_alternation_index == -1:
         # Bottom of recursion reached; no sections on next level have alternations 
+        #print("DEBUG: picked full (non-alt):", " ".join([i.stringify() for i in section_list]))
+
         return section_list
     else:
-        # Bit of tweaking with the indices here since modulo behaviour
+        # NOTE: Bit of tweaking with the indices here since modulo behaviour
         # isn't what we want if dealing with actual indices near zero
+        # This part iterates through the whole set, building a new expanded set
+        # by picking the iteration-matching alternations for each step. 
         for i in range(1, highest_nested_alternation_index + 2):
             for section in section_list:
                 max_index = len(section.get_alternations())
+                #print("Evaluating section: ", section.source_text)
                 if max_index > 0:
                     rem = (i % max_index) - 1
-                    #print("i", i, "max index", max_index,"rem", rem, "section", section.__str__())
                     this_alternation = section.get_alternations()[rem]
-                    #print("picked:", [i.__str__() for i in this_alternation])
+                    #if not this_alternation:
+                        #print("ERROR: Empty alternation returned for index ", rem, section.get_alternations())
                     for alt_sec in this_alternation:
+                        #print(">> DEBUG: picked from sec ", alt_sec.source_text)
                         new_list.append(alt_sec)
                 else:
+                    #print(">> DEBUG: picked non-alternating:", section.source_text)
                     # Some sections have no alternations at all and can be kept as-is
                     new_list.append(section)
     
-        #print("Half-way: ", [i.__str__() for i in new_list])    
+        #print("DEBUG: proceeding with built list:", " ".join([i.stringify() for i in new_list]))
+    
         return expand_alternations(new_list)
         
 
@@ -140,11 +151,39 @@ def expand_alternations(section_list):
 # such as "0" or "0[args...]"
 class Section:
 
+    # Reconstruct into a similar format as source_string for verification 
+    def rebuild_source(self):
+        if self.atomic:
+            return self.source_text + self.get_arg_string()
+        else:
+            base = ""
+            for section in self.sections:
+
+                base += section.separator 
+                if not section.atomic:
+                    base += "("
+                base += section.rebuild_source()
+                if not section.atomic:
+                    base += ")"
+            return base.replace("( ", "(") # TODO: REally should be centralized 
+
+    def stringify_full(self):
+        base = self.source_text 
+        
+        if self.sections:
+            base += "->{" + ",".join([i.stringify_full() for i in self.sections]) + "}" 
+            
+        base += self.get_arg_string()
+        return base 
+
     def stringify(self):
 
-        base = self.source_text + " ".join([i.stringify() for i in self.sections]) + \
+        base = " ".join([i.stringify() for i in self.sections]) + \
             self.get_arg_string()
         return base 
+
+    def to_debug(self):
+        return "'" + self.separator + "'" + "(" + self.stringify() + ")"
 
     # Fetch all variations on this level as list of lists (but no more levels than that!)
     # For example: 0 / 1 / 4 has 3 variations, 0 (1 / 2 / 3) has 1 (parenthesis is next level)
@@ -153,17 +192,14 @@ class Section:
         ongoing_alt = []
         for section in self.sections:
             if section.separator == "/":
-                #print("section", section.source_text, "has / as separator", [s.source_text for s in ongoing_alt])
-                #print("/ in source set ", self.source_text ,"saving",[a.source_text for a in ongoing_alt])
-                alternation_list.append(ongoing_alt.copy())
-                ongoing_alt = []
+                if ongoing_alt:
+                    alternation_list.append(ongoing_alt.copy())
+                    ongoing_alt = []
             ongoing_alt.append(section)
         if ongoing_alt: 
-            #print("closing source set ", self.source_text ,"saving",[a.source_text for a in ongoing_alt])
             alternation_list.append(ongoing_alt.copy())
-            #print("final append: ", [s.source_text for s in ongoing_alt])
+            ongoing_alt = []
 
-        #print(self.source_text, "has", [i.__str__() for y in alternation_list for i in y])
         return alternation_list
 
     def get_arg_string(self):
@@ -178,45 +214,15 @@ class Section:
             compiled += "]"
         return compiled
 
-    # Rebuild the original string with ()-section-wide args moved into the atomic end-branches 
-    # (0 0)[arg0.0] => 0[arg0.0] 0[arg0.0]
-    def collapse_arg_tree(self):
-        compiled = ""
-        
-        if self.atomic:
-            compiled += self.atomic_content
-            if self.args:
-                compiled += self.get_arg_string()
-            return compiled
-        else:
-            ret = ""
-
-            for sec in self.sections:
-
-                # TODO: WIP handling of pass-down args 
-                if self.args:
-                    for key in self.args:
-                        sec.args[key] = self.args[key] 
-
-                if sec.atomic:
-                    ret += sec.separator + sec.collapse_arg_tree()
-                else:
-                    ret += sec.separator + "(" + sec.collapse_arg_tree() + ")"
-                    # TODO: First atomic in a ()-section will add too much sep 
-                    # This is a hack to fix that, I'm sure there's a structural 
-                    # way to fix this properly
-                    ret = ret.replace("( ", "(").replace("(/", "(")
-                    
-            return ret 
-
-
-    def __init__(self, separator, text, common_args = {}):
+    def __init__(self, text, separator = "", common_args = {}):
         # By containing the parsing in the constructor we make subsequent calls easier
         self.separator = separator # "space", "slash" or "root"; what came before this section
         self.sections = [] # Begin list, add new sections through parsing 
         self.atomic_content = "" # Only end-branches have this
         self.args = common_args
         self.source_text = text
+
+        #print("DEBUG: Begin parsing section from ", text)
 
         # NOTE: Trailing separators look nice but mess with compiler
         # Thus the hack:
@@ -242,16 +248,21 @@ class Section:
 
         # Helper function to close save an ongoing section parse in self.sections         
         def close_section():
-            #print("Attempting to close section: ", self._ongoing_section, "with sep \'"+ self._latest_found_separator + "\'")
             if self._ongoing_section != "":
-                parsed_args = parse_args(self._ongoing_args) 
-                # TODO: Multi-level provided args combination 
+                parsed_args = parse_args(self._ongoing_args)
+
+                # Note that we combine the parsed args with the common ones on each level
+                # Since a section contained inside another section inherits the args via () 
+                for key in common_args:
+                    parsed_args[key] = common_args[key]
+
                 self._ongoing_args = ""
-                next_sec = Section(self._latest_found_separator, self._ongoing_section, parsed_args)
+                #print("DEBUG: closing and parsing partial section: ", self._ongoing_section, "for level", self.source_text)
+                next_sec = Section(self._ongoing_section, self._latest_found_separator, parsed_args)
                 self._ongoing_section = ""
                 self.sections.append(next_sec)
-            else:
-                print("ERROR: Attempted to close empty section (or simply last char...)")
+                #print("DEBUG: Current level structure: ", self.stringify_full())
+            #else: # NOTE: Last char close always results in empty
 
         # The end branches of the recursion will have no separators or special chars 
         self.atomic = True
@@ -262,7 +273,12 @@ class Section:
         if self.atomic:
             # Atomic branches need no further step-parsing
             self.atomic_content = text
+            #print("DEBUG: Skipping parsing for atomic element ", text)
         else:
+
+            # Example: 0 0 (2/3) 0
+            # "2/3" gets passed into close_section() and then Section() without parenthesis
+            
 
             for ch in text:
 
@@ -311,11 +327,13 @@ class Section:
             # Close any remaining 
             close_section()
 
+    
+
 
 if __name__ == "__main__":
 
     def test_arg_collapse(source, expected):
-        result = Section("", source).collapse_arg_tree()
+        result = Section(source).rebuild_source()
         assert expected == result, "bad arg collapse: " + result + " != (expected) " + expected
         print(source + " args collapsed OK")
 
@@ -324,16 +342,27 @@ if __name__ == "__main__":
     test_arg_collapse("(0 (0 1)[arg0.0])[art0.1]", "(0[art0.1] (0[arg0.0 art0.1] 1[arg0.0 art0.1]))")
 
     def test_expand(source, expected):
-        section = Section("", source)
+        section = Section(source)
         expanded_sections = expand_alternations(section.sections)
-        expanded = " ".join([i.stringify() for i in expanded_sections]) 
+        expanded = " ".join([i.source_text for i in expanded_sections]) 
         assert expected == expanded, "bad expand: " + expanded + " != (expected) " + expected
         print(source + " expand-tested OK")
 
     test_expand("0 t (1/2)", "0 t 1 0 t 2")    
+    test_expand("0 0 0 0", "0 0 0 0")    
     test_expand("0 0 (1/2/3)", "0 0 1 0 0 2 0 0 3")    
-    test_expand("0 ((1/4)/2)", "0 1 0 2 0 4 0 2")    
+    test_expand("0 ((1/4)/2)", "0 1 0 2 0 4 0 2")   
     test_expand("0 (1/(2/3))", "0 1 0 2 0 1 0 3")    
     test_expand("0 0 (1/(2/3))", "0 0 1 0 0 2 0 0 1 0 0 3")    
 
     
+    def test_combo(source, expected):
+        seed = Section(source).rebuild_source()
+        section = Section(seed)
+        expanded_sections = expand_alternations(section.sections)
+        expanded = " ".join([i.rebuild_source() for i in expanded_sections]) 
+        assert expected == expanded, "bad expand/collapse combo: " + expanded + " != (expected) " + expected
+        print(source + " expand-tested OK")
+
+    test_combo("hum (dum/(jum/bum))[fum22.0]", "hum dum[fum22.0] hum jum[fum22.0] hum dum[fum22.0] hum bum[fum22.0]")
+    test_combo("(0[i55.0] (0/2))[o22.0]", "0[i55.0 o22.0] 0[o22.0] 0[i55.0 o22.0] 2[o22.0]")
