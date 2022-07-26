@@ -23,11 +23,10 @@ def full_parse(source: str) -> list["Message"]:
     # Create message for each end-branch after expanding/"decompiling". 
     return [create_message(atom) for atom in atomic_set]
 
-# Parse an atomic section string into a message object 
+# Parse an atomic section string (e.g. "pre:su" or "0") into a message object 
 def create_message(section: "Section") -> "Message":
     if not section.atomic:
         print("FATAL ERROR: Attempted to parse non-atomic section as Message")
-
 
     # No need to get anything but the core text. Args are already parsed and should NOT be 
     # registered by the parser in this function. 
@@ -35,7 +34,13 @@ def create_message(section: "Section") -> "Message":
     args = section.args  
 
     step = "prefix" # Hacky way of handling which part of the message we are currently parsing
-    special_symbols = [":"] # Symbols that have a specific meaning and can replace numbers as core component
+
+    # Symbols that have a specific meaning and can replace numbers as core component
+    special_symbols = [
+        ":", # "modify" symbol
+        "$", # "drone" symbol
+        "_" # "break" symbol # TODO: amp logic will have to be handled later 
+    ]
 
     prefix = ""
     number = ""
@@ -94,14 +99,18 @@ class Message:
             freq = note_number_to_hz(transpose(new_index, scale))
             self.args["freq"] = freq
 
-symbols = {
-    "=":"time",
-    ">":"sus",
-    "#": "amp"
-}
+
 
 # "amp0.1 sus0.5" -> {"amp": 0.1, "sus": 0.5}
 def parse_args(string: str) -> dict[str, float]:
+
+    # Common arg names get the following shorthands for easy typing 
+    shorthand_symbols = {
+        "=":"time",
+        ">":"sus",
+        "#": "amp",
+        "@": "gate"
+    }
 
     # Remove whitespace
     string = string.replace(" ", "")
@@ -135,8 +144,8 @@ def parse_args(string: str) -> dict[str, float]:
                 print("Orphaned digit! Aborting parse...")
                 break
 
-            if current_symbol in symbols:
-                current_symbol = symbols[current_symbol]
+            if current_symbol in shorthand_symbols:
+                current_symbol = shorthand_symbols[current_symbol]
             
             parsing_number += string[i]
 
