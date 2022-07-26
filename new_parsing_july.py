@@ -140,17 +140,11 @@ def expand_alternations(section_list):
 # such as "0" or "0[args...]"
 class Section:
 
-    def __str__(self):
+    def stringify(self):
 
-        base = "[\'" + self.separator + "\':"
-
-        if self.atomic:
-            return base + self.atomic_content + "]"
-        else:
-            ret = ""
-            for sec in self.sections:
-                ret += ", " + sec.__str__()
-            return base + ret + "]"
+        base = self.source_text + " ".join([i.stringify() for i in self.sections]) + \
+            self.get_arg_string()
+        return base 
 
     # Fetch all variations on this level as list of lists (but no more levels than that!)
     # For example: 0 / 1 / 4 has 3 variations, 0 (1 / 2 / 3) has 1 (parenthesis is next level)
@@ -172,6 +166,18 @@ class Section:
         #print(self.source_text, "has", [i.__str__() for y in alternation_list for i in y])
         return alternation_list
 
+    def get_arg_string(self):
+        compiled = "" 
+        if self.args:
+            compiled += "["
+            arg_arr = []
+            # TODO: No support at all for any rel-args or suchlike
+            for key in self.args:
+                arg_arr.append(key + str(self.args[key]))
+            compiled += " ".join(arg_arr)
+            compiled += "]"
+        return compiled
+
     # Rebuild the original string with ()-section-wide args moved into the atomic end-branches 
     # (0 0)[arg0.0] => 0[arg0.0] 0[arg0.0]
     def collapse_arg_tree(self):
@@ -180,13 +186,7 @@ class Section:
         if self.atomic:
             compiled += self.atomic_content
             if self.args:
-                compiled += "["
-                arg_arr = []
-                # TODO: No support at all for any rel-args or suchlike
-                for key in self.args:
-                    arg_arr.append(key + str(self.args[key]))
-                compiled += " ".join(arg_arr)
-                compiled += "]"
+                compiled += self.get_arg_string()
             return compiled
         else:
             ret = ""
@@ -314,17 +314,26 @@ class Section:
 
 if __name__ == "__main__":
 
-    print("\"" + Section("", "0  gg[ arg0.0] 0 ( 0[arp0.2] / 1)[arg1.2]").collapse_arg_tree() + "\"")
+    def test_arg_collapse(source, expected):
+        result = Section("", source).collapse_arg_tree()
+        assert expected == result, "bad arg collapse: " + result + " != (expected) " + expected
+        print(source + " args collapsed OK")
 
-    # TODO: Seems to work wihtout nested, but something gets messy on lower levels
-    # Probably something to do with "if separator is /"
-    # UPDATE: THink it works now!
-    #print(Section("", "0 0 (0 0/2 (9/8)/4 1)").get_alternation(0))
-    #print("tree", Section("", "0 0 (0 0/2 (9/8)/4 1)").get_alternations())
+    test_arg_collapse("0 (0 1)[arg0.0]", "0 (0[arg0.0] 1[arg0.0])")
+    test_arg_collapse("0 (0/1)[arg0.0]", "0 (0[arg0.0]/1[arg0.0])")
+    test_arg_collapse("(0 (0 1)[arg0.0])[art0.1]", "(0[art0.1] (0[arg0.0 art0.1] 1[arg0.0 art0.1]))")
+
+    def test_expand(source, expected):
+        section = Section("", source)
+        expanded_sections = expand_alternations(section.sections)
+        expanded = " ".join([i.stringify() for i in expanded_sections]) 
+        assert expected == expanded, "bad expand: " + expanded + " != (expected) " + expected
+        print(source + " expand-tested OK")
+
+    test_expand("0 t (1/2)", "0 t 1 0 t 2")    
+    test_expand("0 0 (1/2/3)", "0 0 1 0 0 2 0 0 3")    
+    test_expand("0 ((1/4)/2)", "0 1 0 2 0 4 0 2")    
+    test_expand("0 (1/(2/3))", "0 1 0 2 0 1 0 3")    
+    test_expand("0 0 (1/(2/3))", "0 0 1 0 0 2 0 0 1 0 0 3")    
+
     
-    seed = "0 0 (0 0/2 (9/8)/4 1)"
-    #seed = "0 (9/(8/3)) 4 (4/1)"
-    print("0 0 0 0 0 0 2 9 0 0 4 1 0 0 0 0 0 0 2 8 0 0 4 1")
-    test_sec = Section("", seed)
-    expanded = expand_alternations(test_sec.sections)
-    print(" ".join([i.source_text for i in expanded]))
