@@ -5,7 +5,73 @@
 from scales import transpose
 from pretty_midi import note_number_to_hz
 
-# Core class for atomic parts data, such as e.g. a single "note on" with args  
+# See nested methods for documentation. This turns a section-compatible source string
+# (e.g. ": 0t (bo2/3)[arg0.0] 0") into a list of sequential messages according to the parsing logic
+# in this document. See tests at bottom of file for more examples. 
+def full_parse(source: str) -> list["Message"]:
+    # Initial section object created, including unexpanded alternations
+    # See: Section object documentation. In short: tree-structure where the end-branches are
+    # parseable as Message. 
+    seed = Section(source)
+    # NOTE: This might no longer be required, but doesn't hurt for validation. 
+    # Source string is rebuilt after optimizing and then parsed again.
+    args_collapsed = Section(seed.rebuild_source())
+
+    # Expand into list of atomic sections. 
+    atomic_set = flatten_sections([args_collapsed])
+
+    # Create message for each end-branch after expanding/"decompiling". 
+    return [create_message(atom) for atom in atomic_set]
+
+# Parse an atomic section string into a message object 
+def create_message(section: "Section") -> "Message":
+    if not section.atomic:
+        print("FATAL ERROR: Attempted to parse non-atomic section as Message")
+
+
+    # No need to get anything but the core text. Args are already parsed and should NOT be 
+    # registered by the parser in this function. 
+    source = section.source_text
+    args = section.args  
+
+    step = "prefix" # Hacky way of handling which part of the message we are currently parsing
+    special_symbols = [":"] # Symbols that have a specific meaning and can replace numbers as core component
+
+    prefix = ""
+    number = ""
+    symbol = ""
+    suffix = ""
+
+    for ch in source:
+        if step == "prefix":
+            if ch.isdigit():
+                step = "number"
+                number += ch
+            elif ch in special_symbols:
+                step = "suffix" # There is no "symbol" step since symbol is only ever one char  
+                symbol = ch
+            else:
+                prefix += ch 
+        elif step == "number":
+            if ch.isdigit():
+                number += ch
+            elif ch in special_symbols:
+                step = "suffix"
+                symbol = ch
+            else: 
+                step = "suffix"
+                if ch in special_symbols:
+                    symbol = ch
+                else:
+                    suffix += ch 
+        elif step == "suffix":
+            suffix += ch 
+
+    return Message(prefix, int(number) if number else None, symbol, suffix)
+
+# Core class for atomic parts data that can then be represented as some kind of single message 
+# via conversion  
+# Seed data is typically an atomic end-branch of the Section class, e.g. "bd22t[arg0.0]" or even "0"
 class Message: 
 
     # When parsing a section string as a Message:
@@ -97,7 +163,7 @@ def parse_args(string: str) -> dict[str, float]:
 # Sections separated by "/" constitute an alternation 
 # "0 0 (1/2)" means "Run the whole thing twice, picking 1 on the first and 2 on the second"
 # It gets more complex with nested alternations, hence the recursion...  
-def expand_alternations(section_list) -> list["Section"]:
+def flatten_sections(section_list: list["Section"]) -> list["Section"]:
     new_list = []
 
     #print("***** DEBUG: Calling expand on ", " ".join([i.source_text for i in section_list]))
@@ -143,7 +209,7 @@ def expand_alternations(section_list) -> list["Section"]:
     
         #print("DEBUG: proceeding with built list:", " ".join([i.stringify() for i in new_list]))
     
-        return expand_alternations(new_list)
+        return flatten_sections(new_list)
         
 
 
@@ -335,7 +401,6 @@ if __name__ == "__main__":
     def test_arg_collapse(source, expected):
         result = Section(source).rebuild_source()
         assert expected == result, "bad arg collapse: " + result + " != (expected) " + expected
-        print(source + " args collapsed OK")
 
     test_arg_collapse("0 (0 1)[arg0.0]", "0 (0[arg0.0] 1[arg0.0])")
     test_arg_collapse("0 (0/1)[arg0.0]", "0 (0[arg0.0]/1[arg0.0])")
@@ -343,10 +408,9 @@ if __name__ == "__main__":
 
     def test_expand(source, expected):
         section = Section(source)
-        expanded_sections = expand_alternations([section])
+        expanded_sections = flatten_sections([section])
         expanded = " ".join([i.source_text for i in expanded_sections]) 
         assert expected == expanded, "bad expand: " + expanded + " != (expected) " + expected
-        print(source + " expand-tested OK")
 
     test_expand("0 t (1/2)", "0 t 1 0 t 2")    
     test_expand("0 0 0 0", "0 0 0 0")    
@@ -361,10 +425,34 @@ if __name__ == "__main__":
     def test_combo(source, expected):
         seed = Section(source).rebuild_source()
         section = Section(seed)
-        expanded_sections = expand_alternations([section])
+        expanded_sections = flatten_sections([section])
         expanded = " ".join([i.rebuild_source() for i in expanded_sections]) 
         assert expected == expanded, "bad expand/collapse combo: " + expanded + " != (expected) " + expected
-        print(source + " expand-tested OK")
 
     test_combo("hum (dum/(jum/bum))[fum22.0]", "hum dum[fum22.0] hum jum[fum22.0] hum dum[fum22.0] hum bum[fum22.0]")
     test_combo("(0[i55.0] (0/2))[o22.0]", "0[i55.0 o22.0] 0[o22.0] 0[i55.0 o22.0] 2[o22.0]")
+
+    def verify_message(source, key, val):
+        seed = Section(source)
+        msg = create_message(seed)
+        assert val == msg.__dict__[key], "Message parsing failed: " \
+            + key + "='" + str(msg.__dict__[key]) +"' was not '" + str(val) + "'"
+
+    verify_message("0", "index", 0)
+    verify_message(":", "symbol", ":")
+    verify_message(":", "index", None)
+    verify_message("22:", "index", 22)
+    verify_message("22:", "symbol", ":")
+    verify_message("bo22:t", "prefix", "bo")
+    verify_message("b$22:t", "index", 22)
+    verify_message("bo22:t", "symbol", ":")
+    verify_message("bo22:ti", "suffix", "ti")
+    verify_message("bo:t", "index", None)
+    verify_message("bo:t", "symbol", ":")
+
+    # TODO: Even more validation, but for now a simple "didn't crash" will do 
+    full_parse("0 : ti22p (0/(2/:[aj22.0])/4)[arg0.0] bi: fish0")
+    msgs = full_parse("0 : t22 (2/2)")
+    assert len(msgs) == 8, "Wrong amount of messages generated after full_parse"
+
+    print("All parsing tests OK")
