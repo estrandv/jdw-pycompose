@@ -72,7 +72,7 @@ def create_message(section: "Section") -> "Message":
         elif step == "suffix":
             suffix += ch 
 
-    return Message(prefix, int(number) if number else None, symbol, suffix)
+    return Message(prefix, int(number) if number else None, symbol, suffix, section.args)
 
 # Core class for atomic parts data that can then be represented as some kind of single message 
 # via conversion  
@@ -330,7 +330,9 @@ class Section:
                 # Note that we combine the parsed args with the common ones on each level
                 # Since a section contained inside another section inherits the args via () 
                 for key in common_args:
-                    parsed_args[key] = common_args[key]
+                    # NOTE: No override, only adding missing 
+                    if key not in parsed_args:
+                        parsed_args[key] = common_args[key]
 
                 self._ongoing_args = ""
                 #print("DEBUG: closing and parsing partial section: ", self._ongoing_section, "for level", self.source_text)
@@ -453,7 +455,7 @@ if __name__ == "__main__":
     verify_message("22:", "index", 22)
     verify_message("22:", "symbol", ":")
     verify_message("bo22:t", "prefix", "bo")
-    verify_message("b$22:t", "index", 22)
+    verify_message("b22:t", "index", 22)
     verify_message("bo22:t", "symbol", ":")
     verify_message("bo22:ti", "suffix", "ti")
     verify_message("bo:t", "index", None)
@@ -463,5 +465,8 @@ if __name__ == "__main__":
     full_parse("0 : ti22p (0/(2/:[aj22.0])/4)[arg0.0] bi: fish0")
     msgs = full_parse("0 : t22 (2/2)")
     assert len(msgs) == 8, "Wrong amount of messages generated after full_parse"
+
+    arg_test = full_parse("0[time1.0] 4 5 2[fis1.0]")
+    assert 1.0 == arg_test[0].args["time"]
 
     print("All parsing tests OK")
