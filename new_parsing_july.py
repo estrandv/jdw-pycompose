@@ -107,7 +107,7 @@ def parse_args(string: str) -> dict[str, float]:
     # Common arg names get the following shorthands for easy typing 
     shorthand_symbols = {
         "=":"time",
-        ">":"sus",
+        ">":"gate_time",
         "#": "amp",
         "@": "gate"
     }

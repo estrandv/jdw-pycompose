@@ -4,7 +4,7 @@ from sheet_note import SheetNote
 
 symbols = {
     "=":"time",
-    ">":"sus",
+    ">":"gate_time",
     "#": "amp"
 }
 
@@ -175,7 +175,7 @@ def parse_sheet(sheet: str) -> list['SheetNote']:
 
                 master_args = parse_args(de_bracketed)
 
-            base_args = {"amp": 1.0, "sus": 1.0, "time": 1.0} # Ensure non-null defaults
+            base_args = {"amp": 1.0, "gate_time": 1.0, "time": 1.0} # Ensure non-null defaults
             notes.append(SheetNote(prefix, suffix_part, float(digit_string), master_args, base_args, rel_args, mul_args))
 
     return notes
@@ -212,7 +212,7 @@ if __name__ == "__main__":
     
     def sus_assert(string: str, expected_sus: float):
         result = parse_args(string)
-        assert expected_sus == result["sus"], "Bad sus: " + str(result["sus"])
+        assert expected_sus == result["gate_time"], "Bad sus: " + str(result["gate_time"])
 
     sus_assert(">0.15", 0.15)
     sus_assert(">1.5", 1.5)
@@ -261,4 +261,4 @@ if __name__ == "__main__":
     test_complex("0[amp0.1|amp1.0|amp1.0]", "amp", 1.1)
     test_complex("4[||amp0.5]", "amp", 0.5)
     test_complex("8[|amp-0.7]", "amp", 0.3)
-    test_complex("8[sus2.0 amp4.0||sus0.2]", "sus", 0.4)
+    test_complex("8[sus2.0 amp4.0||sus0.2]", "gate_time", 0.4)
