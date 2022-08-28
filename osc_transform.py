@@ -225,3 +225,10 @@ example_note_string = "(g e+4 (c4 c)[=0.5] d)[=1 >1 #1]"
 # 3. However, "repeat each variation" is kinda its own thing 
 # 4. As such: We need both symbols - one that resolves later 
 #sender.send("(11 12 (13/15) 12 # ££ ## _[=4] #)[>0.3 relT0.4 #0.05 fx2 wid2 lfoS5440 lfoD0.8]", "varsaw", "gen1")
+
+# New symbol testing
+# TODO: Note how an empty send will ruin any start-timing rules since the empty sequence will just
+# wait for its own (empty) loop to finish before starting any later modifications 
+# This needs to be solved in the sequencer through deleting sequences if the payload is empty 
+sender.send("(4 6 5 (3/3/9/1) 2 2 3 4)[>0.1 relT0.2 =0.25]", "gentle", "gen1")
+sender.send("0 (3/5) 1[=0] 2 4§", "sample", "drum1")

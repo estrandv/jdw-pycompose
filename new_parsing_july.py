@@ -4,6 +4,7 @@
 
 from scales import transpose
 from pretty_midi import note_number_to_hz
+from fractions import Fraction
 
 # See nested methods for documentation. This turns a section-compatible source string
 # (e.g. ": 0t (bo2/3)[arg0.0] 0") into a list of sequential messages according to the parsing logic
@@ -154,14 +155,14 @@ def parse_args(string: str) -> dict[str, float]:
     parsing_number = ""
 
     def is_num(char: str) -> bool:
-        return char.isdigit() or char == "-" or char == "."
+        return char.isdigit() or char == "-" or char == "." or char == "/"
 
     def parse_number(num: str) -> float:
 
         negate = "-" in num
         num = num.replace("-", "")
 
-        base = float(num)
+        base = float(Fraction(num))
 
         dimension = -1.0 if negate else 1.0
 
@@ -466,6 +467,14 @@ class Section:
 
 
 if __name__ == "__main__":
+
+    def test_arg_parse(source, key, value):
+        args = parse_args(source)
+        assert value == args[key], "Expected parsed arg " + key + " to be " + str(value) + " but was " + str(args[key])
+
+    test_arg_parse("tit0.2", "tit", 0.2)
+    test_arg_parse("tit0.2 tat55", "tat", 55.0)
+    test_arg_parse("tit0.2 for1/8 tat55", "for", 0.125)
 
     def test_arg_collapse(source, expected):
         result = Section(source).rebuild_source()
