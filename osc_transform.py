@@ -69,7 +69,7 @@ class MessageWrapper:
     def to_note_on_timed(self, synth: str):
 
         if "freq" not in self.message.args:
-            self.message.create_freq_arg(scales.MINOR, 3)
+            self.message.create_freq_arg(scales.MAJOR, 3)
 
         time = self.message.args["gate_time"] if "gate_time" in self.message.args else 0.0
         # Silly default - not sure what a good other option is if tone is not mandatory 
@@ -230,5 +230,12 @@ example_note_string = "(g e+4 (c4 c)[=0.5] d)[=1 >1 #1]"
 # TODO: Note how an empty send will ruin any start-timing rules since the empty sequence will just
 # wait for its own (empty) loop to finish before starting any later modifications 
 # This needs to be solved in the sequencer through deleting sequences if the payload is empty 
-sender.send("(4 6 5 (3/3/9/1) 2 2 3 4)[>0.1 relT0.2 =0.25]", "gentle", "gen1")
-sender.send("0 (3/5) 1[=0] 2 4§", "sample", "drum1")
+# TODO: Also note how cutoff can ruin parenthesised strings - it should probably be handled 
+# more in-depth by removing all future messages rather than skipping the parse 
+#sender.send("(4 6 5 (3/3/9/1) 2 2 3 4)[>0.1 relT0.2 =0.25]", "gentle", "gen1")
+#sender.send("0 (3/5) 1[=0] 2 4§", "sample", "drum1")
+
+# (11/4/7/8)[=0 >2 att0.5 fx2 wid0.8 relT2 #0.05] 
+sender.send("((11/4/11/8)[=0 >2 att0.5 fx4 wid1 relT5 #0.03] 19[rel0.4] (9/_/9/9) 8 _ 8[att0.05] §9 7 7 (_/11[rel0.3]/5/4) _ 9 9)[>0.1 rel0.1 =0.5 #0.3]", "varsaw", "varrr")
+sender.send("§0 4[=0.75] 1[=0.75] 2 1[=0] (3/7)[=0.25] 11[=0.25 ofs0.2]", "sample", "drumm")
+sender.send("§(2/14)[>16 =16 lfoS0.002 lfoD0.8 #0.05 relT8]", "gentle", "drrr")

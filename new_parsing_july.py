@@ -150,7 +150,7 @@ def parse_args(string: str) -> dict[str, float]:
 
     parsed_values: dict[str, float] = {}
 
-    current_symbol = ""
+    current_argname = ""
 
     parsing_number = ""
 
@@ -173,30 +173,30 @@ def parse_args(string: str) -> dict[str, float]:
         char = string[i]
         if is_num(char):
 
-            if current_symbol == "":
+            if current_argname == "":
                 print("Orphaned digit! Aborting parse...")
                 break
 
-            if current_symbol in shorthand_symbols:
-                current_symbol = shorthand_symbols[current_symbol]
+            if current_argname in shorthand_symbols:
+                current_argname = shorthand_symbols[current_argname]
             
             parsing_number += string[i]
 
         else:
             if parsing_number != "":
-                if current_symbol == "tone":
-                    parsed_values[current_symbol] = float(parsing_number)
+                if current_argname == "tone":
+                    parsed_values[current_argname] = float(parsing_number)
                 else:
-                    parsed_values[current_symbol] = parse_number(parsing_number)
-                current_symbol = ""
+                    parsed_values[current_argname] = parse_number(parsing_number)
+                current_argname = ""
                 parsing_number = ""
 
-            current_symbol += char
+            current_argname += char
 
 
     if parsing_number != "":
-        parsed_values[current_symbol] = parse_number(parsing_number)
-        current_symbol = ""
+        parsed_values[current_argname] = parse_number(parsing_number)
+        current_argname = ""
         parsing_number = ""
    
     return parsed_values
@@ -445,7 +445,11 @@ class Section:
                         close_section()
                         self._latest_found_separator = ch
                     else:
-                        self._ongoing_section += ch 
+                        if self._opened_section_brackets == 0 and self._opened_arg_brackets > 0:
+                            self._ongoing_args += ch
+                        else:
+                            self._ongoing_section += ch
+
                 # Repeat character handling
                 # TODO: This repeat char is significantly more hacky than the other stuff and could use 
                 # a lot of clarification (for example the other repeat works like ""= = ="" while this is strictly £££)
@@ -544,5 +548,11 @@ if __name__ == "__main__":
     # Test cutoff 
     cut_test = full_parse("0 0 §0 0 0")
     assert len(cut_test) == 2, "Expected cutoff to end parsing and return 2 messages: " + len(cut_test)
+
+    # Test fractional args inside longer strings
+    fractional_test = full_parse("0 0[=1/4] 0")
+    assert len(fractional_test) == 3, "Fractional string broken, wrong amount of messages: " + len(cut_test)
+    t_arg = fractional_test[1].args["time"]
+    assert 0.25 == t_arg, "Fractional parsing in longer string broken: " + str(t_arg)
 
     print("All parsing tests OK")
