@@ -21,7 +21,35 @@ def full_parse(source: str) -> list["Message"]:
     atomic_set = flatten_sections([args_collapsed])
 
     # Create message for each end-branch after expanding/"decompiling". 
-    return [create_message(atom) for atom in atomic_set]
+    all_messages = [create_message(atom) for atom in atomic_set]
+
+    # Handle special meta-symbols
+    all_messages_complete = []
+    repeat_count = 0 # Repeats are collected as a sequence to avoid exponential repeats on repetition 
+    for message in all_messages:
+        # Repeat symbol 
+        if message.symbol == "=":
+            repeat_count += 1
+        else:
+            # Pick up any ended repeat streak
+            so_far = all_messages_complete.copy()
+            for i in range(0, repeat_count):
+                for msg in so_far:
+                    all_messages_complete.append(msg.clone())
+            repeat_count = 0
+
+            # Add message to final set 
+            all_messages_complete.append(message.clone())
+
+    # In case the final message is a repeat
+    so_far = all_messages_complete.copy()
+    for i in range(0, repeat_count):
+        for msg in so_far:
+            all_messages_complete.append(msg.clone())
+        repeat_count = 0
+
+    return all_messages_complete
+
 
 # Parse an atomic section string (e.g. "pre:su" or "0") into a message object 
 def create_message(section: "Section") -> "Message":
@@ -39,6 +67,7 @@ def create_message(section: "Section") -> "Message":
     special_symbols = [
         ":", # "modify" symbol
         "$", # "drone" symbol
+        "=", # Repeat symbol
         "_" # "break" symbol # TODO: amp logic will have to be handled later 
     ]
 
@@ -90,6 +119,9 @@ class Message:
         self.symbol = symbol # Can be None 
         self.suffix = suffix # Can be None 
         self.args = args
+
+    def clone(self):
+        return Message(self.prefix, self.index, self.symbol, self.suffix, self.args.copy())
     
     # Use index to add a midi-tone-based "freq"-arg to contained args  
     def create_freq_arg(self, scale, octave):
@@ -305,6 +337,10 @@ class Section:
         text = text.replace("  ", " ").replace(" /", "/").replace("/ ", "/")\
             .replace("( ", "(").replace(" )", ")")
 
+        # Check if a cutoff character exists, ending the parse string prematurely
+        # TODO: Collect all symbol chars as constants somewhere for better overview 
+        if "§" in text:
+            text = text.partition("§")[0]
 
         # NOTE: private class args for convenience during this function,
         # not actually needed for anything else
@@ -348,6 +384,9 @@ class Section:
             if sep in text:
                 self.atomic = False 
 
+        # Count sequential repeat characters for smooth repeat 
+        self.repeats = 0
+
         if self.atomic:
             # Atomic branches need no further step-parsing
             self.atomic_content = text
@@ -389,11 +428,30 @@ class Section:
                     # Separators mark the end of a section where we reset ongoing read-vars
                     # and send the section into another recursion level.
                     # Note how this applies for both atomic and non-atomic subsections. 
+
+                    # First handle any open repeats, always 
+                    # Note the logic: Sequential repeats will repeat xn
+                    # 00 £ £ -> 00 00 00
+                    if self.repeats > 0:
+                        clone_sec = []
+                        for section in self.sections:
+                            clone_sec.append(section)
+                        for i in range(0, self.repeats):
+                            self.sections += clone_sec
+                        self.repeats = 0
+
                     if self._opened_arg_brackets == 0 and self._opened_section_brackets == 0:
                         close_section()
                         self._latest_found_separator = ch
                     else:
                         self._ongoing_section += ch 
+                # Repeat character handling
+                # TODO: This repeat char is significantly more hacky than the other stuff and could use 
+                # a lot of clarification (for example the other repeat works like ""= = ="" while this is strictly £££)
+                elif ch == "£" and self._ongoing_section == "":
+                    self.repeats += 1
+                elif ch == "#" and self._ongoing_section == "":
+                    pass # Empty marker symbol handling 
                 else: 
                     # If specifically parsing args we only write those 
                     if self._opened_section_brackets == 0 and self._opened_arg_brackets > 0:
@@ -468,5 +526,14 @@ if __name__ == "__main__":
 
     arg_test = full_parse("0[time1.0] 4 5 2[fis1.0]")
     assert 1.0 == arg_test[0].args["time"]
+
+    # TODO: other repeat char test 
+    rep_test = full_parse("0 2 3 4 = =")
+    assert len(rep_test) == 12, "Expected tripled message count in repeat test, got: " + str(len(rep_test))
+    assert rep_test[11].index == 4, "Expected final msg to be clone of fourth msg: " + str(rep_test[11].index)
+
+    # Test cutoff 
+    cut_test = full_parse("0 0 §0 0 0")
+    assert len(cut_test) == 2, "Expected cutoff to end parsing and return 2 messages: " + len(cut_test)
 
     print("All parsing tests OK")
