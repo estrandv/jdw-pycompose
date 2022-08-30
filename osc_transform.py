@@ -110,22 +110,19 @@ class OSCSender:
     
     # Send a string straight to the synth, skipping sequencing 
     def single_send(self, parse_string: str, synth: "gentle"):
-        # TODO: HIdden defaults for convenience
-        if "::" not in parse_string:
-            parse_string += ":: #1"
 
         messages = new_parsing_july.full_parse(parse_string)
 
         for msg in messages:
+
+            # TODO: Hidden defaults for convenience
+            msg.add_missing_args({"time": 1.0, "gate_time": 0.1, "amp": 1.0})
+
             noti = MessageWrapper(msg)
             send_msg = translate_message(noti, synth)
             self.client.send(send_msg)
 
     def send(self, parse_string: str, synth = "gentle", ext_id = None):
-
-        # TODO: HIdden defaults for convenience
-        if "::" not in parse_string:
-            parse_string += ":: =1 >1 #1"
 
         if ext_id == None: 
             ext_id = "autogen_queue_id_" + str(uuid.uuid4())
@@ -140,6 +137,9 @@ class OSCSender:
 
         # TODO: Get rid of all the bug investigation from earlier - it's a server side issue
         for msg in messages:
+            # TODO: Hidden defaults for convenience
+            msg.add_missing_args({"time": 1.0, "gate_time": 0.1, "amp": 1.0})
+
             noti = MessageWrapper(msg)
             send_msg = translate_message(noti, synth)
 

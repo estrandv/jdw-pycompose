@@ -16,11 +16,16 @@ def full_parse(source: str) -> list["Message"]:
         return []
 
     master_args = {}
+    master_args_are_relative = False 
 
     # Master args that apply to all
     if "::" in source:
         marg_split = source.split("::")
-        master_args = parse_args(marg_split[-1])
+        arg_section = marg_split[-1]
+        if arg_section != "" and arg_section[0] == ";":
+            master_args_are_relative = True 
+            arg_section = "".join(arg_section[1:])
+        master_args = parse_args(arg_section)
         source = "".join(marg_split[:-1])
 
     # List of lists 
@@ -68,7 +73,10 @@ def full_parse(source: str) -> list["Message"]:
 
             # Add master args 
             for msg in all_messages:
-                msg.add_missing_args(master_args)
+                if master_args_are_relative:
+                    msg.add_relative_args(master_args)
+                else:
+                    msg.add_missing_args(master_args)
 
             messages_by_chunk.append(all_messages)
 
@@ -152,6 +160,15 @@ class Message:
         self.symbol = symbol # Can be None 
         self.suffix = suffix # Can be None 
         self.args = args
+
+    # Multiply existing args with corresponding provided ones
+    # Flat add the provided ones if unavailable locally 
+    def add_relative_args(self, args):
+        for arg in args:
+            if arg not in self.args:
+                self.args[arg] = args[arg]
+            else:
+                self.args[arg] *= args[arg]
 
     def add_missing_args(self, args):
         for arg in args:
@@ -595,11 +612,21 @@ if __name__ == "__main__":
 
     # TODO: If we go for this syntax, it would perhaps be helpful to use ALL available ::-parts if multiple
     # I don't see the use for this in regular writing but it's a good way to ensure defaults, for example 
+    # ... or we just manually do defaults by iterating parsed messages 
     master_arg_test = full_parse("0 0[x5] 0 0 :: x3")
     assert 5.0 == master_arg_test[1].args["x"]
     assert 3.0 == master_arg_test[0].args["x"]
 
+    # Should error and abort 
     catchem_test = full_parse("0 0 (1 2 (1/3) {x5} _) 2")
     assert 0 == len(catchem_test)
+
+    # TODO: Rel args
+    # - Noted that a certain kind of master arg could probably be used to relativize all contained args post-fact 
+    # - A message could have "apply_relative" as a method 
+    # - So "0 0[1/2] 4 ;; 1/8" would take the 1/8 flat if unavailable or multiplied if not 
+    # - Basically just a slightly different "use if not available"
+    relarg_test = full_parse("1[=1/2] 2 3 4 ::; =1/2")
+    assert 0.25 == relarg_test[0].args["time"], str(relarg_test[0].args["time"]) + " with args " + str(relarg_test[0].args)
 
     print("All parsing tests OK")
