@@ -10,47 +10,80 @@ from fractions import Fraction
 # (e.g. ": 0t (bo2/3)[arg0.0] 0") into a list of sequential messages according to the parsing logic
 # in this document. See tests at bottom of file for more examples. 
 def full_parse(source: str) -> list["Message"]:
-    # Initial section object created, including unexpanded alternations
-    # See: Section object documentation. In short: tree-structure where the end-branches are
-    # parseable as Message. 
-    seed = Section(source)
-    # NOTE: This might no longer be required, but doesn't hurt for validation. 
-    # Source string is rebuilt after optimizing and then parsed again.
-    args_collapsed = Section(seed.rebuild_source())
 
-    # Expand into list of atomic sections. 
-    atomic_set = flatten_sections([args_collapsed])
+    if source and source[0] == "(":
+        print("ERROR: top level brackets not allowed, please unwrap the first and final ()")
+        return []
 
-    # Create message for each end-branch after expanding/"decompiling". 
-    all_messages = [create_message(atom) for atom in atomic_set]
+    master_args = {}
 
-    # Handle special meta-symbols
-    all_messages_complete = []
-    repeat_count = 0 # Repeats are collected as a sequence to avoid exponential repeats on repetition 
-    for message in all_messages:
-        # Repeat symbol 
-        if message.symbol == "=":
-            repeat_count += 1
-        else:
-            # Pick up any ended repeat streak
-            so_far = all_messages_complete.copy()
-            for i in range(0, repeat_count):
-                for msg in so_far:
-                    all_messages_complete.append(msg.clone())
-            repeat_count = 0
+    # Master args that apply to all
+    if "::" in source:
+        marg_split = source.split("::")
+        master_args = parse_args(marg_split[-1])
+        source = "".join(marg_split[:-1])
 
-            # Add message to final set 
-            all_messages_complete.append(message.clone())
+    # List of lists 
+    messages_by_chunk = []
 
-    # In case the final message is a repeat
-    so_far = all_messages_complete.copy()
-    for i in range(0, repeat_count):
-        for msg in so_far:
-            all_messages_complete.append(msg.clone())
-        repeat_count = 0
+    # Initial chunk verification due to conflicting functionality with ()-alternations
+    open_brackets = 0
+    for char in source:
+        if char == "(":
+            open_brackets += 1
+        elif char == ")":
+            open_brackets -= 1 
+        elif char == "{" and open_brackets > 0:
+            print("ERROR: Attempted to split chunk with {} during opened alternation bracket () - this is not allowed!")
+            return []
 
-    return all_messages_complete
+    # Go through separated chunks using the {} syntax 
+    chunks = source.split("{") # e.g. "0 0" "> 0 0"
 
+    for chunk in chunks:
+        chunk_source = chunk
+        if "}" in chunk: # Arg handling required 
+            last_end_split = chunk_source.split("}")
+            chunk_source = "".join(last_end_split[1:])
+            last_chunk_args = parse_args(last_end_split[0])
+
+            # Apply now finished args of last chunk
+            if messages_by_chunk and last_chunk_args:
+                messages_by_chunk[-1] = apply_meta_args_to_messages(messages_by_chunk[-1], last_chunk_args)               
+
+        # Initial section object created, including unexpanded alternations
+        # See: Section object documentation. In short: tree-structure where the end-branches are
+        # parseable as Message.
+        if chunk_source:
+            seed = Section(chunk_source)
+            # NOTE: This might no longer be required, but doesn't hurt for validation. 
+            # Source string is rebuilt after optimizing and then parsed again.
+            args_collapsed = Section(seed.rebuild_source())
+
+            # Expand into list of atomic sections. 
+            atomic_set = flatten_sections([args_collapsed])
+
+            # Create message for each end-branch after expanding/"decompiling". 
+            all_messages = [create_message(atom) for atom in atomic_set]
+
+            # Add master args 
+            for msg in all_messages:
+                msg.add_missing_args(master_args)
+
+            messages_by_chunk.append(all_messages)
+
+    # Flatten list of lists and return full set 
+    return [message for sublist in messages_by_chunk for message in sublist]
+
+def apply_meta_args_to_messages(message_list, args):
+    
+    ret_list = message_list.copy()
+    if "x" in args and args["x"] > 1.0:
+        for i in range(0, int(args["x"]) - 1):
+            for msg in message_list:
+                ret_list.append(msg)
+
+    return ret_list
 
 # Parse an atomic section string (e.g. "pre:su" or "0") into a message object 
 def create_message(section: "Section") -> "Message":
@@ -68,7 +101,6 @@ def create_message(section: "Section") -> "Message":
     special_symbols = [
         ":", # "modify" symbol
         "$", # "drone" symbol
-        "=", # Repeat symbol
         "_" # "break" symbol # TODO: amp logic will have to be handled later 
     ]
 
@@ -120,6 +152,11 @@ class Message:
         self.symbol = symbol # Can be None 
         self.suffix = suffix # Can be None 
         self.args = args
+
+    def add_missing_args(self, args):
+        for arg in args:
+            if arg not in self.args:
+                self.args[arg] = args[arg]
 
     def clone(self):
         return Message(self.prefix, self.index, self.symbol, self.suffix, self.args.copy())
@@ -535,15 +572,10 @@ if __name__ == "__main__":
     # TODO: Even more validation, but for now a simple "didn't crash" will do 
     full_parse("0 : ti22p (0/(2/:[aj22.0])/4)[arg0.0] bi: fish0")
     msgs = full_parse("0 : t22 (2/2)")
-    assert len(msgs) == 8, "Wrong amount of messages generated after full_parse"
+    assert len(msgs) == 8, "Wrong amount of messages generated after full_parse: " + str(len(msgs))
 
     arg_test = full_parse("0[time1.0] 4 5 2[fis1.0]")
     assert 1.0 == arg_test[0].args["time"]
-
-    # TODO: other repeat char test 
-    rep_test = full_parse("0 2 3 4 = =")
-    assert len(rep_test) == 12, "Expected tripled message count in repeat test, got: " + str(len(rep_test))
-    assert rep_test[11].index == 4, "Expected final msg to be clone of fourth msg: " + str(rep_test[11].index)
 
     # Test cutoff 
     cut_test = full_parse("0 0 §0 0 0")
@@ -554,5 +586,20 @@ if __name__ == "__main__":
     assert len(fractional_test) == 3, "Fractional string broken, wrong amount of messages: " + len(cut_test)
     t_arg = fractional_test[1].args["time"]
     assert 0.25 == t_arg, "Fractional parsing in longer string broken: " + str(t_arg)
+
+    # TODO: Nested chunks. If you wrap a parenthesis around top level the chunk splitting will break everything 
+    # One way to chicken out is to disallow top level parenthesis and handle master args differently 
+    # The alternative is a deep dive in section logic that quickly becomes a recursion headache
+    chunk_test = full_parse("0 (1/2) _ {x3} 0 0 0 0 {}")
+    assert 22 == len(chunk_test), "Wrong amount of total messages after chunk parse: " + str(len(chunk_test))
+
+    # TODO: If we go for this syntax, it would perhaps be helpful to use ALL available ::-parts if multiple
+    # I don't see the use for this in regular writing but it's a good way to ensure defaults, for example 
+    master_arg_test = full_parse("0 0[x5] 0 0 :: x3")
+    assert 5.0 == master_arg_test[1].args["x"]
+    assert 3.0 == master_arg_test[0].args["x"]
+
+    catchem_test = full_parse("0 0 (1 2 (1/3) {x5} _) 2")
+    assert 0 == len(catchem_test)
 
     print("All parsing tests OK")

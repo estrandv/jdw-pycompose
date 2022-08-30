@@ -111,7 +111,8 @@ class OSCSender:
     # Send a string straight to the synth, skipping sequencing 
     def single_send(self, parse_string: str, synth: "gentle"):
         # TODO: HIdden defaults for convenience
-        parse_string = "(" + parse_string + ")[#1]"
+        if "::" not in parse_string:
+            parse_string += ":: #1"
 
         messages = new_parsing_july.full_parse(parse_string)
 
@@ -123,7 +124,8 @@ class OSCSender:
     def send(self, parse_string: str, synth = "gentle", ext_id = None):
 
         # TODO: HIdden defaults for convenience
-        parse_string = "(" + parse_string + ")[=1 >1 #1]"
+        if "::" not in parse_string:
+            parse_string += ":: =1 >1 #1"
 
         if ext_id == None: 
             ext_id = "autogen_queue_id_" + str(uuid.uuid4())
@@ -232,10 +234,18 @@ example_note_string = "(g e+4 (c4 c)[=0.5] d)[=1 >1 #1]"
 # This needs to be solved in the sequencer through deleting sequences if the payload is empty 
 # TODO: Also note how cutoff can ruin parenthesised strings - it should probably be handled 
 # more in-depth by removing all future messages rather than skipping the parse 
+# TODO: Repeat symbol "=" is tricky with alternations
+# 1. "0 (1/0) =" -> "0 1 = 0 0 =" -> "0 1 0 1 0 0 0 1 0 1 0 0"
+# 2. (expected): "0 (1/0) =" -> "0 1 0 0 # 0 1 0 0"
+# 3. This is because the full string decompiles before resolving the repeats 
+# 4. It is probably not possible as of right now to decompile alternations "up until"
+# 5. As such it is probably easiest to get the desired behaviour via some kind of meta handling
+#   - 0 (1/2) | repeat 2 | _[=4]
+#   - See dev diary
 #sender.send("(4 6 5 (3/3/9/1) 2 2 3 4)[>0.1 relT0.2 =0.25]", "gentle", "gen1")
 #sender.send("0 (3/5) 1[=0] 2 4§", "sample", "drum1")
 
 # (11/4/7/8)[=0 >2 att0.5 fx2 wid0.8 relT2 #0.05] 
-sender.send("((11/4/11/8)[=0 >2 att0.5 fx4 wid1 relT5 #0.03] 19[rel0.4] (9/_/9/9) 8 _ 8[att0.05] §9 7 7 (_/11[rel0.3]/5/4) _ 9 9)[>0.1 rel0.1 =0.5 #0.3]", "varsaw", "varrr")
-sender.send("§0 4[=0.75] 1[=0.75] 2 1[=0] (3/7)[=0.25] 11[=0.25 ofs0.2]", "sample", "drumm")
-sender.send("§(2/14)[>16 =16 lfoS0.002 lfoD0.8 #0.05 relT8]", "gentle", "drrr")
+#sender.send("((11/4/11/8)[=0 >2 att0.5 fx4 wid1 relT5 #0.03] 19[rel0.4] (9/_/9/9) 8 _ 8[att0.05] §9 7 7 (_/11[rel0.3]/5/4) _ 9 9)[>0.1 rel0.1 =0.5 #0.3]", "varsaw", "varrr")
+#sender.send("§0 4[=0.75] 1[=0.75] 2 1[=0] (3/7)[=0.25] 11[=0.25 ofs0.2]", "sample", "drumm")
+sender.send("(2/14)[>16 =16 lfoS0.002 lfoD0.8 #0.05 relT8]", "gentle", "drrr")
