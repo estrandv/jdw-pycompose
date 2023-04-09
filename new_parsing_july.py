@@ -15,6 +15,10 @@ def full_parse(source: str) -> list["Message"]:
         print("ERROR: top level brackets not allowed, please unwrap the first and final ()")
         return []
 
+    if source and source[0] == "M":
+        print("Mute triggered")
+        return []
+
     master_args = {}
     master_args_are_relative = False 
 
@@ -27,6 +31,7 @@ def full_parse(source: str) -> list["Message"]:
             arg_section = "".join(arg_section[1:])
         master_args = parse_args(arg_section)
         source = "".join(marg_split[:-1])
+
 
     # List of lists 
     messages_by_chunk = []
@@ -616,6 +621,12 @@ if __name__ == "__main__":
     master_arg_test = full_parse("0 0[x5] 0 0 :: x3")
     assert 5.0 == master_arg_test[1].args["x"]
     assert 3.0 == master_arg_test[0].args["x"]
+
+    margtest_2 = full_parse("0 (1/2) :: x3")
+    assert 4 == len(margtest_2), "Unexpected unpackged len for alternation with master args: " + str([n.index for n in margtest_2])
+
+    margtest_3 = full_parse("0[x5.0] ::; x0.5")
+    assert 2.5 == margtest_3[0].args["x"], "Relative master args did not apply correctly: " + str(margtest_3[0].args["x"])
 
     # Should error and abort 
     catchem_test = full_parse("0 0 (1 2 (1/3) {x5} _) 2")
