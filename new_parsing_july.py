@@ -81,6 +81,7 @@ def full_parse(source: str) -> list["Message"]:
                 if master_args_are_relative:
                     msg.add_relative_args(master_args)
                 else:
+                    print("DEBUG: Adding missing args " + str(master_args) + " to source " + source)
                     msg.add_missing_args(master_args)
 
             messages_by_chunk.append(all_messages)
@@ -176,9 +177,11 @@ class Message:
                 self.args[arg] *= args[arg]
 
     def add_missing_args(self, args):
+        print("DEBUG: before add-missing, we have this: " + str(self.args))
         for arg in args:
             if arg not in self.args:
                 self.args[arg] = args[arg]
+        print("DEBUG: after add-missing, we have this: " + str(self.args))
 
     def clone(self):
         return Message(self.prefix, self.index, self.symbol, self.suffix, self.args.copy())
@@ -621,6 +624,11 @@ if __name__ == "__main__":
     master_arg_test = full_parse("0 0[x5] 0 0 :: x3")
     assert 5.0 == master_arg_test[1].args["x"]
     assert 3.0 == master_arg_test[0].args["x"]
+
+    marg_one = full_parse("0 :: =4")
+    marg_two = full_parse("1 :: =1")
+    assert 4 == marg_one[0].args["time"], "Unexpected time arg with master args: " + str([n.index for n in marg_one])
+    assert 1 == marg_two[0].args["time"], "Unexpected time arg " +  str(marg_two[0].args["time"]) + "with master args: " + str([n.index for n in marg_two])
 
     margtest_2 = full_parse("0 (1/2) :: x3")
     assert 4 == len(margtest_2), "Unexpected unpackged len for alternation with master args: " + str([n.index for n in margtest_2])
