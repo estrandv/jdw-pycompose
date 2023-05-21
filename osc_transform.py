@@ -5,7 +5,6 @@ from pythonosc import osc_message_builder
 import parsing
 import scales
 import time
-import uuid
 from enum import Enum
 
 
@@ -21,11 +20,11 @@ class SendType(Enum):
 
 
 # Wrap a parsig.Message in an execution time - used by generic message transform after parsing 
-def to_timed_osc(time: float, msg: parsing.Message):
+def to_timed_osc(time: float, osc_packet):
     bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
     bundle.add_content(create_msg("/bundle_info", ["timed_msg"]))
     bundle.add_content(create_msg("/timed_msg_info", [time]))
-    bundle.add_content(msg)
+    bundle.add_content(osc_packet)
     return bundle.build()
 
 # Basic quick-syntax for OSC message building, ("/s_new, [1,2,3...]")

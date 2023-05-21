@@ -81,7 +81,7 @@ def full_parse(source: str) -> list["Message"]:
                 if master_args_are_relative:
                     msg.add_relative_args(master_args)
                 else:
-                    print("DEBUG: Adding missing args " + str(master_args) + " to source " + source)
+                    #print("DEBUG: Adding missing args " + str(master_args) + " to source " + source)
                     msg.add_missing_args(master_args)
 
             messages_by_chunk.append(all_messages)
@@ -177,11 +177,11 @@ class Message:
                 self.args[arg] *= args[arg]
 
     def add_missing_args(self, args):
-        print("DEBUG: before add-missing, we have this: " + str(self.args))
+        #print("DEBUG: before add-missing, we have this: " + str(self.args))
         for arg in args:
             if arg not in self.args:
                 self.args[arg] = args[arg]
-        print("DEBUG: after add-missing, we have this: " + str(self.args))
+        #print("DEBUG: after add-missing, we have this: " + str(self.args))
 
     def clone(self):
         return Message(self.prefix, self.index, self.symbol, self.suffix, self.args.copy())
