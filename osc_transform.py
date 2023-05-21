@@ -2,7 +2,6 @@
 
 from pythonosc import osc_bundle_builder
 from pythonosc import osc_message_builder
-from pythonosc import udp_client
 import parsing
 import scales
 import time
@@ -121,76 +120,5 @@ class MessageWrapper:
 
     def get_time(self):
         return self.message.args["time"] if "time" in self.message.args else 0.0 
-    
-client = udp_client.SimpleUDPClient("127.0.0.1", 13339) # Router
-client.send(create_msg("/set_bpm", [120]))
 
-
-# TODO: Sketch up of the above outline
-class Synth():
-    def __init__(self, parse: str, ext_id = ""):
-
-        # TODO: Most of tis copy pasted from (replacing) sender.send() 
-
-        # TODO: Could also be a builder method with this as default 
-        if ext_id == "": 
-            ext_id = "autogen_queue_id_" + str(uuid.uuid4())
-
-        self.ext_id = ext_id
-
-        messages = parsing.full_parse(parse)
-
-        self.msg_wrappers = []
-        for msg in messages: 
-            msg.add_missing_args({"time": 1.0, "gate_time": 0.1, "amp": 1.0})
-            self.msg_wrappers.append(MessageWrapper(msg))
-
-    def nrt_record(self, synth: str, default_type = SendType.NOTE_ON_TIMED):
-        main_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-
-        bun = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-        
-        timeline = 0
-        for wrapper in self.msg_wrappers:
-
-            send_msg = wrapper.to_osc(default_type, synth)
-
-            # TODO: With wrapper resolving the above internally, you can also do this baking 
-            print("DEBUG: resolved time on message: ", str(wrapper.get_time()))
-            wrp = to_timed_osc(wrapper.get_time(), send_msg)
-            bun.add_content(wrp)
-            timeline += wrapper.get_time()
-
-
-        main_bundle.add_content(create_msg("/bundle_info", ["nrt_record"]))
-        main_bundle.add_content(create_msg("/nrt_record_info", [120.0, self.ext_id + ".wav", timeline]))
-        main_bundle.add_content(bun.build())
-
-        # TODO: Global client 
-        client.send(main_bundle.build())
-
-
-    # TODO: play/play_sample might be simpler than default type
-    # But you can easily make those call this 
-    def play(self, synth: str, default_type = SendType.NOTE_ON_TIMED):
-
-        main_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-        main_bundle.add_content(create_msg("/bundle_info", ["update_queue"]))
-        # NOTE: Meta-info for the update-queue command, mainly the external id of the sequencer 
-        main_bundle.add_content(create_msg("/update_queue_info", [self.ext_id]))
-
-        bun = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-        for wrapper in self.msg_wrappers:
-
-            send_msg = wrapper.to_osc(default_type, synth)
-
-
-            # TODO: With wrapper resolving the above internally, you can also do this baking 
-            print("DEBUG: resolved time on message: ", str(wrapper.get_time()))
-            wrp = to_timed_osc(wrapper.get_time(), send_msg)
-            bun.add_content(wrp)
-        main_bundle.add_content(bun.build())
-
-        # TODO: Global client 
-        client.send(main_bundle.build())
 
