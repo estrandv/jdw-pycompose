@@ -1,11 +1,10 @@
 # Package for new Message class (parsing.py) conversion into various jdw OSC formats 
-# TODO: This is part of the new parsing. Keep when purging. 
 
 from pythonosc import osc_bundle_builder
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
-import new_parsing_july
-import scales # TODO: This needs to come along
+import parsing
+import scales
 import time
 import uuid
 from enum import Enum
@@ -23,7 +22,7 @@ class SendType(Enum):
 
 
 # Wrap a parsig.Message in an execution time - used by generic message transform after parsing 
-def to_timed_osc(time: float, msg: new_parsing_july.Message):
+def to_timed_osc(time: float, msg: parsing.Message):
     bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
     bundle.add_content(create_msg("/bundle_info", ["timed_msg"]))
     bundle.add_content(create_msg("/timed_msg_info", [time]))
@@ -38,7 +37,7 @@ def create_msg(adr: str, args = []):
     return builder.build()
 
 class MessageWrapper:
-    def __init__(self, message: new_parsing_july.Message):
+    def __init__(self, message: parsing.Message):
         self.message = message
 
     def get_type(self) -> SendType:
@@ -139,7 +138,7 @@ class Synth():
 
         self.ext_id = ext_id
 
-        messages = new_parsing_july.full_parse(parse)
+        messages = parsing.full_parse(parse)
 
         self.msg_wrappers = []
         for msg in messages: 
