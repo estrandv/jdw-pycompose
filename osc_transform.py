@@ -93,6 +93,7 @@ class MessageWrapper:
 
     def to_note_on_timed(self, synth: str):
 
+        # TODO: See new create freq arg method if ye wanna go letters 
         if "freq" not in self.message.args:
             self.message.create_freq_arg(scales.MAJOR, 3)
 

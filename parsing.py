@@ -194,6 +194,13 @@ class Message:
             freq = note_number_to_hz(transpose(new_index, scale))
             self.args["freq"] = freq
 
+    def create_letter_freq_arg(self):
+
+        # 1: prefix will be everything before the index and should scan to a number on the chromatic scale, e.g. C# -> 1 
+        # 2: index basically sets the octave and should default to 1 or 0 if missing 
+        # Steal formula from here: https://stackoverflow.com/questions/13926280/musical-note-string-c-4-f-3-etc-to-midi-note-value-in-python
+
+        pass # TODO: c1, b4 syntax 
 
 
 # "amp0.1 sus0.5" -> {"amp": 0.1, "sus": 0.5}

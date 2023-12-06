@@ -8,7 +8,6 @@ import uuid
 
 
 client = udp_client.SimpleUDPClient("127.0.0.1", 13339) # Router
-client.send(create_msg("/set_bpm", [120]))
 
 
 class Synth():
@@ -66,23 +65,50 @@ class Synth():
 
         client.send(main_bundle.build())
 
+"""
 
-# TODO: Code readability: complex messages
-# - A JSON parser could help make templates, but that's a lot of work
-# - At the very least, each type of message can be constructed using an object instead of the builder fuckery
+    ### TYPING COMFORT: Yet another run
+
+    ### SYNTAX GUIDE
+
+    # synth:alias = play string
+    tracks["gentle:gentle2"] = "c c d _ f e g :: #.4 >.1"
+
+    # simple prefix to allow samples
+    tracks["SP_KayR8:drum1"] = "bd1 bd2 :: =0.5"
+
+"""
+tracks = {}
+
+tracks["gentle:ex1"] = "1 2 3 4 :: =1 >0.1 relT0.2"
+tracks["example:ex2"] = "_ 2 _ 3 _ 4 _ 5 :: >0.1 =0.5"
+
+for key in tracks:
+    contents = key.split(":")
+    synth_name = contents[0]
+    is_sample = "SP_" in synth_name
+    synth_name = synth_name.splt("_SP")[0] if is_sample else synth_name
+    send_type = SendType.PLAY_SAMPLE if is_sample else SendType.NOTE_ON_TIMED
+
+    alias = contents[1] if len(contents) > 1 else contents[0] # Default to name of the synth 
+    parse_string = tracks[key]
+
+    print("string: ", parse_string, " synth_name: ", synth_name, " alias: ", alias)
+
+    Synth(parse_string, alias, sc_synth_name=synth_name, default_send_type=send_type).play() 
 
 
-Synth("bd0 (hh0/hh0[ofs0]) bd4 (hh0/(hh0 hh4)[=0.5])", 
-    ext_id="drum2", 
-    sc_synth_name="KorgT3", 
-    default_send_type=SendType.PLAY_SAMPLE
-).nrt_record()
+client.send(create_msg("/set_bpm", [140]))
 
-#Synth("bd0 hh2 bd0 hh4", "drum2").nrt_record("KorgT3", SendType.PLAY_SAMPLE)
-#Synth("cy1[=16 #0.2]", "drm").play("example", SendType.PLAY_SAMPLE)
+
+# TODO: Notice how this comes out as 8x8 for some reason 
+Synth("M6 {x7} 7 {x8} :: =0.5 >0.4 #0.3 bus1", "bass", sc_synth_name="brute").play() 
+
+
+#Synth("cy1[=16 #0.2]", "drm").play("example", SendType.PLAY_SAMPLE)5 4 {x3} 3 4
 #Synth(" (32) _ _ _ :: >0.1 #0.2 =0.25 relT0.2", "drill").play("brute")
 #Synth("2 _ 2 2 4 _ 4 4 3 _ 3 3 1 _ 1 1 :: #0.4 >0.1 =0.5 relT0.2", "bass").play("brute")
-Synth(" (11/13/11/12)[=0 >2 relT2 #0.2] 7 9[=0.5] 8 5 _ 9 6 (2/(8 9)[=0.25])[=0.5] :: #0.3 >0.1 =0.5 relT0.2", sc_synth_name="brute").nrt_record()
+#Synth(" (11/13/11/12)[=0 >2 relT2 #0.2] 7 9[=0.5] 8 5 _ 9 6 (2/(8 9)[=0.25])[=0.5] :: #0.3 >0.1 =0.5 relT0.2", sc_synth_name="brute").nrt_record()
 #Synth(" 7 8 7 9 7 8 7 9 :: #0.3 >0.1 =0.25 relT0.2", "solo").nrt_record("brute")
 
 # TODO: Something very clearly goes wrong here, somewhere
