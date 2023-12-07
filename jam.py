@@ -80,9 +80,11 @@ class Synth():
 """
 tracks = {}
 
-tracks["SP_KayR8:drum1"] = "bd2 bd5 sn1 bd5 :: ofs0 #0.5 =1"
-tracks["brute:ex11"] = "6 26 6 6 8 8 (8/7/4/7) 8 :: =0.25 >0.05 #0.05"
-tracks["example:ex2"] = "M_ 2 _ 6 _ (7/(7 7)[=0.25 >0.05]) _ (6/5/4/8) :: >0.1 =0.5 #0.1"
+tracks["SP_KayR8:drum1"] = "bd2 bd5 (sn1/sn4) bd5 :: ofs0 #0.5 =1"
+#tracks["brute:ex11"] = "6 26 6 6 8 8 (8/7/4/7) 8 :: =0.25 >0.05 #0.05"
+#tracks["example:ex2"] = "M_ 2 _ 6 _ (7/(7 7)[=0.25 >0.05]) _ (6/5/4/8) :: >0.1 =0.5 #0.1"
+tracks["brute:exlet"] = "g3[relT0.7] _ (c4/(d3 d4)[=0.5 >0.1]/eb4/ab3) c3 :: =1 >0.5 #0.3 fx0.5 pan-0.4"
+tracks["example:exlat"] = "eb2 eb2 eb2 _ eb2 eb2 eb2 (d3/g2/d3/b2)[>0.6] :: =0.5 >0.4 #0.2"
 
 for key in tracks:
     contents = key.split(":")

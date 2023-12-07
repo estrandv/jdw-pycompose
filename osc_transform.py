@@ -93,9 +93,15 @@ class MessageWrapper:
 
     def to_note_on_timed(self, synth: str):
 
-        # TODO: See new create freq arg method if ye wanna go letters 
         if "freq" not in self.message.args:
-            self.message.create_freq_arg(scales.MAJOR, 3)
+            # TODO: Kinda stupid, hidden inferrence that is just here for convenience.
+            # Idea is that we do letter parsing if the prefix matches a note letter, otherwise we go index notes with provided octave 
+            # TODO: Also note that this has no testing and currently does not apply to note mod or note on drones 
+            letter_check = parsing.note_letter_to_midi(self.message.prefix)
+            if letter_check == -1:
+                self.message.create_freq_arg(scales.MAJOR, 3)
+            else:
+                self.message.create_letter_freq_arg()
 
         time = self.message.args["gate_time"] if "gate_time" in self.message.args else 0.0
         # Silly external note id default - not sure what a good other option is if tone is not mandatory 
