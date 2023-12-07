@@ -6,6 +6,35 @@ from scales import transpose
 from pretty_midi import note_number_to_hz
 from fractions import Fraction
 
+def note_letter_to_midi(note_string) -> int:
+    # https://stackoverflow.com/questions/13926280/musical-note-string-c-4-f-3-etc-to-midi-note-value-in-python
+    # [["C"],["C#","Db"],["D"],["D#","Eb"],["E"],["F"],["F#","Gb"],["G"],["G#","Ab"],["A"],["A#","Bb"],["B"]]
+    note_map = {
+        "c": 0,
+        "c#": 1,
+        "db": 1,
+        "d": 2,
+        "d#": 3,
+        "eb": 3,
+        "e": 4,
+        "f": 5,
+        "f#": 6,
+        "gb": 6,
+        "g": 7,
+        "g#": 8,
+        "ab": 8,
+        "a": 9,
+        "a#": 10,
+        "bb": 10,
+        "b": 11
+    }
+
+    if note_string in note_map:
+        return note_map[note_string]
+    else:
+        return -1
+
+
 # See nested methods for documentation. This turns a section-compatible source string
 # (e.g. ": 0t (bo2/3)[arg0.0] 0") into a list of sequential messages according to the parsing logic
 # in this document. See tests at bottom of file for more examples. 
@@ -179,6 +208,7 @@ class Message:
     def add_missing_args(self, args):
         #print("DEBUG: before add-missing, we have this: " + str(self.args))
         for arg in args:
+        # 1: prefix will be everything before the index and should scan to a number on the chromatic scale, e.g. C# -> 1 
             if arg not in self.args:
                 self.args[arg] = args[arg]
         #print("DEBUG: after add-missing, we have this: " + str(self.args))
@@ -194,13 +224,30 @@ class Message:
             freq = note_number_to_hz(transpose(new_index, scale))
             self.args["freq"] = freq
 
+    # Alternative to "create_freq_arg" where we instead infer notes from typical letter+octave notation 
     def create_letter_freq_arg(self):
 
         # 1: prefix will be everything before the index and should scan to a number on the chromatic scale, e.g. C# -> 1 
         # 2: index basically sets the octave and should default to 1 or 0 if missing 
-        # Steal formula from here: https://stackoverflow.com/questions/13926280/musical-note-string-c-4-f-3-etc-to-midi-note-value-in-python
+        # Steal formula from here: 
 
-        pass # TODO: c1, b4 syntax 
+        if self.prefix != None:
+
+            # E.g. "C" or "C#" or "Cb"
+            letter_and_semitone = self.prefix.lower() 
+            # As in the "3" of "c3"
+            octave = self.index if self.index != None else 1
+
+            # Math, same as for index freq calculation
+            tone = note_letter_to_midi(letter_and_semitone)
+            tone_index = 0 if tone == -1 else tone 
+            extra = (12 * (octave + 1)) if octave > 0 else 0
+            new_index = tone_index + extra
+
+            freq = note_number_to_hz(new_index)
+            self.args["freq"] = freq
+
+        pass 
 
 
 # "amp0.1 sus0.5" -> {"amp": 0.1, "sus": 0.5}
@@ -600,6 +647,8 @@ if __name__ == "__main__":
     verify_message("bo22:ti", "suffix", "ti")
     verify_message("bo:t", "index", None)
     verify_message("bo:t", "symbol", ":")
+    verify_message("c#", "prefix", "c#")
+    verify_message("eb", "prefix", "eb")
 
     # TODO: Even more validation, but for now a simple "didn't crash" will do 
     full_parse("0 : ti22p (0/(2/:[aj22.0])/4)[arg0.0] bi: fish0")
@@ -654,5 +703,21 @@ if __name__ == "__main__":
     # - Basically just a slightly different "use if not available"
     relarg_test = full_parse("1[=1/2] 2 3 4 ::; =1/2")
     assert 0.25 == relarg_test[0].args["time"], str(relarg_test[0].args["time"]) + " with args " + str(relarg_test[0].args)
+
+
+    # Letter notation 
+
+    def verify_tone(source, expect_freq):
+        seed = Section(source)
+        msg = create_message(seed)
+        msg.create_letter_freq_arg()
+        assert expect_freq == msg.args["freq"], "Letter-note inferrence failed: " \
+            + "freq" + "='" + str(msg.args["freq"]) +"' was not '" + str(expect_freq) + "'"
+
+    verify_tone("a4", 440.0)
+    verify_tone("c", 32.70319566257483)
+    verify_tone("gb3", 184.9972113558172)
+    verify_tone("b8", 7902.132820097988)
+    
 
     print("All parsing tests OK")

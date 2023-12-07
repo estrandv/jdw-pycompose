@@ -80,14 +80,15 @@ class Synth():
 """
 tracks = {}
 
-tracks["gentle:ex1"] = "1 2 3 4 :: =1 >0.1 relT0.2"
-tracks["example:ex2"] = "_ 2 _ 3 _ 4 _ 5 :: >0.1 =0.5"
+tracks["SP_KayR8:drum1"] = "bd2 bd5 sn1 bd5 :: ofs0 #0.5 =1"
+tracks["brute:ex11"] = "6 26 6 6 8 8 (8/7/4/7) 8 :: =0.25 >0.05 #0.05"
+tracks["example:ex2"] = "M_ 2 _ 6 _ (7/(7 7)[=0.25 >0.05]) _ (6/5/4/8) :: >0.1 =0.5 #0.1"
 
 for key in tracks:
     contents = key.split(":")
     synth_name = contents[0]
     is_sample = "SP_" in synth_name
-    synth_name = synth_name.splt("_SP")[0] if is_sample else synth_name
+    synth_name = synth_name.split("SP_")[1] if is_sample else synth_name
     send_type = SendType.PLAY_SAMPLE if is_sample else SendType.NOTE_ON_TIMED
 
     alias = contents[1] if len(contents) > 1 else contents[0] # Default to name of the synth 
@@ -102,7 +103,7 @@ client.send(create_msg("/set_bpm", [140]))
 
 
 # TODO: Notice how this comes out as 8x8 for some reason 
-Synth("M6 {x7} 7 {x8} :: =0.5 >0.4 #0.3 bus1", "bass", sc_synth_name="brute").play() 
+#Synth("M6 {x7} 7 {x8} :: =0.5 >0.4 #0.3 bus1", "bass", sc_synth_name="brute").play() 
 
 
 #Synth("cy1[=16 #0.2]", "drm").play("example", SendType.PLAY_SAMPLE)5 4 {x3} 3 4
