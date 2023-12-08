@@ -46,7 +46,9 @@ def full_parse(source: str) -> list["Message"]:
 
     if source and source[0] == "M":
         print("Mute triggered")
-        return []
+        # Leaving it like this for now since an on-beat mute is better for restarts given the current state of the sequencer. 
+        # TODO: Bit of a hidden piece of logic, rework eventually 
+        return full_parse("_ :: =1")
 
     master_args = {}
     master_args_are_relative = False 
@@ -97,7 +99,9 @@ def full_parse(source: str) -> list["Message"]:
             seed = Section(chunk_source)
             # NOTE: This might no longer be required, but doesn't hurt for validation. 
             # Source string is rebuilt after optimizing and then parsed again.
-            args_collapsed = Section(seed.rebuild_source())
+            # UPDATE: This was causing a bug and has been removed without breaking tests. Should be ok? 
+            #rgs_collapsed = Section(seed.rebuild_source())
+            args_collapsed = seed 
 
             # Expand into list of atomic sections. 
             atomic_set = flatten_sections([args_collapsed])
@@ -193,7 +197,7 @@ class Message:
         self.prefix = prefix # Can be None 
         self.index = index # Can be None 
         self.symbol = symbol # Can be None 
-        self.suffix = suffix # Can be None 
+        self.suffix = suffix # Can be None
         self.args = args
 
     # Multiply existing args with corresponding provided ones
@@ -252,6 +256,7 @@ class Message:
 
 # "amp0.1 sus0.5" -> {"amp": 0.1, "sus": 0.5}
 def parse_args(string: str) -> dict[str, float]:
+
 
     # Common arg names get the following shorthands for easy typing 
     shorthand_symbols = {
@@ -488,11 +493,9 @@ class Section:
                         parsed_args[key] = common_args[key]
 
                 self._ongoing_args = ""
-                #print("DEBUG: closing and parsing partial section: ", self._ongoing_section, "for level", self.source_text)
                 next_sec = Section(self._ongoing_section, self._latest_found_separator, parsed_args)
                 self._ongoing_section = ""
                 self.sections.append(next_sec)
-                #print("DEBUG: Current level structure: ", self.stringify_full())
             #else: # NOTE: Last char close always results in empty
 
         # The end branches of the recursion will have no separators or special chars 
@@ -683,8 +686,8 @@ if __name__ == "__main__":
 
     marg_one = full_parse("0 :: =4")
     marg_two = full_parse("1 :: =1")
-    assert 4 == marg_one[0].args["time"], "Unexpected time arg with master args: " + str([n.index for n in marg_one])
-    assert 1 == marg_two[0].args["time"], "Unexpected time arg " +  str(marg_two[0].args["time"]) + "with master args: " + str([n.index for n in marg_two])
+    assert 4 == marg_one[0].args["time"], "Unexpected time arg " +  str(marg_one[0].args["time"])
+    assert 1 == marg_two[0].args["time"], "Unexpected time arg " +  str(marg_two[0].args["time"])
 
     margtest_2 = full_parse("0 (1/2) :: x3")
     assert 4 == len(margtest_2), "Unexpected unpackged len for alternation with master args: " + str([n.index for n in margtest_2])
