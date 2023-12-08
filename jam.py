@@ -101,11 +101,6 @@ for key in tracks:
 
 client.send(create_msg("/set_bpm", [140]))
 
-
-# TODO: Notice how this comes out as 8x8 for some reason 
-#Synth("M6 {x7} 7 {x8} :: =0.5 >0.4 #0.3 bus1", "bass", sc_synth_name="brute").play() 
-
-
 #Synth("cy1[=16 #0.2]", "drm").play("example", SendType.PLAY_SAMPLE)5 4 {x3} 3 4
 #Synth(" (32) _ _ _ :: >0.1 #0.2 =0.25 relT0.2", "drill").play("brute")
 #Synth("2 _ 2 2 4 _ 4 4 3 _ 3 3 1 _ 1 1 :: #0.4 >0.1 =0.5 relT0.2", "bass").play("brute")

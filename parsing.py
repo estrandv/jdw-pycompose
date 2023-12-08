@@ -7,7 +7,7 @@ from pretty_midi import note_number_to_hz
 from fractions import Fraction
 
 # Easy debug logging
-debug = False  
+debug = False   
 def debug_log(message):
     if debug:
         print("DEBUG: " + message)
@@ -101,7 +101,9 @@ def full_parse(source: str) -> list["Message"]:
         # Initial section object created, including unexpanded alternations
         # See: Section object documentation. In short: tree-structure where the end-branches are
         # parseable as Message.
-        if chunk_source:
+        # NOTE: Boolean-ness of strip() to ensure string is not blank or empty 
+        if chunk_source and chunk_source.strip():
+            debug_log("Creating section from chunk: " + chunk_source)
             seed = Section(chunk_source)
             # NOTE: This might no longer be required, but doesn't hurt for validation. 
             # Source string is rebuilt after optimizing and then parsed again.
@@ -132,8 +134,9 @@ def apply_meta_args_to_messages(message_list, args):
     
     ret_list = message_list.copy()
     if "x" in args and args["x"] > 1.0:
+        debug_log("Applying the 'x' meta-arg to duplicate messages before it. Copying n messages: " + str(len(message_list)) + " n-1 times: " + str(args["x"]))
         for i in range(0, int(args["x"]) - 1):
-            for msg in message_list:
+            for msg in message_list.copy():
                 ret_list.append(msg)
 
     return ret_list
@@ -698,6 +701,13 @@ if __name__ == "__main__":
     # Should error and abort 
     catchem_test = full_parse("0 0 (1 2 (1/3) {x5} _) 2")
     assert 0 == len(catchem_test)
+
+    # From real error scenario
+    multi_len_test = full_parse("6 {x7} 7 {x8} :: fish0.2")
+    for msg in multi_len_test:
+        debug_log("Message created " + str(msg.__dict__))
+    assert 15 == len(multi_len_test), "Unexpexted length of parsed messages: " + str(len(multi_len_test))
+
 
     # TODO: Rel args
     # - Noted that a certain kind of master arg could probably be used to relativize all contained args post-fact 
