@@ -6,6 +6,12 @@ from scales import transpose
 from pretty_midi import note_number_to_hz
 from fractions import Fraction
 
+# Easy debug logging
+debug = False  
+def debug_log(message):
+    if debug:
+        print("DEBUG: " + message)
+
 def note_letter_to_midi(note_string) -> int:
     # https://stackoverflow.com/questions/13926280/musical-note-string-c-4-f-3-etc-to-midi-note-value-in-python
     # [["C"],["C#","Db"],["D"],["D#","Eb"],["E"],["F"],["F#","Gb"],["G"],["G#","Ab"],["A"],["A#","Bb"],["B"]]
@@ -114,7 +120,7 @@ def full_parse(source: str) -> list["Message"]:
                 if master_args_are_relative:
                     msg.add_relative_args(master_args)
                 else:
-                    #print("DEBUG: Adding missing args " + str(master_args) + " to source " + source)
+                    debug_log("Adding missing args " + str(master_args) + " to source " + source)
                     msg.add_missing_args(master_args)
 
             messages_by_chunk.append(all_messages)
@@ -210,12 +216,12 @@ class Message:
                 self.args[arg] *= args[arg]
 
     def add_missing_args(self, args):
-        #print("DEBUG: before add-missing, we have this: " + str(self.args))
+        debug_log("before add-missing, we have this: " + str(self.args))
         for arg in args:
         # 1: prefix will be everything before the index and should scan to a number on the chromatic scale, e.g. C# -> 1 
             if arg not in self.args:
                 self.args[arg] = args[arg]
-        #print("DEBUG: after add-missing, we have this: " + str(self.args))
+        debug_log("after add-missing, we have this: " + str(self.args))
 
     def clone(self):
         return Message(self.prefix, self.index, self.symbol, self.suffix, self.args.copy())
@@ -329,8 +335,6 @@ def parse_args(string: str) -> dict[str, float]:
 def flatten_sections(section_list: list["Section"]) -> list["Section"]:
     new_list = []
 
-    #print("***** DEBUG: Calling expand on ", " ".join([i.source_text for i in section_list]))
-
     highest_nested_alternation_index = -1
 
     for section in section_list:
@@ -345,7 +349,6 @@ def flatten_sections(section_list: list["Section"]) -> list["Section"]:
 
     if highest_nested_alternation_index == -1:
         # Bottom of recursion reached; no sections on next level have alternations 
-        #print("DEBUG: picked full (non-alt):", " ".join([i.stringify() for i in section_list]))
 
         return section_list
     else:
@@ -363,14 +366,11 @@ def flatten_sections(section_list: list["Section"]) -> list["Section"]:
                     #if not this_alternation:
                         #print("ERROR: Empty alternation returned for index ", rem, section.get_alternations())
                     for alt_sec in this_alternation:
-                        #print(">> DEBUG: picked from sec ", alt_sec.source_text)
                         new_list.append(alt_sec)
                 else:
-                    #print(">> DEBUG: picked non-alternating:", section.source_text)
                     # Some sections have no alternations at all and can be kept as-is
                     new_list.append(section)
     
-        #print("DEBUG: proceeding with built list:", " ".join([i.stringify() for i in new_list]))
     
         return flatten_sections(new_list)
         
@@ -452,7 +452,7 @@ class Section:
         self.args = common_args
         self.source_text = text
 
-        #print("DEBUG: Begin parsing section from ", text)
+        debug_log("Begin parsing section from "+ text)
 
         # NOTE: Trailing separators look nice but mess with compiler
         # Thus the hack:
