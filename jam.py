@@ -84,9 +84,14 @@ tracks = {}
 #tracks["example:piano"] = "Md3[=0 >2] d4 d4 g4 d4 c3[=0 >2] c4 c4 d4 c4 f3[=0 >2 #0.2] f4 f4 c4 f4 c3[=0 >2] c4 c4 (d4 / (d4 d4)[=0.5]) c4 :: =1 #0.3 >0.1"
 
 # CUTE LIL TRACK 
-tracks["brute:rap"] = "Meb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.2"
+#tracks["SP_KayR8:drum1"] = "bd1 hh1 bd2 hh1 :: ofs0"
+#tracks["SP_KorgT3:drum2"] = "_ hh0 _ hh1 :: ofs0.0 #0.4"
+tracks["brute:rap"] = "eb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.2"
 tracks["brute:rap2"] = "eb3 g3 c3 ab3 :: >2 =4 #0.1"
 tracks["gentle:sing"] = "g5 g5 g5 (eb5 (ab5/d5))[=2] :: =4 >1.2 relT0.5 attT0.01 #0.05"
+tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _ g5[=2] / d#5[=4]) :: >0.1 attT0.4 relT0.5 #0.2"
+tracks["SP_Roland808:drumX"] = "hh2 sn1 . sn3 . sn1 . (sn3 sn3 . .)[=0.25] :: ofs0.02"
+tracks["SP_Roland808:drum2X"] = "bd0 . (bd1 to3)[=0.5] . bd0 . bd1 . :: ofs0.003"
 
 for key in tracks:
     contents = key.split(":")
@@ -103,7 +108,7 @@ for key in tracks:
     Synth(parse_string, alias, sc_synth_name=synth_name, default_send_type=send_type).play() 
 
 
-client.send(create_msg("/set_bpm", [140]))
+client.send(create_msg("/set_bpm", [100]))
 
 #Synth("cy1[=16 #0.2]", "drm").play("example", SendType.PLAY_SAMPLE)5 4 {x3} 3 4
 #Synth(" (32) _ _ _ :: >0.1 #0.2 =0.25 relT0.2", "drill").play("brute")
@@ -162,3 +167,12 @@ client.send(create_msg("/set_bpm", [140]))
 # - Master args appear to break (/) syntax 
 #   -> Haven't found an example yet, need to explore this - might just be a bug with ::; 
 
+# Jan 2024 Notes 
+"""
+(does not undo the above)
+
+Chronological default args:
+- d6[::amp0.2] d3 d2 d3 d4[::amp0.2] d2
+- Basically: "From this note, until otherwise specified, use the following defaults"
+
+"""
