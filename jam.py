@@ -42,7 +42,8 @@ class Synth():
             timeline += wrapper.get_time()
 
         main_bundle.add_content(create_msg("/bundle_info", ["nrt_record"]))
-        main_bundle.add_content(create_msg("/nrt_record_info", [120.0, self.ext_id + ".wav", timeline]))
+        # TODO: BPM and project output 
+        main_bundle.add_content(create_msg("/nrt_record_info", [110.0, "/home/estrandv/jdw_output/" + self.ext_id + ".wav", timeline]))
         main_bundle.add_content(note_bundle.build())
 
         client.send(main_bundle.build())
@@ -86,12 +87,14 @@ tracks = {}
 # CUTE LIL TRACK 
 #tracks["SP_KayR8:drum1"] = "bd1 hh1 bd2 hh1 :: ofs0"
 #tracks["SP_KorgT3:drum2"] = "_ hh0 _ hh1 :: ofs0.0 #0.4"
-tracks["brute:rap"] = "eb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.2"
-tracks["brute:rap2"] = "eb3 g3 c3 ab3 :: >2 =4 #0.1"
-tracks["gentle:sing"] = "g5 g5 g5 (eb5 (ab5/d5))[=2] :: =4 >1.2 relT0.5 attT0.01 #0.05"
-tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _ g5[=2] / d#5[=4]) :: >0.1 attT0.4 relT0.5 #0.2"
-tracks["SP_Roland808:drumX"] = "hh2 sn1 . sn3 . sn1 . (sn3 sn3 . .)[=0.25] :: ofs0.02"
-tracks["SP_Roland808:drum2X"] = "bd0 . (bd1 to3)[=0.5] . bd0 . bd1 . :: ofs0.003"
+tracks["brute:rap"] = "eb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.3"
+#tracks["brute:test"] = "c4 :: >0.1 =1 #0.2"
+tracks["sawbass:rapx"] = "eb1 {x16} g1 {x16} c2 {x16} ab1 {x16} :: >0.2 =0.25 #0.2 pan-0.2"
+tracks["brute:rap2"] = "eb3 g3 c3 ab3 :: >2 =4 #0.2"
+tracks["gentle:sing"] = "g5 g5 g5 (eb5 (ab5/d5))[=2] :: =4 >1.2 relT0.5 attT0.01 #0.1"
+tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _ g5[=2] / d#5[=4]) :: >0.1 attT0.4 relT0.5 #0.4"
+tracks["SP_Roland808:drumX"] = " (mi11 / mi5)[#0.3] sn8 _ sn8 _ sn1 _ (sn8 sn3 _ _)[=0.25] :: ofs0.022 rate0.5"
+tracks["SP_Roland808:drum2X"] = "bd5 _ (bd4 bd8)[=0.5] mi4[#0.2] bd0 mi4[#0.2] bd1 _ :: ofs0.002 rate1"
 
 for key in tracks:
     contents = key.split(":")
@@ -105,7 +108,7 @@ for key in tracks:
 
     print("string: ", parse_string, " synth_name: ", synth_name, " alias: ", alias)
 
-    Synth(parse_string, alias, sc_synth_name=synth_name, default_send_type=send_type).play() 
+    Synth(parse_string, alias, sc_synth_name=synth_name, default_send_type=send_type).nrt_record() 
 
 
 client.send(create_msg("/set_bpm", [100]))
