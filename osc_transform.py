@@ -103,7 +103,7 @@ class MessageWrapper:
             else:
                 self.message.create_letter_freq_arg()
 
-        time = self.message.args["gate_time"] if "gate_time" in self.message.args else 0.0
+        time = str(self.message.args["gate_time"]) if "gate_time" in self.message.args else "0.0"
         # Silly external note id default - not sure what a good other option is if tone is not mandatory 
         ext_id = self.message.suffix if self.message.suffix != "" else synth + ",".join(self.message.args)
         osc_args = []
@@ -125,6 +125,6 @@ class MessageWrapper:
         return create_msg("/note_on", [synth, ext_id] + osc_args)
 
     def get_time(self):
-        return self.message.args["time"] if "time" in self.message.args else 0.0 
+        return str(self.message.args["time"]) if "time" in self.message.args else "0.0" 
 
 
