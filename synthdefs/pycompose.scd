@@ -1,7 +1,8 @@
 SynthDef("pycompose",
-{|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=0, relT=0.04, fxa=1.0, fxf=300, fxs=0.002|
+{|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002|
 	var osc1, osc2, filter, filter2, env, filterenv, ab;
 	amp = amp * 0.2;
+	freq = freq * fmod; 
 	
 	osc1 = Saw.ar(freq);
 	osc2 = Mix(Saw.ar(freq * [0.125,1,1.5], [0.5,0.4,0.1]));
@@ -17,4 +18,63 @@ SynthDef("pycompose",
 	env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.01, 0, sus, relT]), doneAction:Done.freeSelf);
 
 	Out.ar(bus,Pan2.ar((filter + filter2) * env * amp, pan))
+}).add; 
+
+SynthDef("filtersquare",
+{|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=500, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, gate=1|
+	var osc1, osc2, filter, filter2, env, filterenv, ab, snd, adsrvol, lowpass;
+	amp = amp * 0.5;
+	freq = freq * fmod; 
+	
+	// Note the chaining of oscs 
+	osc1 = Pulse.ar(freq) + Saw.ar(freq * 2);
+
+	// Applied with * 
+	adsrvol = EnvGen.ar(Env.adsr(0.0, 0.8, 0.6, relT), gate, doneAction:Done.freeSelf);
+
+	// Applied through replacement - note the * for cutoff and envgen 
+	// Note that filters are a bit strange and might want to freeself? 
+	lowpass = RLPF.ar(osc1, cutoff * EnvGen.ar(Env.adsr(0.0, 0.6, 0.3, relT / 2), gate, doneAction:Done.freeSelf), rq);
+
+	snd = lowpass * adsrvol * amp;
+
+	snd = Pan2.ar(snd, pan);
+
+	Out.ar(bus,snd)
+}).add; 
+
+SynthDef("eli",
+{|amp=1, sus=0.2, pan=0, bus=0, freq=440, gate=1, lfoS=3220, lfoD=2, cutoff=500|
+	var osc1, modulator, snd, adsrvol, lowpass;
+	amp = amp * 0.5; 
+
+	// Perhaps more harmonic (mult works, but random number is a bit chaotic) 
+	lfoS = freq ;
+	
+	// Mul is the breath of the oscillations
+	// Still not really behaving like I expect lfoS/D to work...  
+	// "Modulator freq determines sideband spacing, modulator mul determines number of audible sidebands"
+	// Eli uses more like lfoD=400 but that sounds off to me 
+	modulator = Pulse.ar(lfoS, mul: lfoD);
+
+	// Eli Fieldsteel on YouTube denotes this as "number of sidebands increating as mul goes up"
+	// Another tutorial noted that sidebands are what denote a complex sound, such as a piano 
+	osc1 = SinOsc.ar(freq + modulator);
+	
+	//osc1 = osc1 + Saw.ar(freq * 4); // Saw adds an edge, can be removed 
+	//osc1 = osc1 + Pulse.ar(freq * 8); // Pulse adds a bright ring, more toypiano-esque  
+
+	// Applied with * 
+	adsrvol = EnvGen.ar(Env.adsr(0.0, 0.8, 0.6, 2.4), gate, doneAction:Done.freeSelf);
+
+	// Applied through replacement - note the * for cutoff and envgen 
+	// Note that filters are a bit strange and might want to freeself?
+	// Note that LPF cutoff is the "maximum allowed frequency", which might mean that the adsr 0.x values makes it MORE strict 
+	lowpass = RLPF.ar(osc1, cutoff * EnvGen.ar(Env.adsr(0.0, 0.7, 0.3, 0.2), gate, doneAction:Done.none), 0.5);
+
+	snd = lowpass * adsrvol * amp * 1.0;
+
+	snd = Pan2.ar(snd, pan);
+
+	Out.ar(bus,snd)
 }).add; 

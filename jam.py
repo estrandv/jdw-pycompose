@@ -90,14 +90,14 @@ tracks = {}
 # CUTE LIL TRACK 
 #tracks["SP_KayR8:drum1"] = "bd1 hh1 bd2 hh1 :: ofs0"
 #tracks["SP_KorgT3:drum2"] = "_ hh0 _ hh1 :: ofs0.0 #0.4"
-tracks["brute:rapzzzz"] = "eb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.3"
-tracks["brute:test"] = "c4 :: >0.1 =1 #0.2"
-tracks["example:rapx"] = "eb1 {x16} g1 {x16} c2 {x16} ab1 {x16} :: >0.2 =0.25 #0.2 pan-0.2"
-tracks["brute:rap2"] = "eb3 g3 c3 ab3 :: >2 =4 #0.2"
-tracks["gentle:sing"] = "g5 g5 g5 (eb5 (ab5/d5))[=2] :: =4 >1.2 relT0.5 attT0.01 #0.1"
-tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _ g5[=2] / d#5[=4]) :: >0.1 attT0.4 relT0.5 #0.4"
-tracks["SP_Roland808:drumX"] = " (mi11 / mi5)[#0.3] sn8 _ sn8 _ sn1 _ (sn8 sn3 _ _)[=0.25] :: ofs0.022 rate0.5"
-tracks["SP_Roland808:drum2X"] = "bd5 _ (bd4 bd8)[=0.5] mi4[#0.2] bd0 mi4[#0.2] bd1 _ :: ofs0.002 rate1"
+#tracks["brute:rapzzzz"] = "eb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.3"
+#tracks["brute:test"] = "c4 :: >0.1 =1 #0.2"
+#tracks["example:rapx"] = "eb1 {x16} g1 {x16} c2 {x16} ab1 {x16} :: >0.2 =0.25 #0.2 pan-0.2"
+#tracks["brute:rap2"] = "eb3 g3 c3 ab3 :: >2 =4 #0.2"
+#tracks["gentle:sing"] = "g5 g5 g5 (eb5 (ab5/d5))[=2] :: =4 >1.2 relT0.5 attT0.01 #0.1"
+#tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _ g5[=2] / d#5[=4]) :: >0.1 attT0.4 relT3.5 #0.4"
+#tracks["SP_Roland808:drumX"] = " (mi11 / mi5)[#0.3] sn8 _ sn8 _ sn1 _ (sn8 sn3 _ _)[=0.25] :: ofs0.022 rate0.5"
+#tracks["SP_Roland808:drum2X"] = "bd5 _ (bd4 bd8)[=0.5] mi4[#0.2] bd0 mi4[#0.2] bd1 _ :: ofs0.002 rate1"
 
 # Another track 
 #tracks["SP_Roland808:drum2X"] = "bd5 sn4 {x3} bd5 (sn4 sn5)[=0.5] :: ofs0.002 rate1"
@@ -121,9 +121,15 @@ tracks["SP_Roland808:drum2X"] = "bd5 _ (bd4 bd8)[=0.5] mi4[#0.2] bd0 mi4[#0.2] b
 # This wipe would have to be "On next finish", of course. New boolean flag inside sequencer..? 
 
 # More experimenting 
-#tracks["pycompose:testingreadscd"] = "c6 d6 f5 d6 :: >4 relT5 =4"
-#tracks["pycompose:testingreadscd"] = "eb2[=0] eb3 {x8} c3[fxs0.8] {x8} g3[fxb0.3] {x8} d3[fxf200 fxs0.6] {x8} :: >1 =0.25 #0.2 relT0.4"
-#tracks["SP_Roland808:drum4X"] = " bd11[rate2] sn8 {x3} bd4 (sn8 sn8[ofs0.002])[=0.25 rate0.5] _[=0.5] :: ofs0.00 rate1"
+#tracks["pycompose:testingreadscd"] = "c6 d6 f5 d6 :: >4 relT5 =4 fmod0.5"
+#tracks["pycompose:testingreadscddd"] = "eb2[=0] eb3 {x8} c3[fxs0.8] {x8} g3[fxb0.3] {x8} d3[fxf200 fxs0.6] {x8} :: >1 =0.25 #0.2 relT0.4 fmod1"
+#tracks["SP_Roland808:drum4X"] = "bd11[rate2] sn8 {x3} bd4 (sn8 sn8[ofs0.002])[=0.25 rate0.5] _[=0.5] :: ofs0.00 rate1"
+#tracks["filtersquare:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >0.124 =0.5 #1 relT0.1 fmod2"
+
+tracks["eli:plucker"] = "c4 d4[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >1 =1 #1"
+#tracks["eli:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >1 =1 #1"
+#tracks["eli:plucker2"] = " d5:a eb4 g5:a c4[=1]  :: >4 =4 #1"
+#tracks["filtersquare:plucker3"] = " d2  :: >4 =4 #1 relT8"
 
 with open("synthdefs/pycompose.scd", "r") as file:
     data = file.read() 
