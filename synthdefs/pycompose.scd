@@ -44,7 +44,7 @@ SynthDef("filtersquare",
 }).add; 
 
 SynthDef("eli",
-{|amp=1, sus=0.2, pan=0, bus=0, freq=440, gate=1, lfoS=3220, lfoD=4, cutoff=500, fx=0.2|
+{|amp=1, sus=0.2, pan=0, bus=0, freq=440, gate=1, lfoS=3220, lfoD=4, cut=500, fx=0.2|
 	var osc1, modulator, snd, adsrvol, lowpass;
 	amp = amp * 0.5; 
 	
@@ -67,7 +67,34 @@ SynthDef("eli",
 	// Applied through replacement - note the * for cutoff and envgen 
 	// Note that filters are a bit strange and might want to freeself?
 	// Note that LPF cutoff is the "maximum allowed frequency", which might mean that the adsr 0.x values makes it MORE strict 
-	lowpass = RLPF.ar(osc1, cutoff * EnvGen.ar(Env.adsr(0.0, 0.7, 0.3, 0.2), gate, doneAction:Done.none), 0.5);
+	lowpass = RLPF.ar(osc1, cut * EnvGen.ar(Env.adsr(0.0, 0.7, 0.3, 0.2), gate, doneAction:Done.none), 0.5);
+
+	snd = lowpass * adsrvol * amp * 1.0;
+
+	snd = Pan2.ar(snd, pan);
+
+	Out.ar(bus,snd)
+}).add; 
+
+SynthDef("elisin",
+{|amp=1, sus=0.2, pan=0, bus=0, freq=440, gate=1, lfoD=1633, cut=500|
+	var osc1, modulator, snd, adsrvol, lowpass, mod2;
+	amp = amp * 0.5; 
+	
+	modulator = SinOsc.ar(freq, mul: lfoD);
+	osc1 = SinOsc.ar((freq * 4) + modulator);
+	
+	osc1 = osc1; // + (Pulse.ar(freq) * 4);
+
+	// Applied with * 
+	adsrvol = EnvGen.ar(Env.adsr(0.2, 1.0, 0.8, 2.4), gate, doneAction:Done.freeSelf);
+
+	osc1 = osc1 + (Saw.ar(freq * 1.008) * 1); // Some attempt at a detune, sounds pretty neat 
+
+	// Applied through replacement - note the * for cutoff and envgen 
+	// Note that filters are a bit strange and might want to freeself?
+	// Note that LPF cutoff is the "maximum allowed frequency", which might mean that the adsr 0.x values makes it MORE strict 
+	lowpass = RLPF.ar(osc1, cut * EnvGen.ar(Env.adsr(0.2, 2.8, 0.4, 2.2), gate, doneAction:Done.none), 0.5);
 
 	snd = lowpass * adsrvol * amp * 1.0;
 

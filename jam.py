@@ -110,8 +110,8 @@ tracks = {}
 # Yet another (works well with the pycompose one below) 
 #tracks["pluck:raapapa"] = "c6 d6 f5 d6 :: relT5 =4"
 #tracks["pluck:raapapaasdasd"] = "g5 g5 c5 c5 a5 a5 c5 c5 :: >4 relT6 =2 #0.4"
-#tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
-#tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
+tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
+tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
 #tracks["example:rapapazz"] = "c3 g3 {x8} d4 g3 {x8} :: >0.06 =0.25 #0.2"
 #tracks["brute:rapapazzaa"] = "c3 f2 c3 g2 :: >4 =8 relT8 #0.4 lfoS0.1 lfoD0.01 fx0.06"
 
@@ -126,10 +126,12 @@ tracks = {}
 #tracks["SP_Roland808:drum4X"] = "bd11[rate2] sn8 {x3} bd4 (sn8 sn8[ofs0.002])[=0.25 rate0.5] _[=0.5] :: ofs0.00 rate1"
 #tracks["filtersquare:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >0.124 =0.5 #1 relT0.1 fmod2"
 
-tracks["eli:plucker"] = "c4[fx0.4] d4[=0.25] g3[=0.25] g2[fx0.4] f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3)[fx0.6] :: >1 =1 #1 fx0"
-#tracks["eli:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >1 =1 #1"
+
+#tracks["SP_Roland808:drum4X"] = "bd3[rate1] (mi3[#0.7]/sn3) :: ofs0.00 rate1"
+tracks["eli:plucker"] = "d4[=0.25] g3[=0.25] g2[fx0.4] g3[=0.25] d3[=0.25] (f3/d4/c3/g2)[fx0.6 cut1800 #0.3] c4[fx0.4] :: >1 =1 #1 fx0"
+#tracks["eli:plucker"] = "d3[=0.25] g3[=0.25] g2 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) c2 :: >1 =1 #1"
 #tracks["eli:plucker2"] = " d5:a eb4 g5:a c4[=1]  :: >4 =4 #1"
-#tracks["filtersquare:plucker3"] = " d2  :: >4 =4 #1 relT8"
+tracks["elisin:roar"] = " d3[cut800 #0.7] c4 g3 c3 :: >8 =8 #1"
 
 with open("synthdefs/pycompose.scd", "r") as file:
     data = file.read() 
