@@ -126,7 +126,7 @@ tracks = {}
 #tracks["SP_Roland808:drum4X"] = "bd11[rate2] sn8 {x3} bd4 (sn8 sn8[ofs0.002])[=0.25 rate0.5] _[=0.5] :: ofs0.00 rate1"
 #tracks["filtersquare:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >0.124 =0.5 #1 relT0.1 fmod2"
 
-tracks["eli:plucker"] = "c4 d4[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >1 =1 #1"
+tracks["eli:plucker"] = "c4[fx0.4] d4[=0.25] g3[=0.25] g2[fx0.4] f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3)[fx0.6] :: >1 =1 #1 fx0"
 #tracks["eli:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >1 =1 #1"
 #tracks["eli:plucker2"] = " d5:a eb4 g5:a c4[=1]  :: >4 =4 #1"
 #tracks["filtersquare:plucker3"] = " d2  :: >4 =4 #1 relT8"

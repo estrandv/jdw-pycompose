@@ -44,25 +44,22 @@ SynthDef("filtersquare",
 }).add; 
 
 SynthDef("eli",
-{|amp=1, sus=0.2, pan=0, bus=0, freq=440, gate=1, lfoS=3220, lfoD=2, cutoff=500|
+{|amp=1, sus=0.2, pan=0, bus=0, freq=440, gate=1, lfoS=3220, lfoD=4, cutoff=500, fx=0.2|
 	var osc1, modulator, snd, adsrvol, lowpass;
 	amp = amp * 0.5; 
-
-	// Perhaps more harmonic (mult works, but random number is a bit chaotic) 
-	lfoS = freq ;
 	
 	// Mul is the breath of the oscillations
 	// Still not really behaving like I expect lfoS/D to work...  
 	// "Modulator freq determines sideband spacing, modulator mul determines number of audible sidebands"
-	// Eli uses more like lfoD=400 but that sounds off to me 
-	modulator = Pulse.ar(lfoS, mul: lfoD);
+	// Eli uses more like lfoD=400 but that sounds off to me - seems to work better with SinOsc main  
+	modulator = SinOsc.ar(freq, mul: lfoD);
 
 	// Eli Fieldsteel on YouTube denotes this as "number of sidebands increating as mul goes up"
 	// Another tutorial noted that sidebands are what denote a complex sound, such as a piano 
-	osc1 = SinOsc.ar(freq + modulator);
+	osc1 = Pulse.ar(freq + modulator);
 	
-	//osc1 = osc1 + Saw.ar(freq * 4); // Saw adds an edge, can be removed 
-	//osc1 = osc1 + Pulse.ar(freq * 8); // Pulse adds a bright ring, more toypiano-esque  
+	osc1 = osc1 + (Saw.ar(freq * 4) * fx); // Saw adds an edge, can be removed 
+	osc1 = osc1 + (Pulse.ar(freq * 8) * fx); // Pulse adds a bright ring, more toypiano-esque  
 
 	// Applied with * 
 	adsrvol = EnvGen.ar(Env.adsr(0.0, 0.8, 0.6, 2.4), gate, doneAction:Done.freeSelf);
