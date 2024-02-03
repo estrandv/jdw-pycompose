@@ -12,7 +12,7 @@ class JDWClient:
         self.client = udp_client.SimpleUDPClient("127.0.0.1", 13339) # Router
 
     def set_sequencer_bpm(self, value: int):
-        self.client.send(create_message("/set_bpm", [value]))
+        self.client.send(create_msg("/set_bpm", [value]))
 
     def stop(self):
         self.client.send(create_msg("/hard_stop", []))

@@ -62,15 +62,24 @@ tracks = {}
 #tracks["filtersquare:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >0.124 =0.5 #1 relT0.1 fmod2"
 
 # Raddest track yet 
-tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
-tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
-tracks["SP_Roland808:drum3X"] = "bd3[rate1] (mi3[#0.7]/sn3) :: ofs0.00 rate1"
-tracks["eli:plucker"] = "d4[=0.25] g3[=0.25] g2[fx0.4] g3[=0.25] d3[=0.25] (f3/d4/c3/g2)[fx0.6 cut1800 #0.3] c4[fx0.4] :: >1 =1 #1 fx0"
+#tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
+#tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
+#tracks["SP_Roland808:drum3X"] = "bd3[rate1] (mi3[#0.7]/sn3) :: ofs0.00 rate1"
+#tracks["eli:plucker"] = "d4[=0.25] g3[=0.25] g2[fx0.4] g3[=0.25] d3[=0.25] (f3/d4/c3/g2)[fx0.6 cut1800 #0.3] c4[fx0.4] :: >1 =1 #1 fx0"
 #tracks["eli:plucker"] = "d3[=0.25] g3[=0.25] g2 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) c2 :: >1 =1 #1"
-tracks["elisin:roar"] = " d3[cut800 #0.7] c4 g3 c3 :: >8 =8 #1"
+#tracks["elisin:roar"] = " d3[cut800 #0.7] c4 g3 c3 :: >8 =8 #1"
+
+# Theseus 
+tracks["pycompose:bassline"] = "Mg3 b3 b3 g3 b3 b3 g3 b3 g3 b3 b3 c4 b3 g3 a3 g3 {} g3 c4 c4 g3 c4 c4 g3 c4 g3 c4 c4 d4 c4 g3 b3 g3  :: =0.5 >0.6 #0.2 relT2.2 fmod1 fxf500 fxs0.2 fxa0.4 cutoff1300"
+tracks["brute:rapapa"] = "g2 {x32} c2 {x32} g2 {x32} d3 {x32} :: >0.06 =0.25 #0.2"
+tracks["brute:rapapaaaaa"] = " c4 c3 {x16} g4 g3 {x16} c4 {x32} g4 g3 {x16} :: >0.2 =0.25 #0.08"
+tracks["SP_Roland808:drum5X"] = " (bd2/(bd2 bd2)[=0.25] bd2[=1.5]) sn3[ofs0.02]  :: =2 rate2 ofs0"
+tracks["elisin:roar"] = " d4 d4[=4] c4[=4] g3 c4[=2] b3[=6] :: >8 =8 #0.2 cut450"
 
 client.read_custom_synths()
-#client.stop() 
+#client.stop() #
+client.set_sequencer_bpm(108)
+
 
 for key in tracks:
     contents = key.split(":")

@@ -27,14 +27,14 @@ SynthDef("filtersquare",
 	freq = freq * fmod; 
 	
 	// Note the chaining of oscs 
-	osc1 = Pulse.ar(freq) + Saw.ar(freq * 2);
+	osc1 = Pulse.ar(freq) + Saw.ar(freq * 1.008) + (Saw.ar(freq * 2) * 0.8);
 
 	// Applied with * 
-	adsrvol = EnvGen.ar(Env.adsr(0.0, 0.8, 0.6, relT), gate, doneAction:Done.freeSelf);
+	adsrvol = EnvGen.ar(Env.adsr(2.1, 0.8, 0.6, relT), gate, doneAction:Done.freeSelf);
 
 	// Applied through replacement - note the * for cutoff and envgen 
 	// Note that filters are a bit strange and might want to freeself? 
-	lowpass = RLPF.ar(osc1, cutoff * EnvGen.ar(Env.adsr(0.0, 0.6, 0.3, relT / 2), gate, doneAction:Done.freeSelf), rq);
+	lowpass = RLPF.ar(osc1, cutoff * EnvGen.ar(Env.adsr(0.2, 0.6, 0.5, relT / 2), gate, doneAction:Done.freeSelf), rq);
 
 	snd = lowpass * adsrvol * amp;
 
