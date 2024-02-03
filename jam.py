@@ -1,74 +1,11 @@
 # Testing grounds 
-from osc_transform import SendType, create_msg, MessageWrapper, to_timed_osc
-from pythonosc import osc_bundle_builder
-from pythonosc import osc_message_builder
-import parsing
-from pythonosc import udp_client
-import uuid
+from jdw_client import JDWClient
+from osc_transform import SendType
 
 
-client = udp_client.SimpleUDPClient("127.0.0.1", 13339) # Router
-
-
-class Synth():
-    def __init__(self, parse: str, ext_id = "", default_send_type = SendType.NOTE_ON_TIMED, sc_synth_name = "example"):
-
-        self.ext_id = "autogen_queue_id_" + str(uuid.uuid4()) if ext_id == "" else ext_id
-        self.default_send_type = default_send_type
-        self.sc_synth_name = sc_synth_name
-
-        messages = parsing.full_parse(parse)
-
-        self.msg_wrappers = []
-        for msg in messages: 
-            msg.add_missing_args({"time": 1.0, "gate_time": 0.1, "amp": 1.0})
-            self.msg_wrappers.append(MessageWrapper(msg))
-
-    def id(self, new_ext_id: str):
-        self.ext_id = new_ext_id
-        return self 
-
-    def nrt_record(self):
-        main_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-
-        note_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-        
-        timeline = 0
-        for wrapper in self.msg_wrappers:
-
-            osc_msg = wrapper.to_osc(self.default_send_type, self.sc_synth_name)
-            timed_osc_msg = to_timed_osc(wrapper.get_time(), osc_msg)
-            note_bundle.add_content(timed_osc_msg)
-            timeline += wrapper.get_time()
-
-        main_bundle.add_content(create_msg("/bundle_info", ["nrt_record"]))
-        # TODO: BPM and project output 
-        main_bundle.add_content(create_msg("/nrt_record_info", [110.0, "/home/estrandv/jdw_output/" + self.ext_id + ".wav", timeline]))
-        main_bundle.add_content(note_bundle.build())
-
-        client.send(main_bundle.build())
-
-    def play(self):
-
-        main_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-        # NOTE: Meta-info for the update-queue command, mainly the external id of the sequencer 
-
-        note_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
-        for wrapper in self.msg_wrappers:
-
-            osc_msg = wrapper.to_osc(self.default_send_type, self.sc_synth_name)
-            timed_osc_msg = to_timed_osc(wrapper.get_time(), osc_msg)
-            note_bundle.add_content(timed_osc_msg)
-
-        main_bundle.add_content(create_msg("/bundle_info", ["update_queue"]))
-        main_bundle.add_content(create_msg("/update_queue_info", [self.ext_id]))
-        main_bundle.add_content(note_bundle.build())
-
-        client.send(main_bundle.build())
+client = JDWClient() 
 
 """
-
-    ### TYPING COMFORT: Yet another run
 
     ### SYNTAX GUIDE
 
@@ -80,8 +17,6 @@ class Synth():
 
 """
 tracks = {}
-
-#client.send(create_msg("/hard_stop", []))
 
 
 # CUTE LIL PIANO 
@@ -110,8 +45,8 @@ tracks = {}
 # Yet another (works well with the pycompose one below) 
 #tracks["pluck:raapapa"] = "c6 d6 f5 d6 :: relT5 =4"
 #tracks["pluck:raapapaasdasd"] = "g5 g5 c5 c5 a5 a5 c5 c5 :: >4 relT6 =2 #0.4"
-tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
-tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
+#tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
+#tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
 #tracks["example:rapapazz"] = "c3 g3 {x8} d4 g3 {x8} :: >0.06 =0.25 #0.2"
 #tracks["brute:rapapazzaa"] = "c3 f2 c3 g2 :: >4 =8 relT8 #0.4 lfoS0.1 lfoD0.01 fx0.06"
 
@@ -126,16 +61,16 @@ tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: 
 #tracks["SP_Roland808:drum4X"] = "bd11[rate2] sn8 {x3} bd4 (sn8 sn8[ofs0.002])[=0.25 rate0.5] _[=0.5] :: ofs0.00 rate1"
 #tracks["filtersquare:plucker"] = "c2 d3[=0.25] g3[=0.25] g2 f3 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) :: >0.124 =0.5 #1 relT0.1 fmod2"
 
-
-#tracks["SP_Roland808:drum4X"] = "bd3[rate1] (mi3[#0.7]/sn3) :: ofs0.00 rate1"
+# Raddest track yet 
+tracks["SP_Roland808:drum5X"] = "bd6 sn7[=0.25] bd7[=1] to[=0.25] (sn4/sn8)[=1.5] :: ofs0.001 rate1.2"
+tracks["SP_Roland808:drum4X"] = " (mi18/mi12)[=3.75] (mi43/mi48)[=0.25 #0.2] :: ofs0.001 rate4"
+tracks["SP_Roland808:drum3X"] = "bd3[rate1] (mi3[#0.7]/sn3) :: ofs0.00 rate1"
 tracks["eli:plucker"] = "d4[=0.25] g3[=0.25] g2[fx0.4] g3[=0.25] d3[=0.25] (f3/d4/c3/g2)[fx0.6 cut1800 #0.3] c4[fx0.4] :: >1 =1 #1 fx0"
 #tracks["eli:plucker"] = "d3[=0.25] g3[=0.25] g2 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) c2 :: >1 =1 #1"
-#tracks["eli:plucker2"] = " d5:a eb4 g5:a c4[=1]  :: >4 =4 #1"
 tracks["elisin:roar"] = " d3[cut800 #0.7] c4 g3 c3 :: >8 =8 #1"
 
-with open("synthdefs/pycompose.scd", "r") as file:
-    data = file.read() 
-    client.send(create_msg("/read_scd", [data]))
+client.read_custom_synths()
+#client.stop() 
 
 for key in tracks:
     contents = key.split(":")
@@ -149,10 +84,8 @@ for key in tracks:
 
     print("string: ", parse_string, " synth_name: ", synth_name, " alias: ", alias)
 
-    Synth(parse_string, alias, sc_synth_name=synth_name, default_send_type=send_type).play()
-
-
-client.send(create_msg("/set_bpm", [100]))
+    #Synth(parse_string, alias, sc_synth_name=synth_name, default_send_type=send_type).play()
+    client.play(synth_name, parse_string, alias, default_send_type=send_type)
 
 
 # Jan 2024 Notes 
