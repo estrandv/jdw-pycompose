@@ -23,14 +23,14 @@ tracks = {}
 #tracks["example:piano"] = "d3[=0 >2] d4 d4 g4 d4 c3[=0 >2] c4 c4 d4 c4 f3[=0 >2 #0.2] f4 f4 c4 f4 c3[=0 >2] c4 c4 (d4 / (d4 d4)[=0.5]) c4 :: =1 #0.3 >0.1"
 
 # CUTE LIL TRACK 
-#tracks["SP_KayR8:drum1"] = "bd1 hh1 bd2 hh1 :: ofs0"
-#tracks["SP_KorgT3:drum2"] = "_ hh0 _ hh1 :: ofs0.0 #0.4"
+#tracks["SP_Roland808:drum1"] = "bd1 hh1 bd2 hh1 :: ofs0"
+#tracks["SP_Roland808:drum2"] = "_ hh0 _ hh1 :: ofs0.0 #0.4"
 #tracks["brute:rapzzzz"] = "eb2 {x8} g2 {x8} c3 {x8} ab2 {x8} :: >0.1 =0.5 #0.3"
 #tracks["brute:test"] = "c4 :: >0.1 =1 #0.2"
 #tracks["example:rapx"] = "eb1 {x16} g1 {x16} c2 {x16} ab1 {x16} :: >0.2 =0.25 #0.2 pan-0.2"
 #tracks["brute:rap2"] = "eb3 g3 c3 ab3 :: >2 =4 #0.2"
 #tracks["gentle:sing"] = "g5 g5 g5 (eb5 (ab5/d5))[=2] :: =4 >1.2 relT0.5 attT0.01 #0.1"
-#tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _ g5[=2] / d#5[=4]) :: >0.1 attT0.4 relT3.5 #0.4"
+#tracks["pluck:raapapa"] = "g5[=0.5] f5[=0.5] g5[=0.5] f5[=2.5] ((g5 g#5)[=0.5] _[=1] g5[=2] / d#5[=4]) :: =1 >0.1 attT0.4 relT3.5 #0.4"
 #tracks["SP_Roland808:drumX"] = " (mi11 / mi5)[#0.3] sn8 _ sn8 _ sn1 _ (sn8 sn3 _ _)[=0.25] :: ofs0.022 rate0.5"
 #tracks["SP_Roland808:drum2X"] = "bd5 _ (bd4 bd8)[=0.5] mi4[#0.2] bd0 mi4[#0.2] bd1 _ :: ofs0.002 rate1"
 
@@ -50,10 +50,6 @@ tracks = {}
 #tracks["example:rapapazz"] = "c3 g3 {x8} d4 g3 {x8} :: >0.06 =0.25 #0.2"
 #tracks["brute:rapapazzaa"] = "c3 f2 c3 g2 :: >4 =8 relT8 #0.4 lfoS0.1 lfoD0.01 fx0.06"
 
-# TODO: Easiest way to selectively mute tracks: 
-# All tracks should come at once, as a batch send of queue messages in a bundle 
-# Then you can have a sequencer mode that says "Wipe tracks not present in new queue payload"
-# This wipe would have to be "On next finish", of course. New boolean flag inside sequencer..? 
 
 # More experimenting 
 #tracks["pycompose:testingreadscd"] = "c6 d6 f5 d6 :: >4 relT5 =4 fmod0.5"
@@ -73,25 +69,29 @@ tracks = {}
 # Start with annoy/harmonics, bring in rhythm for singing 
 
 # fmod 1/2 has different feels  
-tracks["pycompose:bassline"] = "g3 b3 b3 g3[#0] b3 b3 g3[#0] b3 g3 b3 b3 c4 b3 g3 a3 g3 {} g3 c4 c4 g3[#0] c4 c4 g3[#0] c4 g3 c4 c4 d4 c4 g3 b3 g3  :: =0.5 >0.6 #0.2 relT2.2 fmod2 fxf500 fxs0.2 fxa0.4 cutoff1300"
+#tracks["pycompose:bassline"] = "g3 b3 b3 g3[#0] b3 b3 g3[#0] b3 g3 b3 b3 c4 b3 g3 a3 g3 {} g3 c4 c4 g3[#0] c4 c4 g3[#0] c4 g3 c4 c4 d4 c4 g3 b3 g3  :: =0.5 >0.6 #0.2 relT2.2 fmod2 fxf500 fxs0.2 fxa0.4 cutoff1300"
 
-# 2/4 oct for raise 
-tracks["brute:annoy"] = "g2 {x32} c2 {x32} g2 {x32} c2 {x32} :: >0.06 =0.25 relT0.4 #0.15"
-tracks["eli:rhythm"] = " _[=0.75] g2[=0.25] g2[=0.5] g2[=0.5] {x4} _[=0.75] c2[=0.25] c2[=0.5] c2[=0.5] {x4} :: >0.06 #0.4 =1 relT0.8"
-tracks["brute:harmonics"] = " d4[>0.04] c3 {x16} g4 g3[>0.04] {x16} d4[>0.04] c3 {x16} b3 g3[>0.04] {x16} :: >0.2 =0.25 #0.05 fx8.02 relT2"
+# 2/4 oct for raise
+#tracks["brute:annoy"] = "g2 {x32} c3 {x32} g2 {x32} c3 {x32} :: >0.06 =0.25 relT0.4 #0.15"
+#tracks["brute:annoy"] = "g4 {x32} c5 {x32} g4 {x32} c5 {x32} :: >0.06 =0.25 relT0.4 #0.15"
+#tracks["eli:rhythm"] = " _[=0.75] g2[=0.25] g2[=0.5] g2[=0.5] {x4} _[=0.75] c2[=0.25] c2[=0.5] c2[=0.5] {x4} :: >0.06 #0.4 =1 relT0.8"
+#tracks["brute:harmonics"] = " d4[>0.04] c3 {x16} g4 g3[>0.04] {x16} d4[>0.04] c3 {x16} b3 g3[>0.04] {x16} :: >0.2 =0.25 #0.05 fx8.02 relT2"
 
 #tracks["SP_Roland808:drum5X"] = " (bd2/(bd2 bd2)[=0.25] bd2[=1.5]) sn3[ofs0.02]  :: =2 rate2 ofs0 #0.8"
 
 # Some variety for the drums 
-tracks["SP_Roland808:drum5X"] = " (mi28/_/_/_)[=0 #0.3 rate1] (bd2 mi34[=0 ofs0.03]/(bd2 bd2)[=0.25] bd2[=0.5] bd2[=1]) sn3[ofs0.02]  :: =2 rate2 ofs0"
+#tracks["SP_Roland808:drum5X"] = " (mi28/_/_/_)[=0 #0.3 rate1] (bd2 mi34[=0 ofs0.03]/(bd2 bd2)[=0.25] bd2[=0.5] bd2[=1]) sn3[ofs0.02]  :: =2 rate2 ofs0"
 
 #tracks["SP_Roland808:drum5X"] = " (mi28/_)[=0 #0.3 rate1]  (bd2[=1] bd2[=1]/(bd2 bd2)[=0.25] bd2[=0.5] bd2[=1]) sn3[ofs0.02 =1] bd2[=1]  :: =2 rate2 ofs0"
 
 # First note is also cool as high 
-tracks["elisin:roar"] = " (g5 g2)[=0 >8 cut800 #0.15] d4 d4[=4] c4[=4] g3 c4[=2] b3[=6] :: >8 =8 #0.2 cut450"
+#tracks["elisin:roar"] = " (g5 g2)[=0 >8 cut800 #0.2] d4 d4[=4] c4[=4] g3 c4[=2] b3[=6] :: >8 =8 #0.25 cut450"
 
 client.read_custom_synths()
 #client.stop() #
+# TODO: Seems to stop everything forever if you do it for the very last remaining sequencer 
+# This is for now remedied by calling client.stop when it happens 
+client.wipe_on_finish()
 client.set_sequencer_bpm(108)
 
 

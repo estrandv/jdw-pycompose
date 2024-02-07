@@ -17,6 +17,9 @@ class JDWClient:
     def stop(self):
         self.client.send(create_msg("/hard_stop", []))
 
+    def wipe_on_finish(self):
+        self.client.send(create_msg("/wipe_on_finish"))
+
     def play(
         self,
         sc_synth_name: str,
