@@ -7,9 +7,13 @@ import scales
 import time
 from enum import Enum
 
-
 # Debugging 
 import json 
+
+# jdw_sc needs a delay for even sequencing
+# This is mainly for usage with jdw-sequencer and isn't relevant for direct input
+# Should ideally be dynamic I guess
+SC_DELAY_MS = 70
 
 class SendType(Enum):
     NOTE_ON_TIMED = 0
@@ -77,7 +81,7 @@ class MessageWrapper:
         for key in self.message.args:
             osc_args.append(key)
             osc_args.append(self.message.args[key])
-        return create_msg("/play_sample", [ext_id, sample_pack_name, self.message.index, self.message.prefix] + osc_args)
+        return create_msg("/play_sample", [ext_id, sample_pack_name, self.message.index, self.message.prefix, SC_DELAY_MS] + osc_args)
 
     def to_note_modify(self, scale=scales.MINOR, octave=3):
         if "freq" not in self.message.args:
@@ -89,7 +93,7 @@ class MessageWrapper:
         for key in self.message.args:
             osc_args.append(key)
             osc_args.append(self.message.args[key])
-        return create_msg("/note_modify", [ext_id] + osc_args)
+        return create_msg("/note_modify", [ext_id, SC_DELAY_MS] + osc_args)
 
     def to_note_on_timed(self, synth: str):
 
@@ -110,7 +114,7 @@ class MessageWrapper:
         for key in self.message.args:
             osc_args.append(key)
             osc_args.append(self.message.args[key])
-        return create_msg("/note_on_timed", [synth, ext_id, time] + osc_args)
+        return create_msg("/note_on_timed", [synth, ext_id, time, SC_DELAY_MS] + osc_args)
 
     def to_note_on(self, synth: str):
         if "freq" not in self.message.args:
@@ -122,7 +126,7 @@ class MessageWrapper:
         for key in self.message.args:
             osc_args.append(key)
             osc_args.append(self.message.args[key])
-        return create_msg("/note_on", [synth, ext_id] + osc_args)
+        return create_msg("/note_on", [synth, ext_id, SC_DELAY_MS] + osc_args)
 
     def get_time(self):
         return str(self.message.args["time"]) if "time" in self.message.args else "0.0" 
