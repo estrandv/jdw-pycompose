@@ -65,27 +65,32 @@ tracks = {}
 #tracks["eli:plucker"] = "d3[=0.25] g3[=0.25] g2 g3[=0.25] d3[=0.25] (g2/f3/d4/c3) c2 :: >1 =1 #1"
 #tracks["elisin:roar"] = " d3[cut800 #0.7] c4 g3 c3 :: >8 =8 #1"
 
+### Experimentation
+tracks["filtersquare:taper"] = " (g3/d3/c3/d3)[>4 =0 #0.2] c4 g4 d5 a4 f4 g4 d4 g4 d4 :: >0.1 relT2 =1 #0.7 =0.5"
+tracks["pycompose:zzzap"] = " (_[=0.5]/_[=1]) {} g5 {x3} f6 {x6} c5 {x3} eb5 {x3} c3 {x6} d6 {x3} d5 {x3} eb5 {x3} :: >0.6 =0.25 #0.2"
+tracks["SP_Roland808:drum"] = "bd6 sn4 bd6 ((sn4/mi22) sn6)[=0.25] bd4[=0.5] :: #0.4 =1 >1 ofs0"
+
 ### Theseus
 # Start with annoy/harmonics, bring in rhythm for singing 
 
 # fmod 1/2 has different feels  
-tracks["pycompose:bassline"] = "g3 b3 b3 g3[#0] b3 b3 g3[#0] b3 g3 b3 b3 c4 b3 g3 a3 g3 {} g3 c4 c4 g3[#0] c4 c4 g3[#0] c4 g3 c4 c4 d4 c4 g3 b3 g3  :: =0.5 >0.6 #0.2 relT2.2 fmod2 fxf500 fxs0.2 fxa0.4 cutoff1300"
+#tracks["pycompose:bassline"] = "g3 b3 b3 g3[#0] b3 b3 g3[#0] b3 g3 b3 b3 c4 b3 g3 a3 g3 {} g3 c4 c4 g3[#0] c4 c4 g3[#0] c4 g3 c4 c4 d4 c4 g3 b3 g3  :: =0.5 >0.6 #0.2 relT2.2 fmod2 fxf500 fxs0.2 fxa0.4 cutoff1300"
 
 # 2/4 oct for raise
-tracks["brute:annoy"] = "g2 {x32} c3 {x32} g2 {x32} c3 {x32} :: >0.06 =0.25 relT0.4 #0.15"
+#tracks["brute:annoy"] = "g2 {x32} c3 {x32} g2 {x32} c3 {x32} :: >0.06 =0.25 relT0.4 #0.15"
 #tracks["brute:annoy"] = "g4 {x32} c5 {x32} g4 {x32} c5 {x32} :: >0.06 =0.25 relT0.4 #0.15"
-tracks["eli:rhythm"] = " _[=0.75] g2[=0.25] g2[=0.5] g2[=0.5] {x4} _[=0.75] c2[=0.25] c2[=0.5] c2[=0.5] {x4} :: >0.06 #0.4 =1 relT0.8"
-tracks["brute:harmonics"] = " d4[>0.04] c3 {x16} g4 g3[>0.04] {x16} d4[>0.04] c3 {x16} b3 g3[>0.04] {x16} :: >0.2 =0.25 #0.05 fx8.02 relT2"
+#tracks["eli:rhythm"] = " _[=0.75] g2[=0.25] g2[=0.5] g2[=0.5] {x4} _[=0.75] c2[=0.25] c2[=0.5] c2[=0.5] {x4} :: >0.06 #0.4 =1 relT0.8"
+#tracks["brute:harmonics"] = " d4[>0.04] c3 {x16} g4 g3[>0.04] {x16} d4[>0.04] c3 {x16} b3 g3[>0.04] {x16} :: >0.2 =0.25 #0.05 fx8.02 relT2"
 
 #tracks["SP_Roland808:drum5X"] = " (bd2/(bd2 bd2)[=0.25] bd2[=1.5]) sn3[ofs0.02]  :: =2 rate2 ofs0 #0.8"
 
 # Some variety for the drums 
-tracks["SP_Roland808:drum5X"] = " (mi28/_/_/_)[=0 #0.3 rate1] (bd2 mi34[=0 ofs0.03]/(bd2 bd2)[=0.25] bd2[=0.5] bd2[=1]) sn3[ofs0.02]  :: =2 rate2 ofs0"
+#tracks["SP_Roland808:drum5X"] = " (mi28/_/_/_)[=0 #0.3 rate1] (bd2 mi34[=0 ofs0.03]/(bd2 bd2)[=0.25] bd2[=0.5] bd2[=1]) sn3[ofs0.02]  :: =2 rate2 ofs0"
 
 #tracks["SP_Roland808:drum5X"] = " (mi28/_)[=0 #0.3 rate1]  (bd2[=1] bd2[=1]/(bd2 bd2)[=0.25] bd2[=0.5] bd2[=1]) sn3[ofs0.02 =1] bd2[=1]  :: =2 rate2 ofs0"
 
 # First note is also cool as high 
-tracks["elisin:roar"] = " (g5 g2)[=0 >8 cut800 #0.2] d4 d4[=4] c4[=4] g3 c4[=2] b3[=6] :: >8 =8 #0.25 cut450"
+#tracks["elisin:roar"] = " (g5 g2)[=0 >8 cut800 #0.2] d4 d4[=4] c4[=4] g3 c4[=2] b3[=6] :: >8 =8 #0.25 cut450"
 
 client.read_custom_synths()
 #client.stop() #

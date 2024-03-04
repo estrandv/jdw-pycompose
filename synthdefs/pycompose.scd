@@ -40,6 +40,8 @@ SynthDef("filtersquare",
 
 	snd = Pan2.ar(snd, pan);
 
+	snd = AnalogTape.ar(snd);
+
 	Out.ar(bus,snd)
 }).add; 
 
