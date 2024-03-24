@@ -19,8 +19,12 @@ def parse_sections(source_string):
             if not cursor.is_done():
                 current_element.information = cursor.get_until(" ")
 
-            # TODO: Fail safe if element has no parent 
-            current_element = current_element.parent 
+            # TODO: Fail safe if element has no parent
+            # Convoluted because alternations create nested parents 
+            if current_element.parent.type == ElementType.ALTERNATION_SECTION:
+                current_element = current_element.parent.parent 
+            else:  
+                current_element = current_element.parent 
         elif cursor.get() == "/":        
 
             if current_element.parent != None and current_element.parent.type == ElementType.ALTERNATION_SECTION:
@@ -69,3 +73,6 @@ print(parse_sections("abc abc (ala alb / alc (nala nalab)22 )").to_string())
 
 print(parse_sections("a / b / c / d").to_string())
 
+print(parse_sections("outside outside (inside (inside2 (inside3)))bonus / lol").to_string())
+
+print(parse_sections("a b c / (a b c / d d) c").to_string())

@@ -68,8 +68,13 @@ class Element:
             nested = [ele.to_string() for ele in self.elements]
 
             sym = " /" if self.type == ElementType.ALTERNATION_SECTION else ","
+            brackets = ["[", "]"] if self.type == ElementType.ALTERNATION_SECTION else ["(", ")"]
             
-            contents = "(" + (sym + " ").join(nested) + ")"
+            contents = brackets[0] + (sym + " ").join(nested) + brackets[1]
+            
+            #if self.type == ElementType.ALTERNATION_SECTION:
+            #    contents = "*" + contents + "*"
+            
             if self.type == ElementType.ALTERNATION_SECTION:
                 contents = contents 
             if self.information != "":
