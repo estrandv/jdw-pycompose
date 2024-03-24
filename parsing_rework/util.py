@@ -61,6 +61,31 @@ class Element:
         self.elements[-1].parent = self 
         return self.elements[-1]
 
+    
+    def tree_expand(self):
+        req_iterations = self.alternation_count() 
+        full = []
+        for i in range(0, req_iterations - 1):
+            full += self.expand_alternations(i)
+        return full
+
+    def expand_alternations(self, iteration: int):
+        if self.type == ElementType.ATOMIC:
+            return [self]
+        if self.type == ElementType.SECTION:
+            flatmap = []
+            matrix = [e.expand_alternations(iteration) for e in self.elements]
+            for c in matrix:
+                for r in c:
+                    flatmap.append(r)
+            return flatmap
+        if self.type == ElementType.ALTERNATION_SECTION:
+            mod = iteration % (len(self.elements))
+            current_alt = self.elements[mod]
+            print("EXPANDING: ", current_alt.to_string(), str(mod), str(len(self.elements)), str(iteration))            
+            return current_alt.expand_alternations(iteration)
+        return []
+
     def alternation_count(self):
 
         base = 1

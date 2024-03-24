@@ -78,5 +78,16 @@ print(parse_sections("outside outside (inside (inside2 (inside3)))bonus / lol").
 
 print(parse_sections("a b c / (a b c / d d) c").to_string())
 
-# 6 
+# 6  
 print(str(parse_sections("b (c / d / (e / f)").alternation_count()))
+
+# Longer alternation test
+# a b a p f a d a b a p f a h
+# TODO: Broken because iteration index starts too high on nested 
+# We need a new class that keeps track of its own ticks I think
+# Like "expand again" and it counts itself 
+
+alt_parse = parse_sections("a (b / (p f / (d / h))")
+
+#print("ALT EXPAND LEN: ", str(len(alt_parse.tree_expand())))
+print(",".join([e.to_string() for e in alt_parse.tree_expand()]))
