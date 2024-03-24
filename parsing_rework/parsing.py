@@ -67,6 +67,7 @@ def parse_sections(source_string):
 # ISSUES 
 # - Alternation nesting breaks the 22 below 
 # - Final element not read due to nature of is_done() check
+
  
 
 print(parse_sections("abc abc (ala alb / alc (nala nalab)22 )").to_string())
@@ -76,3 +77,6 @@ print(parse_sections("a / b / c / d").to_string())
 print(parse_sections("outside outside (inside (inside2 (inside3)))bonus / lol").to_string())
 
 print(parse_sections("a b c / (a b c / d d) c").to_string())
+
+# 6 
+print(str(parse_sections("b (c / d / (e / f)").alternation_count()))

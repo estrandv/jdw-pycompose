@@ -61,6 +61,16 @@ class Element:
         self.elements[-1].parent = self 
         return self.elements[-1]
 
+    def alternation_count(self):
+
+        base = 1
+        
+        if self.type == ElementType.ALTERNATION_SECTION:
+            base = len(self.elements)
+            print("BASE TO " + str(base))
+
+        return base * max([ele.alternation_count() for ele in self.elements] + [1])
+    
     def to_string(self):
         if self.type == ElementType.ATOMIC:
             return self.information
