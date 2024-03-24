@@ -10,20 +10,36 @@ class Cursor:
         self.cursor_index = 0
 
     def is_done(self):
-        return self.cursor_index >= len(self.source_string) - 1
+        return self.cursor_index > len(self.source_string) - 1
 
     def next(self):
         self.cursor_index += 1
+
+    def peek(self):
+        index = self.cursor_index + 1 
+        if index <= len(self.source_string) - 1:
+            return self.source_string[index]
+        else:
+            return "" 
 
     def get(self):
         return self.source_string[self.cursor_index]
 
     def get_until(self, symbols):
-        scan = ""
-        self.next() 
-        while self.get() not in symbols and not self.is_done():
-            scan += self.get()             
-            self.next()
+        scan = "" 
+        while True:
+
+            
+            current = self.get()
+            ahead = self.peek() 
+
+            if current in symbols:
+                break 
+            else: 
+                scan += current
+                if ahead in symbols or ahead == "":
+                    break 
+                self.next() 
 
         return scan
 

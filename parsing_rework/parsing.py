@@ -7,7 +7,7 @@ def parse_sections(source_string):
     master_section.type = ElementType.SECTION
     current_element = master_section 
 
-    while not cursor.is_done():
+    while True:
 
         print("CURSOR AT: " + cursor.get())
         
@@ -15,7 +15,9 @@ def parse_sections(source_string):
             current_element = current_element.add()
             current_element.type = ElementType.SECTION
         elif cursor.get() == ")":
-            current_element.information = cursor.get_until(" ")
+            cursor.next()
+            if not cursor.is_done():
+                current_element.information = cursor.get_until(" ")
 
             # TODO: Fail safe if element has no parent 
             current_element = current_element.parent 
@@ -45,11 +47,15 @@ def parse_sections(source_string):
         elif cursor.get() != " ":
             current_element = current_element.add()
             current_element.type = ElementType.ATOMIC
-            current_element.information += cursor.get() + cursor.get_until(") ")
+            current_element.information += cursor.get_until(") ")
             current_element = current_element.parent 
 
-        cursor.next()
+        if cursor.peek() == "":
+            break
+        else:
+            cursor.next()
 
+    
 
 
     return master_section 
