@@ -148,9 +148,11 @@ BONUS NOTE #2: Relargs would be neatest as operators: "c4:#+.25", "d5:#*2,>.25".
 	-> Makes it easy to remember what different operators do
 	-> Is compatible with other "*" usage, but can still use another symbol for clarity  
 
-
-
-
+BONUS NOTE #3: Something something alternations in sections unwrap something
+	a3 (c3 / f3)*2 -> a3 c3 f3 c3 f3 # This is dumb 
+	a3 (c3 / f3)*2 -> a3 c3 a3 f3 # This is just the behaviour of: (a3 (c3 / f3))*2
+	a3 (c3 / f3)*2 a5 f5 -> a3 c3 f3 a5 f5 a3 c3 f3 ...... this is dumb but consistent, and there are ways to write what 
+		else other shit you might be intending. 
 
 
 

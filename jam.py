@@ -66,14 +66,23 @@ tracks = {}
 #tracks["elisin:roar"] = " d3[cut800 #0.7] c4 g3 c3 :: >8 =8 #1"
 
 ### Experimentation
-tracks["filtersquare:taper"] = " (g3/d3/c3/d3)[>4 =0 #0.2] c4 g4 d5 a4 f4 g4 d4 g4 d4 :: >0.1 relT2 =1 #0.7 =0.5"
-tracks["pycompose:zzzap"] = " (_[=0.5]/_[=1]) {} g5 {x3} f6 {x6} c5 {x3} eb5 {x3} c3 {x6} d6 {x3} d5 {x3} eb5 {x3} :: >0.6 =0.25 #0.2"
-tracks["SP_Roland808:drum"] = "bd6 sn4 bd6 ((sn4/mi22) sn6)[=0.25] bd4[=0.5] :: #0.4 =1 >1 ofs0"
+#tracks["pycompose:taper"] = " c2 c2[=1] (g2/f2)[=1] :: >1.3 relT2.2 =2 #0.3"
+#tracks["pycompose:skib"] = "b3 {x3} g3 a3 d3 {x3} (a4/b4)[>1] :: =0.5 #0.2 >0.2 relT2 attT0.1"
+#tracks["brute:somebrut"] = "c3[=0 fxb1] f4 a3 g3 b4 :: #0.1 fxb0.24 fxa0.2 =16 >6 relT2 attT0.5"
+#tracks["brute:argh"] = "_ {x16} _ _ _ g5 d5 c5 _ (f4/b4) :: =0.5 #0.3 fxb0.64 fxa0.44 >0.1 relT2.2"
+#tracks["pycompose:zzzap"] = " (_[=0.5]/_[=1]) {} g5 {x3} f6 {x6} c5 {x3} eb5 {x3} c3 {x6} d6 {x3} d5 {x3} eb5 {x3} :: >0.6 =0.25 #0.2"
+
+# Something cool coming up helpre 
+tracks["SP_Roland808:drum"] = "mi16[=0 ofs0.2] bd6 sn4 bd6 ((sn4/mi22) sn6)[=0.25] bd4[=0.5] :: #0.4 =1 >1 ofs0 rate2.7"
+tracks["pluck:riff"] = "g3 g4 {x16} c3 g4 {x16} f4 g4 {x16} eb3 g4 {x16}  :: >0.3 =0.25 #0.34 relT0.2 attT0.1"
+tracks["elisin:organ"] = "d5[=0] c2 g2 f2 d5[=0] eb2 :: =8 >2 #0.2 relT2 attT0.1"
+tracks["gentle:raw"] = "f2t[=2] f6:t[=6] f2t[=1 >1] f2t[=1] f8:t[=6]  :: #0.2 >4 =4 prt0.2 fxa0.32 fxb22.02 fx2.2 relT2"
+#tracks["brute:riiiigh"] = "g3[=0] d3 {x16} _ {x32} g4[=0] c3 {x64} :: =0.125 >0.05 #0.1 lfoD0.2 lfoS0.02 relT0.2"
 
 ### Theseus
 # Start with annoy/harmonics, bring in rhythm for singing 
 
-# fmod 1/2 has different feels  
+# fmod 1/2 hashs different feels  
 #tracks["pycompose:bassline"] = "g3 b3 b3 g3[#0] b3 b3 g3[#0] b3 g3 b3 b3 c4 b3 g3 a3 g3 {} g3 c4 c4 g3[#0] c4 c4 g3[#0] c4 g3 c4 c4 d4 c4 g3 b3 g3  :: =0.5 >0.6 #0.2 relT2.2 fmod2 fxf500 fxs0.2 fxa0.4 cutoff1300"
 
 # 2/4 oct for raise
