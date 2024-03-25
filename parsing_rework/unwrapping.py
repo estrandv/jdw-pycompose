@@ -1,5 +1,32 @@
 """
 
+	#### NEW TAKES 
+
+Recursiveness becomes tricky as soon as we require state and would require additional utility objects.
+
+Still, I think it would be the cleanest. 
+
+The core issue is this: each alternation, on each level, should have its own counter.
+
+The counter should be the modulo; a "get next looping" for the alternation set. 
+
+This should trigger individually each time that particular alternation is "selected". 
+
+So we still start with getting the minimum required iterations and looping that. 
+
+But instead of passing the modulo as the iteration variable, we call getNext each step along the way. 
+
+Q: Is it possible to do getNext(element) and keep a state outside? 
+	- The python "is" operator checks if two object references point to the same place in memory. 
+	- It should be possible to do some form of array magic here  
+
+
+
+
+	#### BELOW IS OLD TALK 
+
+
+
 	TODO: Unwrapping alternation sections 
 
 	General note: Probably the last thing we want to do, after atomic string parsing. 

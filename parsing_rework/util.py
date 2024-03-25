@@ -43,6 +43,26 @@ class Cursor:
 
         return scan
 
+class TreeExpander:
+
+    def __init__(self):
+        self.tick_list = []
+    
+    def tree_expand(self, element):
+        req_iteratins = element.alternation_count()
+        print("REQUIRED ALTERNATIONS: ", str(req_iteratins))
+        full = []
+        for i in range(0, req_iteratins):
+            full += element.expand_alternations(self)
+
+        return full
+
+    # Returns the amount of times that this particular element has been ticked so far.
+    # Used to keep track of which alternation to return. 
+    def tick(self,element):
+        count = len([e for e in self.tick_list if e is element])
+        self.tick_list.append(element)
+        return count 
 
 class ElementType(Enum):
     SECTION = 0
@@ -61,29 +81,24 @@ class Element:
         self.elements[-1].parent = self 
         return self.elements[-1]
 
-    
-    def tree_expand(self):
-        req_iterations = self.alternation_count() 
-        full = []
-        for i in range(0, req_iterations - 1):
-            full += self.expand_alternations(i)
-        return full
 
-    def expand_alternations(self, iteration: int):
+    def expand_alternations(self, tree):
         if self.type == ElementType.ATOMIC:
             return [self]
         if self.type == ElementType.SECTION:
             flatmap = []
-            matrix = [e.expand_alternations(iteration) for e in self.elements]
+            matrix = [e.expand_alternations(tree) for e in self.elements]
             for c in matrix:
                 for r in c:
                     flatmap.append(r)
             return flatmap
         if self.type == ElementType.ALTERNATION_SECTION:
-            mod = iteration % (len(self.elements))
+            
+            ticks = tree.tick(self)
+            mod = ticks % (len(self.elements))
             current_alt = self.elements[mod]
-            print("EXPANDING: ", current_alt.to_string(), str(mod), str(len(self.elements)), str(iteration))            
-            return current_alt.expand_alternations(iteration)
+            print("EXPANDING: ", current_alt.to_string(), str(mod), str(len(self.elements)), str(ticks))            
+            return current_alt.expand_alternations(tree)
         return []
 
     def alternation_count(self):

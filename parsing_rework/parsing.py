@@ -1,4 +1,4 @@
-from util import Cursor, Element, ElementType
+from util import Cursor, Element, ElementType, TreeExpander
 import json 
 
 def parse_sections(source_string):
@@ -82,12 +82,11 @@ print(parse_sections("a b c / (a b c / d d) c").to_string())
 print(str(parse_sections("b (c / d / (e / f)").alternation_count()))
 
 # Longer alternation test
-# a b a p f a d a b a p f a h
-# TODO: Broken because iteration index starts too high on nested 
-# We need a new class that keeps track of its own ticks I think
-# Like "expand again" and it counts itself 
-
+# EXP: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
+# RES: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
 alt_parse = parse_sections("a (b / (p f / (d / h))")
 
 #print("ALT EXPAND LEN: ", str(len(alt_parse.tree_expand())))
-print(",".join([e.to_string() for e in alt_parse.tree_expand()]))
+
+tree = TreeExpander()
+print(",".join([e.to_string() for e in tree.tree_expand(alt_parse)]))
