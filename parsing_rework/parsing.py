@@ -59,35 +59,40 @@ def parse_sections(source_string):
     
 
 
-    return master_section 
-
+    return master_section     
 
 # Run tests if ran standalone 
 if __name__ == "__main__": 
 
-    # TODO: First, change the to_string asserts to more carefully consider contents 
+    def assert_type(element, type):
+        assert element.type == type, element.type 
 
-    print(parse_sections("abc abc (ala alb / alc (nala nalab)22 )").to_string())
+    atomic_test = parse_sections("a")
+    assert atomic_test.type == ElementType.SECTION, atomic_test.type
+    assert len(atomic_test.elements) == 1, len(atomic_test.elements)
+    assert atomic_test.elements[0].type == ElementType.ATOMIC, atomic_test.elements[0].type
 
-    print(parse_sections("a / b / c / d").to_string())
+    single_alt_test = parse_sections("a / b / c / d")
+    assert_type(single_alt_test, ElementType.ALTERNATION_SECTION)
+    assert len(single_alt_test.elements) == 4, len(single_alt_test.elements)
 
-    print(parse_sections("outside outside (inside (inside2 (inside3)))bonus / lol").to_string())
+    nested_alt_test = parse_sections("a b c / (a (b / b2) c / d d) c")
+    assert_type(nested_alt_test, ElementType.ALTERNATION_SECTION)
+    assert len(nested_alt_test.elements) == 2, len(nested_alt_test.elements)
+    assert_type(nested_alt_test.elements[1], ElementType.SECTION)
+    assert_type(nested_alt_test.elements[1].elements[0], ElementType.ALTERNATION_SECTION)
+    abc_nest = nested_alt_test.elements[1].elements[0].elements[0]
+    assert_type(abc_nest, ElementType.SECTION)
+    assert len(abc_nest.elements) == 3, len(abc_nest.elements)
 
-    print(parse_sections("a b c / (a b c / d d) c").to_string())
+    alternation_count_test = parse_sections("b (c / d / (e / f)").alternation_count()
+    assert alternation_count_test == 6, alternation_count_test
 
-    # 6  
-    print(str(parse_sections("b (c / d / (e / f)").alternation_count()))
-
-    # Longer alternation test
-    # EXP: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
-    # RES: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
-    alt_parse = parse_sections("a (b / (p f / (d / h))")
-
-    #print("ALT EXPAND LEN: ", str(len(alt_parse.tree_expand())))
-
+    # Quick assertion of atomic elements after a full tree alternations expand    
+    tree_expand_test = parse_sections("a (b / (p f / (d / h))")
     tree = TreeExpander()
-    # TODO: This is a different assert which could eventually become the new to_string
-    print(",".join([e.to_string() for e in tree.tree_expand(alt_parse)]))
+    tree_expand_string = ",".join([e.information for e in tree.tree_expand(tree_expand_test)])
+    assert tree_expand_string == "a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h"
 
     # TODO: Future staring here. Safe, step-by-step procedure to include parent args
     # Best if this is done before unwrapping, in case alternations want different uses 
@@ -95,3 +100,47 @@ if __name__ == "__main__":
     assert len(nested_arg_set.elements) == 2
     a_node = nested_arg_set.elements[1].elements[0].elements[0]
     assert a_node.get_information_array_ordered() == ["::a", "b", "c", ""], "was: " + ",".join([a for a in a_node.get_information_array_ordered()])
+
+    # TODO: With a way to unwrap, and a way to resolve parent args, we can start working on the atomic parse 
+    # This parse will parse (1) core symbols and indices (2) optional arg string at the end
+    # Resolve other todos first to ensure a clean codebase 
+
+    """
+        REVISITING THE FEATURE SPEC: 
+        1. Complete reconstruction (know what was entered, interpret things like alternations freely at later time).
+        2. SYNTAX
+
+            d3:1.0,mut2.0,arg0.1 e3 ((a3 / b2) b3):0.2
+    
+            - csv args (after ":" or other spacer), to simplify writing and sanctify whitespace as note-spacing
+                - "time" as convenience arg; naming not necessary
+            - first class parentheses, where everything written directly after is interpreted as for notes
+            - same old atomic note split: 
+                [prefix: non-number string] [index: number] [suffix: non-number string] [args: sub-parse if arg-symbol (always last)]
+        3. Alternation needs 
+            - (a b c (d/f))x8 should single-resolve for each "x", rather than unpack everything eight times
+                -> a b c d a b c f [...]
+            
+            => THIS IS TRICKY TO KEEP IN YOUR HEAD 
+                - Default interpretation is "repeat until unwrapped everything", so behaivour gets a bit mixed
+        
+                    a b c (d/f) -> a b c d a b c f
+
+                    a b c (d/f)x2 -> a b c d f a b c d f (rather than single-iteration "spend the whole thing")
+
+                    Ideally, expand_alternations should count how many times an alternation is ticked and be satisfied when it has expanded all contained items. 
+
+                    I think you can get around this by tinkering with alternation_count:
+                        - if xN, return max count divided by N
+
+                    REQUIREMENT: Repeat amount known early
+                        - Extra tricky because it propagates downward 
+                        - Better, then, to resolve args BEFORE alternation unwrapping
+                            -> Somewhat easy if dynamic to start with
+            
+
+            CONCLUSION:
+                - Start with "parse_suffix" which can detect both args and repeats 
+                - Make sure it returns complete information 
+
+    """

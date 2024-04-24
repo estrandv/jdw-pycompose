@@ -51,10 +51,11 @@ class TreeExpander:
         self.tick_list = []
     
     def tree_expand(self, element):
+        # Count how many times one would have to iterate the whole set to expand all nested alternations 
         req_iteratins = element.alternation_count()
         full = []
         for i in range(0, req_iteratins):
-            full += element.expand_alternations(self)
+            full += self.expand_alternations(element)
 
         return full
 
@@ -64,6 +65,26 @@ class TreeExpander:
         count = len([e for e in self.tick_list if e is element])
         self.tick_list.append(element)
         return count 
+
+    def expand_alternations(self, element):
+        if element.type == ElementType.ATOMIC:
+            return [element]
+        if element.type == ElementType.SECTION:
+            flatmap = []
+            matrix = [self.expand_alternations(e) for e in element.elements]
+            for c in matrix:
+                for r in c:
+                    flatmap.append(r)
+            return flatmap
+        if element.type == ElementType.ALTERNATION_SECTION:
+
+            # Tick element and return amount of times it has been ticked            
+            ticks = self.tick(element)
+            # Resolve an index from the tick amount (so that, in a 2-len array, 2 follows after 1, 0 after 2, etc)
+            mod = ticks % (len(element.elements))
+            current_alt = element.elements[mod]
+            return self.expand_alternations(current_alt)
+        return []
 
 class ElementType(Enum):
     SECTION = 0
@@ -82,26 +103,7 @@ class Element:
         self.elements[-1].parent = self 
         return self.elements[-1]
 
-    # TODO: Place in the tree instead
-    def expand_alternations(self, tree):
-        if self.type == ElementType.ATOMIC:
-            return [self]
-        if self.type == ElementType.SECTION:
-            flatmap = []
-            matrix = [e.expand_alternations(tree) for e in self.elements]
-            for c in matrix:
-                for r in c:
-                    flatmap.append(r)
-            return flatmap
-        if self.type == ElementType.ALTERNATION_SECTION:
-            
-            ticks = tree.tick(self)
-            mod = ticks % (len(self.elements))
-            current_alt = self.elements[mod]
-            return current_alt.expand_alternations(tree)
-        return []
-
-    # TODO: Consider placing in tree as well
+    # TODO: Consider placing in tree instead 
     def alternation_count(self):
 
         base = 1
@@ -109,8 +111,10 @@ class Element:
         if self.type == ElementType.ALTERNATION_SECTION:
             base = len(self.elements)
 
+        # Max of [AC, 1]
         return base * max([ele.alternation_count() for ele in self.elements] + [1])
     
+    # TODO: Used for quick, brainless print tests. Highly unstable, don't use for asserts... 
     def to_string(self):
         if self.type == ElementType.ATOMIC:
             return self.information
