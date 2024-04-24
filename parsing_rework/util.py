@@ -25,6 +25,8 @@ class Cursor:
     def get(self):
         return self.source_string[self.cursor_index]
 
+    # Returns characters up until, but not including, any of the mentioned symbols
+    # Leaves cursor at the found symbol
     def get_until(self, symbols):
         scan = "" 
         while True:
@@ -50,7 +52,6 @@ class TreeExpander:
     
     def tree_expand(self, element):
         req_iteratins = element.alternation_count()
-        print("REQUIRED ALTERNATIONS: ", str(req_iteratins))
         full = []
         for i in range(0, req_iteratins):
             full += element.expand_alternations(self)
@@ -81,7 +82,7 @@ class Element:
         self.elements[-1].parent = self 
         return self.elements[-1]
 
-
+    # TODO: Place in the tree instead
     def expand_alternations(self, tree):
         if self.type == ElementType.ATOMIC:
             return [self]
@@ -97,17 +98,16 @@ class Element:
             ticks = tree.tick(self)
             mod = ticks % (len(self.elements))
             current_alt = self.elements[mod]
-            print("EXPANDING: ", current_alt.to_string(), str(mod), str(len(self.elements)), str(ticks))            
             return current_alt.expand_alternations(tree)
         return []
 
+    # TODO: Consider placing in tree as well
     def alternation_count(self):
 
         base = 1
         
         if self.type == ElementType.ALTERNATION_SECTION:
             base = len(self.elements)
-            print("BASE TO " + str(base))
 
         return base * max([ele.alternation_count() for ele in self.elements] + [1])
     
@@ -131,3 +131,12 @@ class Element:
                 contents += self.information 
             return contents
         
+    # Returns an array of information strings, starting with self.information and then resolving parent.informaiton all the way up to the top 
+    # Used to retrieve a priority-ordered information set which can then be used for e.g. argument parsing and overwriting. 
+    def get_information_array_ordered(self):
+        full_information = [] 
+        current_node = self
+        while current_node != None:
+            full_information.append(current_node.information)
+            current_node = current_node.parent
+        return  full_information      

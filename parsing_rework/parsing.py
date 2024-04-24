@@ -8,9 +8,6 @@ def parse_sections(source_string):
     current_element = master_section 
 
     while True:
-
-        print("CURSOR AT: " + cursor.get())
-        
         if cursor.get() == "(":
             current_element = current_element.add()
             current_element.type = ElementType.SECTION
@@ -64,29 +61,37 @@ def parse_sections(source_string):
 
     return master_section 
 
-# ISSUES 
-# - Alternation nesting breaks the 22 below 
-# - Final element not read due to nature of is_done() check
 
- 
+# Run tests if ran standalone 
+if __name__ == "__main__": 
 
-print(parse_sections("abc abc (ala alb / alc (nala nalab)22 )").to_string())
+    # TODO: First, change the to_string asserts to more carefully consider contents 
 
-print(parse_sections("a / b / c / d").to_string())
+    print(parse_sections("abc abc (ala alb / alc (nala nalab)22 )").to_string())
 
-print(parse_sections("outside outside (inside (inside2 (inside3)))bonus / lol").to_string())
+    print(parse_sections("a / b / c / d").to_string())
 
-print(parse_sections("a b c / (a b c / d d) c").to_string())
+    print(parse_sections("outside outside (inside (inside2 (inside3)))bonus / lol").to_string())
 
-# 6  
-print(str(parse_sections("b (c / d / (e / f)").alternation_count()))
+    print(parse_sections("a b c / (a b c / d d) c").to_string())
 
-# Longer alternation test
-# EXP: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
-# RES: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
-alt_parse = parse_sections("a (b / (p f / (d / h))")
+    # 6  
+    print(str(parse_sections("b (c / d / (e / f)").alternation_count()))
 
-#print("ALT EXPAND LEN: ", str(len(alt_parse.tree_expand())))
+    # Longer alternation test
+    # EXP: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
+    # RES: a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h
+    alt_parse = parse_sections("a (b / (p f / (d / h))")
 
-tree = TreeExpander()
-print(",".join([e.to_string() for e in tree.tree_expand(alt_parse)]))
+    #print("ALT EXPAND LEN: ", str(len(alt_parse.tree_expand())))
+
+    tree = TreeExpander()
+    # TODO: This is a different assert which could eventually become the new to_string
+    print(",".join([e.to_string() for e in tree.tree_expand(alt_parse)]))
+
+    # TODO: Future staring here. Safe, step-by-step procedure to include parent args
+    # Best if this is done before unwrapping, in case alternations want different uses 
+    nested_arg_set = parse_sections("f (( ::a )b )c")
+    assert len(nested_arg_set.elements) == 2
+    a_node = nested_arg_set.elements[1].elements[0].elements[0]
+    assert a_node.get_information_array_ordered() == ["::a", "b", "c", ""], "was: " + ",".join([a for a in a_node.get_information_array_ordered()])

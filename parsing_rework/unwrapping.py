@@ -1,5 +1,38 @@
 """
 
+	###### Repetition
+
+I previously wanted repetition to be done separately from unwrapping.
+
+Depending on usage, however, it might be somewhat closely tied to the alternations concept:
+
+	a b*3 (f / g)*2
+
+	=> a b b b f f a b b b g g
+	=> a b b b f g a b b b f g
+
+In order to do the top resolution, we must unpack repetitions during unwrapping (know that the alternation is identical)
+
+Again, we are faced with the issue of state. 
+
+The Element class is not supposed to know about args and operators at this time. 
+
+It is however impossible to detect repetition without them. 
+
+Furthermore, it feels overkill to walk the whole tree and replace the elements with wrapper classes. 
+
+a) So the easiest solution is to pre-parse the source_string args. 
+
+b) But we can also on-demand parse them with a util, losing performance but keeping the objects clean. 
+
+c) The middle way is a wrapper or next-step class. This requires a replacement walk procedure. Might not be all that bad. 
+	- Long term perhaps best as well, as once we get to nested/master args and suchlike it is best handled in-tree rather than individually parsed 
+
+As a sort of stepping stone, we can start by adding transformation calls for the next-step class. 
+
+We can then use those directly in our unwrapping, without preparing. We can later transition into passing prepared objects into unwrapping. 
+
+
 	#### NEW TAKES 
 
 Recursiveness becomes tricky as soon as we require state and would require additional utility objects.
