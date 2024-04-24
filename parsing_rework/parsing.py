@@ -1,6 +1,8 @@
 from util import Cursor, Element, ElementType, TreeExpander
 import json 
 
+import pytest 
+
 def parse_sections(source_string):
     cursor = Cursor(source_string)
     master_section = Element()
@@ -16,9 +18,13 @@ def parse_sections(source_string):
             if not cursor.is_done():
                 current_element.information = cursor.get_until(" ")
 
-            # TODO: Fail safe if element has no parent
             # Convoluted because alternations create nested parents 
+
+            if current_element.parent == None: 
+                raise Exception("Encountered closing bracket in section with no parent (orphaned closing bracket?)")
             if current_element.parent.type == ElementType.ALTERNATION_SECTION:
+                if current_element.parent.parent == None:
+                    raise Exception("Encountered closing bracked in alternation section with no grandparent (orphaned closing bracket?)")
                 current_element = current_element.parent.parent 
             else:  
                 current_element = current_element.parent 
@@ -42,8 +48,6 @@ def parse_sections(source_string):
                 # Begin new section after the slash 
                 current_element = current_element.add() 
                 current_element.type = ElementType.SECTION  
-                
-
             
         elif cursor.get() != " ":
             current_element = current_element.add()
@@ -56,13 +60,21 @@ def parse_sections(source_string):
         else:
             cursor.next()
 
-    
-
-
     return master_section     
 
 # Run tests if ran standalone 
 if __name__ == "__main__": 
+
+    # Perform some bad faith tests
+    with pytest.raises(Exception) as x:
+        parse_sections(")))")
+        assert "orphaned closing bracket" in x.value
+        assert "no parent" in x.value
+
+    # These should be OK even if they are gibberish 
+    parse_sections("                ")
+    parse_sections("(a c v")
+    parse_sections("(((((/)))))")
 
     def assert_type(element, type):
         assert element.type == type, element.type 
@@ -142,5 +154,8 @@ if __name__ == "__main__":
             CONCLUSION:
                 - Start with "parse_suffix" which can detect both args and repeats 
                 - Make sure it returns complete information 
+
+            4. REMEMBER: We want proper syntax error handling this time as well 
+            5. Once all parsing is solid, we can move on to OSC transformation 
 
     """
