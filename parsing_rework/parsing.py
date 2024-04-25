@@ -5,6 +5,10 @@ import pytest
 from decimal import Decimal
 
 @dataclass
+class SuffixFreetextInfo:
+    repeat: int = 1
+
+@dataclass
 class SuffixInfo:
     freetext: str = ""
     arg_source: str = ""
@@ -20,6 +24,20 @@ def parse_suffix(suffix_string) -> SuffixInfo:
     info = SuffixInfo() 
     info.freetext = freetext
     info.arg_source = arg_source
+    return info 
+
+# Parse non-arg part of suffix string
+# ATM only "xN" for repeat! 
+def parse_suffix_freetext(suffix_freetext) -> SuffixFreetextInfo:
+    cursor = Cursor(suffix_freetext)
+    info = SuffixFreetextInfo() 
+    if not cursor.is_done() and cursor.get() == "x":
+        cursor.next() 
+        if not cursor.is_done():
+            numeric = cursor.get_remaining()
+            if numeric != "":
+                info.repeat = int(numeric)
+
     return info 
 
 # Parse 1.0,arg2,argb2.0 [...] part of element info suffix 
@@ -215,6 +233,14 @@ if __name__ == "__main__":
     assert arg_test[";"] == Decimal("900"), arg_test[";"]
     assert arg_test["lob"] == Decimal("0.002"), arg_test["lob"]
     
+    # Suffix freetext testing 
+
+    freetext_test = parse_suffix_freetext("")
+    assert freetext_test.repeat == 1, freetext_test.repeat
+    
+    freetext_test_2 = parse_suffix_freetext("x44")
+    assert freetext_test_2.repeat == 44, freetext_test_2.repeat
+
     """
         REVISITING THE FEATURE SPEC: 
         1. Complete reconstruction (know what was entered, interpret things like alternations freely at later time).
