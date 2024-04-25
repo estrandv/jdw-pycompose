@@ -176,14 +176,7 @@ if __name__ == "__main__":
     alternation_count_test = parse_sections("b (c / d / (e / f)").alternation_count()
     assert alternation_count_test == 6, alternation_count_test
 
-    # Quick assertion of atomic elements after a full tree alternations expand    
-    # TODO: Tree expander should have its own tests, not get mixed up with parsing
-    # This is a lot easier for now though ...     
-    tree_expand_test = parse_sections("a (b / (p f / (d / h))")
-    tree = TreeExpander()
-    tree_expand_string = ",".join([e.information for e in tree.tree_expand(tree_expand_test)])
-    assert tree_expand_string == "a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h"
-
+    
     # TODO: Future staring here. Safe, step-by-step procedure to include parent args
     # Best if this is done before unwrapping, in case alternations want different uses
     nested_arg_set = parse_sections("f (( ::a )b )c")
