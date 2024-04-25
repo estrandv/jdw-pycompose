@@ -1,12 +1,9 @@
-from util import Cursor, Element, ElementType, TreeExpander
+from util import Cursor, TreeExpander
+from element import Element, ElementType
 import json 
 from dataclasses import dataclass
 import pytest 
 from decimal import Decimal
-
-@dataclass
-class SuffixFreetextInfo:
-    repeat: int = 1
 
 @dataclass
 class SuffixInfo:
@@ -25,6 +22,10 @@ def parse_suffix(suffix_string) -> SuffixInfo:
     info.freetext = freetext
     info.arg_source = arg_source
     return info 
+
+@dataclass
+class SuffixFreetextInfo:
+    repeat: int = 1
 
 # Parse non-arg part of suffix string
 # ATM only "xN" for repeat! 
@@ -77,7 +78,7 @@ def parse_args(arg_source) -> dict:
 
     return args 
 
-
+# Top level division of elements - ()-sections, /-alternations and "abc123"-atomics 
 def parse_sections(source_string) -> Element:
     cursor = Cursor(source_string)
     master_section = Element()
