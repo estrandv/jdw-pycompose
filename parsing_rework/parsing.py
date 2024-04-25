@@ -9,6 +9,7 @@ class SuffixInfo:
     freetext: str = ""
     arg_source: str = ""
 
+# Parse [freetext]:[args] part of element info 
 def parse_suffix(suffix_string) -> SuffixInfo:
 
     cursor = Cursor(suffix_string)
@@ -21,6 +22,7 @@ def parse_suffix(suffix_string) -> SuffixInfo:
     info.arg_source = arg_source
     return info 
 
+# Parse 1.0,arg2,argb2.0 [...] part of element info suffix 
 def parse_args(arg_source) -> dict:
     args = {}
 
@@ -36,18 +38,20 @@ def parse_args(arg_source) -> dict:
         if sub_cursor.peek() != "" and non_numeric != "":
             sub_cursor.next()
 
-        numeric = sub_cursor.get_remaining() 
-        numeric_decimal = Decimal(numeric)
+        numeric = sub_cursor.get_remaining()
 
-        if non_numeric == "":
-            if len(args) == 0:
-                # TODO: Some other way to provide this default 
-                # First arg is "time" unless otherwise noted 
-                args["time"] = numeric_decimal
+        if numeric != "": 
+            numeric_decimal = Decimal(numeric)
+
+            if non_numeric == "":
+                if len(args) == 0:
+                    # TODO: Some other way to provide this default 
+                    # First arg is "time" unless otherwise noted 
+                    args["time"] = numeric_decimal
+                else:
+                    raise Exception("Parsing error: unnamed arg")
             else:
-                raise Exception("Parsing error: unnamed arg")
-        else:
-            args[non_numeric] = numeric_decimal
+                args[non_numeric] = numeric_decimal
 
         cursor.move_past_next(",")
         if cursor.is_done():
@@ -188,6 +192,9 @@ if __name__ == "__main__":
     assert suffix_broken_args_test.arg_source == "", suffix_broken_args_test.arg_source
 
     # Args tests 
+
+    no_arg_test = parse_args("")
+    assert len(no_arg_test) == 0
 
     arg_test_basic = parse_args("1.0")
     assert arg_test_basic["time"] == Decimal("1.0"), arg_test_basic["time"]

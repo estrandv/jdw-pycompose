@@ -44,7 +44,11 @@ class Cursor:
     # Returns characters up until, but not including, any of the mentioned symbols
     # Leaves cursor before the found symbol
     def get_until(self, symbols):
-        scan = "" 
+        scan = ""
+
+        if self.is_done():
+            return ""
+
         while True:
 
             
