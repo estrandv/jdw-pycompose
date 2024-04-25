@@ -25,8 +25,24 @@ class Cursor:
     def get(self):
         return self.source_string[self.cursor_index]
 
+    def get_remaining(self):
+        return "".join(self.source_string[self.cursor_index:])
+
+    # Place cursor on index after next occurrence of any of the mentioned symbols
+    def move_past_next(self, symbols):
+
+        while True: 
+            if self.is_done():
+                break 
+            else:
+                current = self.get()
+                self.next()
+                if current in symbols:
+                    break 
+        return  
+
     # Returns characters up until, but not including, any of the mentioned symbols
-    # Leaves cursor at the found symbol
+    # Leaves cursor before the found symbol
     def get_until(self, symbols):
         scan = "" 
         while True:

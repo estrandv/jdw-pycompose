@@ -1,9 +1,27 @@
 from util import Cursor, Element, ElementType, TreeExpander
 import json 
-
+from dataclasses import dataclass
 import pytest 
 
-def parse_sections(source_string):
+@dataclass
+class SuffixInfo:
+    freetext: str = ""
+    arg_source: str = ""
+
+def parse_suffix(suffix_string) -> SuffixInfo:
+
+    cursor = Cursor(suffix_string)
+    freetext = cursor.get_until(":")
+    cursor.move_past_next(":")
+    arg_source = "" if cursor.is_done() else cursor.get_remaining() 
+    
+    info = SuffixInfo() 
+    info.freetext = freetext
+    info.arg_source = arg_source
+    return info 
+
+
+def parse_sections(source_string) -> Element:
     cursor = Cursor(source_string)
     master_section = Element()
     master_section.type = ElementType.SECTION
@@ -101,13 +119,15 @@ if __name__ == "__main__":
     assert alternation_count_test == 6, alternation_count_test
 
     # Quick assertion of atomic elements after a full tree alternations expand    
+    # TODO: Tree expander should have its own tests, not get mixed up with parsing
+    # This is a lot easier for now though ...     
     tree_expand_test = parse_sections("a (b / (p f / (d / h))")
     tree = TreeExpander()
     tree_expand_string = ",".join([e.information for e in tree.tree_expand(tree_expand_test)])
     assert tree_expand_string == "a,b,a,p,f,a,b,a,d,a,b,a,p,f,a,b,a,h"
 
     # TODO: Future staring here. Safe, step-by-step procedure to include parent args
-    # Best if this is done before unwrapping, in case alternations want different uses 
+    # Best if this is done before unwrapping, in case alternations want different uses
     nested_arg_set = parse_sections("f (( ::a )b )c")
     assert len(nested_arg_set.elements) == 2
     a_node = nested_arg_set.elements[1].elements[0].elements[0]
@@ -116,6 +136,19 @@ if __name__ == "__main__":
     # TODO: With a way to unwrap, and a way to resolve parent args, we can start working on the atomic parse 
     # This parse will parse (1) core symbols and indices (2) optional arg string at the end
     # Resolve other todos first to ensure a clean codebase 
+
+    # TODO: Consider separate files for separate parts of parsing logic 
+    suffix_test_simple = parse_suffix("abc:1.0,fc33")
+    assert suffix_test_simple.arg_source == "1.0,fc33", suffix_test_simple.arg_source
+    assert suffix_test_simple.freetext == "abc", suffix_test_simple.freetext
+
+    suffix_test_no_args = parse_suffix("()---")
+    assert suffix_test_no_args.arg_source == "", suffix_test_no_args.arg_source
+    assert suffix_test_no_args.freetext == "()---", suffix_test_no_args.freetext
+
+    suffix_broken_args_test = parse_suffix("f:")
+    assert suffix_broken_args_test.freetext == "f", suffix_broken_args_test.freetext 
+    assert suffix_broken_args_test.arg_source == "", suffix_broken_args_test.arg_source
 
     """
         REVISITING THE FEATURE SPEC: 
