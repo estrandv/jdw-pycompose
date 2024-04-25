@@ -2,6 +2,7 @@ from util import Cursor, Element, ElementType, TreeExpander
 import json 
 from dataclasses import dataclass
 import pytest 
+from decimal import Decimal
 
 @dataclass
 class SuffixInfo:
@@ -19,6 +20,40 @@ def parse_suffix(suffix_string) -> SuffixInfo:
     info.freetext = freetext
     info.arg_source = arg_source
     return info 
+
+def parse_args(arg_source) -> dict:
+    args = {}
+
+    cursor = Cursor(arg_source)
+    while True: 
+        # Step on separator at a time 
+        content = cursor.get_until(",")
+
+        sub_cursor = Cursor(content)
+        non_numeric = sub_cursor.get_until("0123456789")
+
+        # Step into the numeric part of the string unless it began immediately 
+        if sub_cursor.peek() != "" and non_numeric != "":
+            sub_cursor.next()
+
+        numeric = sub_cursor.get_remaining() 
+        numeric_decimal = Decimal(numeric)
+
+        if non_numeric == "":
+            if len(args) == 0:
+                # TODO: Some other way to provide this default 
+                # First arg is "time" unless otherwise noted 
+                args["time"] = numeric_decimal
+            else:
+                raise Exception("Parsing error: unnamed arg")
+        else:
+            args[non_numeric] = numeric_decimal
+
+        cursor.move_past_next(",")
+        if cursor.is_done():
+            break 
+
+    return args 
 
 
 def parse_sections(source_string) -> Element:
@@ -137,6 +172,8 @@ if __name__ == "__main__":
     # This parse will parse (1) core symbols and indices (2) optional arg string at the end
     # Resolve other todos first to ensure a clean codebase 
 
+    # Suffix tests 
+
     # TODO: Consider separate files for separate parts of parsing logic 
     suffix_test_simple = parse_suffix("abc:1.0,fc33")
     assert suffix_test_simple.arg_source == "1.0,fc33", suffix_test_simple.arg_source
@@ -150,6 +187,27 @@ if __name__ == "__main__":
     assert suffix_broken_args_test.freetext == "f", suffix_broken_args_test.freetext 
     assert suffix_broken_args_test.arg_source == "", suffix_broken_args_test.arg_source
 
+    # Args tests 
+
+    arg_test_basic = parse_args("1.0")
+    assert arg_test_basic["time"] == Decimal("1.0"), arg_test_basic["time"]
+    assert len(arg_test_basic) == 1, len(arg_test_basic)
+
+    arg_test_basic_2 = parse_args("fish1.0,cheese0.3")
+    assert "fish" in arg_test_basic_2
+    assert "cheese" in arg_test_basic_2
+    assert arg_test_basic_2["fish"] == Decimal("1.0"), arg_test_basic_2["fish"]
+    assert arg_test_basic_2["cheese"] == Decimal("0.3"), arg_test_basic_2["cheese"]
+    
+    # TODO: Consider ".2" shorthand support 
+    arg_test = parse_args("0.2,;900,lob0.002")
+    assert "time" in arg_test
+    assert ";" in arg_test
+    assert "lob" in arg_test
+    assert arg_test["time"] == Decimal("0.2"), arg_test["time"]
+    assert arg_test[";"] == Decimal("900"), arg_test[";"]
+    assert arg_test["lob"] == Decimal("0.002"), arg_test["lob"]
+    
     """
         REVISITING THE FEATURE SPEC: 
         1. Complete reconstruction (know what was entered, interpret things like alternations freely at later time).
