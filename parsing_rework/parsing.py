@@ -1,4 +1,5 @@
-from util import Cursor, TreeExpander
+import util 
+from cursor import Cursor
 from element import Element, ElementType
 import json 
 from dataclasses import dataclass
@@ -78,7 +79,160 @@ def parse_args(arg_source) -> dict:
 
     return args 
 
+def parse_secetions_ultranew(source_string) -> Element:
+
+    # Because reading step-by-step comes with complications
+    # Let's explore smarter section-parsing
+    """
+        "a b c / (a g d / f) / p :bla"
+
+        a b c
+        ((a b c) / (a g d
+        ((a b c) / ((a g d) / (f))
+
+    Case: 
+        - We have "a b c" registered in a SECTION 
+        - We encounter "/"
+        - This means: 
+            - The current SECTION is really an ALTERNATION SECTION
+                - If it already is, it means we've already started the below procedure 
+            - All ELEMENTS registered so far (including SECTION elements) should be their own SECTION
+                - So we remove our elements, replace them with a section, and add them to that
+                - INFORMATION does not travel downward from this 
+                - If we've already started, we should act differently
+                    - Close the ongoing section, as if with ")" (because we've opened one when starting)
+                    - Open a new section, to which everything will be added as usual 
+                - Closing artificial alternation sections is harder 
+                    - We are in a SECTION
+                    - We encounter a ")"
+                    - This means we should close the PARENT if it is an ALTERNATION SECTION 
+                    - This should work because ALTERNATION SECTION can never be the parent of 
+                        another ALTERNATION SECTION ()
+
+
+        - Is there an easier way? 
+            - E.g. always splitting things into their smallest parts
+        
+
+            "a b c / (a g d / f) / p :bla"
+
+            -> Split by " "
+
+            a -> save
+            b -> save 
+            c -> save
+            / -> save
+            (a -> scan until contains matching ")", save result 
+            / -> save
+
+
+                    
+                    
+    """
+    pass     
+
+def parse_sections_new(source_string) -> Element:
+    
+    top_element = Element()
+    top_element.type = ElementType.SECTION 
+    current_element = top_element
+
+    def store(element):
+        if current_element.type == ElementType.ALTERNATION_SECTION:
+            current_alternation.append(element)
+        else:
+            current_element.elements.append(element)
+            element.parent = current_element
+
+    def end_current_alternation(current_alternation):
+
+        if len(current_alternation) > 1:
+            sub_section = current_element.add()
+            sub_section.type = ElementType.SECTION
+            
+            for ele in current_alternation:
+                ele.parent = sub_section
+                sub_section.elements.append(ele)
+        else:
+            # Looped to be 0-len safe, although typically one element 
+            for ele in current_alternation:
+                ele.parent = current_element
+                current_element.elements.append(ele)
+
+        current_alternation = [] 
+
+
+    # Divide into substrings, separated by space unless bracketed
+    # Dealing with one bracket-layer at a time 
+    current_alternation = []
+    for substring in util.section_split(source_string):
+
+        if "(" in substring or ")" in substring:
+
+            # Grab meta-information and then recursively parse bracketed sections 
+
+            if substring[0] != "(":
+                pass # TODO: error wonky substring start 
+
+            end_index = substring.rfind(")")
+            if end_index == -1:
+                pass # TODO: Error orphaned starting bracket 
+
+            # Perform information gathering 
+            end_information = "".join(substring[end_index + 1:]) if substring[-1] != ")" else ""
+
+            unwrap = "".join(substring[1:end_index])
+            #print("Unwrapped a bracket into", unwrap, "with information", end_information)
+
+            sub_section = parse_sections_new(unwrap)
+            sub_section.information = end_information
+            store(sub_section)
+
+        elif substring == "/":
+
+            if current_element.type == ElementType.ALTERNATION_SECTION:
+
+                if len(current_alternation) == 0:
+                    pass # TODO: error orphaned slash, should be below 
+
+                # Not the first encountered / 
+                # Take all elements created since the last /
+                # Add them as a section if multiple 
+                
+                end_current_alternation(current_alternation) 
+
+            elif len(current_element.elements) > 0: 
+                # Classify ongoing section as alternation
+                # Move any previously passed elements into a subsection (if plural)
+                current_element.type = ElementType.ALTERNATION_SECTION
+                current_alternation = []
+                
+                if len(current_element.elements) > 1:                    
+                    sub_section = current_element.add()
+                    sub_section.type = ElementType.SECTION
+                    sub_section.elements = current_element.elements
+                    current_element.elements = [sub_section]
+                    
+            else:
+                print("ERORORR", source_string)
+                pass # TODO: Error slash without anything ongoing 
+        else:
+            # Regular, atomic entry 
+            atomic = Element() 
+            atomic.type = ElementType.ATOMIC
+            atomic.information = substring
+
+            store(atomic)
+
+    # In case last element is part of an alternation (post-/)
+    end_current_alternation(current_alternation)
+
+    return top_element
+
+
+
 # Top level division of elements - ()-sections, /-alternations and "abc123"-atomics 
+# TODO: DEPRECATED, change to new implementation 
 def parse_sections(source_string) -> Element:
     cursor = Cursor(source_string)
     master_section = Element()
@@ -141,6 +295,11 @@ def parse_sections(source_string) -> Element:
 # Run tests if ran standalone 
 if __name__ == "__main__": 
 
+    # TODO: Naive tests to confirm working
+    print(parse_sections_new("a / (b c)fff").represent())
+    print(parse_sections_new("f f f f").represent())
+    print(parse_sections_new("(ab)x4 ((a t) / c)x4").represent())
+
     # Perform some bad faith tests
     with pytest.raises(Exception) as x:
         parse_sections(")))")
@@ -164,7 +323,7 @@ if __name__ == "__main__":
     assert_type(single_alt_test, ElementType.ALTERNATION_SECTION)
     assert len(single_alt_test.elements) == 4, len(single_alt_test.elements)
 
-    nested_alt_test = parse_sections("a b c / (a (b / b2) c / d d) c")
+    nested_alt_test = parse_sections("a b c / (a (b / b2)z c / d d) c")
     assert_type(nested_alt_test, ElementType.ALTERNATION_SECTION)
     assert len(nested_alt_test.elements) == 2, len(nested_alt_test.elements)
     assert_type(nested_alt_test.elements[1], ElementType.SECTION)
@@ -175,7 +334,6 @@ if __name__ == "__main__":
 
     alternation_count_test = parse_sections("b (c / d / (e / f)").alternation_count()
     assert alternation_count_test == 6, alternation_count_test
-
     
     # TODO: Future staring here. Safe, step-by-step procedure to include parent args
     # Best if this is done before unwrapping, in case alternations want different uses

@@ -28,26 +28,18 @@ class Element:
         # Max of [AC, 1]
         return base * max([ele.alternation_count() for ele in self.elements] + [1])
     
-    # TODO: Used for quick, brainless print tests. Highly unstable, don't use for asserts... 
-    def to_string(self):
-        if self.type == ElementType.ATOMIC:
-            return self.information
-        else:
-            nested = [ele.to_string() for ele in self.elements]
+    # Attempt at reconstructing the contents of the element as a parseable string  
+    def represent(self):
 
-            sym = " /" if self.type == ElementType.ALTERNATION_SECTION else ","
-            brackets = ["[", "]"] if self.type == ElementType.ALTERNATION_SECTION else ["(", ")"]
-            
-            contents = brackets[0] + (sym + " ").join(nested) + brackets[1]
-            
-            #if self.type == ElementType.ALTERNATION_SECTION:
-            #    contents = "*" + contents + "*"
-            
-            if self.type == ElementType.ALTERNATION_SECTION:
-                contents = contents 
-            if self.information != "":
-                contents += self.information 
-            return contents
+        match self.type:
+            case ElementType.ATOMIC:
+                return self.information
+            case ElementType.SECTION:
+                return "(" + " ".join([e.represent() for e in self.elements]) + ")" + self.information
+            case ElementType.ALTERNATION_SECTION:
+                return "(" + " / ".join([e.represent() for e in self.elements]) + ")" + self.information
+            case _:
+                return "" 
         
     # Returns an array of information strings, starting with self.information and then resolving parent.informaiton all the way up to the top 
     # Used to retrieve a priority-ordered information set which can then be used for e.g. argument parsing and overwriting. 

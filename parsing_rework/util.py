@@ -1,68 +1,39 @@
 from element import ElementType
+from cursor import Cursor 
 import parsing
 
-# Used for step-parsing strings
+# "Business logic" - explain later 
+def section_split(source_string) -> list:
+    cursor = Cursor(source_string)
 
-class Cursor: 
-    def __init__(self, source_string):
-        self.source_string = source_string
-        self.cursor_index = 0
+    opened_parentheses = 0
 
-    def is_done(self):
-        return self.cursor_index > len(self.source_string) - 1
+    everything = []
 
-    def next(self):
-        self.cursor_index += 1
+    current = ""
 
-    def peek(self):
-        index = self.cursor_index + 1 
-        if index <= len(self.source_string) - 1:
-            return self.source_string[index]
-        else:
-            return "" 
+    while not cursor.is_done(): 
+        match cursor.get():
+            case "(": 
+                current += cursor.get() 
+                opened_parentheses += 1
+            case ")":
+                current += cursor.get() 
+                opened_parentheses -= 1
+            case " ":
+                if opened_parentheses == 0:
+                    everything.append(current)
+                    current = ""
+                else:
+                    current += cursor.get()
+            case _:
+                current += cursor.get()
+        cursor.next() 
 
-    def get(self):
-        return self.source_string[self.cursor_index]
+    if current != "":
+        everything.append(current)
 
-    def get_remaining(self):
-        return "".join(self.source_string[self.cursor_index:])
-
-    # Place cursor on index after next occurrence of any of the mentioned symbols
-    def move_past_next(self, symbols):
-
-        while True: 
-            if self.is_done():
-                break 
-            else:
-                current = self.get()
-                self.next()
-                if current in symbols:
-                    break 
-        return  
-
-    # Returns characters up until, but not including, any of the mentioned symbols
-    # Leaves cursor before the found symbol
-    def get_until(self, symbols):
-        scan = ""
-
-        if self.is_done():
-            return ""
-
-        while True:
-
-            
-            current = self.get()
-            ahead = self.peek() 
-
-            if current in symbols:
-                break 
-            else: 
-                scan += current
-                if ahead in symbols or ahead == "":
-                    break 
-                self.next() 
-
-        return scan
+    return everything 
 
 class TreeExpander:
 
@@ -73,6 +44,7 @@ class TreeExpander:
         # Count how many times one would have to iterate the whole set to expand all nested alternations 
         req_iteratins = element.alternation_count()
         full = []
+        print("Expanding top level: " + element.represent())
         for i in range(0, req_iteratins):
             full += self.expand(element, get_repeat(element))
 
@@ -87,6 +59,10 @@ class TreeExpander:
 
     # Expand both alternations and repeats 
     def expand(self, element, repeat):
+
+        print("Expanding section/element: " + element.represent(), element.type)
+        #print("Expanding an element with type", element.type, "and information", element.information, "and elements", len(element.elements))
+
         if element.type == ElementType.ATOMIC:
             return duplicate([element], repeat) 
         if element.type == ElementType.SECTION:
@@ -126,7 +102,13 @@ def duplicate(elements, times):
     return ret 
 
 # Run tests if ran standalone 
-if __name__ == "__main__": 
+if __name__ == "__main__":
+
+    assert section_split("a b c") == ["a", "b", "c"]
+    assert section_split("a (f) c") == ["a", "(f)", "c"]
+    assert section_split("a (f (b a ()) / tt) c") == ["a", "(f (b a ()) / tt)", "c"]
+
+
     tree = TreeExpander()
 
     # Quick assertion of atomic elements after a full tree alternations expand    
@@ -152,7 +134,11 @@ if __name__ == "__main__":
             - But its parent should have it 
             - Although, as noted for top level, there isn't always a parent  
             - Either way, alternations will always be nested and thus never have _information_ 
-                -> See tests in parsing for what types to expect 
+                -> See tests in parsing for what types to expect
+
+        - Evening note: I feel like there's something wrong in the logic. If 
+            top level can be alternation without section nesting, ()-parts should
+            be able to as well. Might be I misunderstand.  
 
     """ 
     assert_expanded("t / (a / b)x3", "t a b a t b a b")
