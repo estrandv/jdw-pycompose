@@ -22,7 +22,8 @@ def section_split(source_string) -> list:
                 opened_parentheses -= 1
             case " ":
                 if opened_parentheses == 0:
-                    everything.append(current)
+                    if current != "":
+                        everything.append(current)
                     current = ""
                 else:
                     current += cursor.get()

@@ -29,17 +29,20 @@ class Element:
         return base * max([ele.alternation_count() for ele in self.elements] + [1])
     
     # Attempt at reconstructing the contents of the element as a parseable string  
-    def represent(self):
+    def represent(self, recursion = 0):
+
 
         match self.type:
             case ElementType.ATOMIC:
                 return self.information
             case ElementType.SECTION:
-                return "(" + " ".join([e.represent() for e in self.elements]) + ")" + self.information
+                return "(" + " ".join([e.represent(recursion + 1) for e in self.elements]) + ")" + self.information \
+                    if len(self.elements) > 0 else "ERROR"
             case ElementType.ALTERNATION_SECTION:
-                return "(" + " / ".join([e.represent() for e in self.elements]) + ")" + self.information
+                return "(" + " / ".join([e.represent(recursion + 1) for e in self.elements]) + ")" + self.information \
+                    if len(self.elements) > 0 else "ERROR"
             case _:
-                return "" 
+                return "ERROR" 
         
     # Returns an array of information strings, starting with self.information and then resolving parent.informaiton all the way up to the top 
     # Used to retrieve a priority-ordered information set which can then be used for e.g. argument parsing and overwriting. 

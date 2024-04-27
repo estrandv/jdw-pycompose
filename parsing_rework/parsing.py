@@ -79,63 +79,10 @@ def parse_args(arg_source) -> dict:
 
     return args 
 
-def parse_secetions_ultranew(source_string) -> Element:
-
-    # Because reading step-by-step comes with complications
-    # Let's explore smarter section-parsing
-    """
-        "a b c / (a g d / f) / p :bla"
-
-        a b c
-        ((a b c) / (a g d
-        ((a b c) / ((a g d) / (f))
-
-    Case: 
-        - We have "a b c" registered in a SECTION 
-        - We encounter "/"
-        - This means: 
-            - The current SECTION is really an ALTERNATION SECTION
-                - If it already is, it means we've already started the below procedure 
-            - All ELEMENTS registered so far (including SECTION elements) should be their own SECTION
-                - So we remove our elements, replace them with a section, and add them to that
-                - INFORMATION does not travel downward from this 
-                - If we've already started, we should act differently
-                    - Close the ongoing section, as if with ")" (because we've opened one when starting)
-                    - Open a new section, to which everything will be added as usual 
-                - Closing artificial alternation sections is harder 
-                    - We are in a SECTION
-                    - We encounter a ")"
-                    - This means we should close the PARENT if it is an ALTERNATION SECTION 
-                    - This should work because ALTERNATION SECTION can never be the parent of 
-                        another ALTERNATION SECTION ()
-
-
-        - Is there an easier way? 
-            - E.g. always splitting things into their smallest parts
-        
-
-            "a b c / (a g d / f) / p :bla"
-
-            -> Split by " "
-
-            a -> save
-            b -> save 
-            c -> save
-            / -> save
-            (a -> scan until contains matching ")", save result 
-            / -> save
-
-
-                    
-                    
-    """
-    pass     
-
-def parse_sections_new(source_string) -> Element:
+def parse_sections(source_string) -> Element:
     
-    top_element = Element()
-    top_element.type = ElementType.SECTION 
-    current_element = top_element
+    current_element = Element()
+    current_element.type = ElementType.SECTION 
 
     def store(element):
         if current_element.type == ElementType.ALTERNATION_SECTION:
@@ -144,22 +91,20 @@ def parse_sections_new(source_string) -> Element:
             current_element.elements.append(element)
             element.parent = current_element
 
-    def end_current_alternation(current_alternation):
+    def end_current_alternation(alternation):
 
-        if len(current_alternation) > 1:
+        if len(alternation) > 1:
             sub_section = current_element.add()
             sub_section.type = ElementType.SECTION
             
-            for ele in current_alternation:
+            for ele in alternation:
                 ele.parent = sub_section
                 sub_section.elements.append(ele)
         else:
             # Looped to be 0-len safe, although typically one element 
-            for ele in current_alternation:
+            for ele in alternation:
                 ele.parent = current_element
                 current_element.elements.append(ele)
-
-        current_alternation = [] 
 
 
     # Divide into substrings, separated by space unless bracketed
@@ -172,10 +117,12 @@ def parse_sections_new(source_string) -> Element:
             # Grab meta-information and then recursively parse bracketed sections 
 
             if substring[0] != "(":
+                print("ERROR")
                 pass # TODO: error wonky substring start 
 
             end_index = substring.rfind(")")
             if end_index == -1:
+                print("ERROR")
                 pass # TODO: Error orphaned starting bracket 
 
             # Perform information gathering 
@@ -184,8 +131,9 @@ def parse_sections_new(source_string) -> Element:
             unwrap = "".join(substring[1:end_index])
             #print("Unwrapped a bracket into", unwrap, "with information", end_information)
 
-            sub_section = parse_sections_new(unwrap)
+            sub_section = parse_sections(unwrap)
             sub_section.information = end_information
+            #print("Storing subsection", unwrap, "<< as >>", sub_section.represent())
             store(sub_section)
 
         elif substring == "/":
@@ -193,6 +141,7 @@ def parse_sections_new(source_string) -> Element:
             if current_element.type == ElementType.ALTERNATION_SECTION:
 
                 if len(current_alternation) == 0:
+                    print("ERROR")
                     pass # TODO: error orphaned slash, should be below 
 
                 # Not the first encountered / 
@@ -200,6 +149,7 @@ def parse_sections_new(source_string) -> Element:
                 # Add them as a section if multiple 
                 
                 end_current_alternation(current_alternation) 
+                current_alternation = []
 
             elif len(current_element.elements) > 0: 
                 # Classify ongoing section as alternation
@@ -207,10 +157,13 @@ def parse_sections_new(source_string) -> Element:
                 current_element.type = ElementType.ALTERNATION_SECTION
                 current_alternation = []
                 
-                if len(current_element.elements) > 1:                    
-                    sub_section = current_element.add()
+                if len(current_element.elements) > 1:
+                    port = current_element.elements 
+                    sub_section = Element()
                     sub_section.type = ElementType.SECTION
-                    sub_section.elements = current_element.elements
+                    sub_section.elements = port
+                    for e in sub_section.elements:
+                        e.parent = sub_section
                     current_element.elements = [sub_section]
                     
             else:
@@ -226,125 +179,47 @@ def parse_sections_new(source_string) -> Element:
 
     # In case last element is part of an alternation (post-/)
     end_current_alternation(current_alternation)
-
-    return top_element
-
-
-
-# Top level division of elements - ()-sections, /-alternations and "abc123"-atomics 
-# TODO: DEPRECATED, change to new implementation 
-def parse_sections(source_string) -> Element:
-    cursor = Cursor(source_string)
-    master_section = Element()
-    master_section.type = ElementType.SECTION
-    current_element = master_section 
-
-    while True:
-        if cursor.get() == "(":
-            current_element = current_element.add()
-            current_element.type = ElementType.SECTION
-        elif cursor.get() == ")":
-            cursor.next()
-            if not cursor.is_done():
-                current_element.information = cursor.get_until(" ")
-
-            # Convoluted because alternations create nested parents 
-
-            if current_element.parent == None: 
-                raise Exception("Encountered closing bracket in section with no parent (orphaned closing bracket?)")
-            if current_element.parent.type == ElementType.ALTERNATION_SECTION:
-                if current_element.parent.parent == None:
-                    raise Exception("Encountered closing bracked in alternation section with no grandparent (orphaned closing bracket?)")
-                current_element = current_element.parent.parent 
-            else:  
-                current_element = current_element.parent 
-        elif cursor.get() == "/":        
-
-            if current_element.parent != None and current_element.parent.type == ElementType.ALTERNATION_SECTION:
-                current_element = current_element.parent.add() 
-                current_element.type = ElementType.SECTION
-            else:
-                # Create an inbetween alternation parent 
-                # Nest the ongoing section under it as a new section 
-                downport = current_element.elements
-                current_element.elements = []
-                current_element.type = ElementType.ALTERNATION_SECTION
-                nest = current_element.add()
-                nest.elements = downport
-                nest.type = ElementType.SECTION
-                for ele in nest.elements:
-                    ele.parent = nest
-
-                # Begin new section after the slash 
-                current_element = current_element.add() 
-                current_element.type = ElementType.SECTION  
-            
-        elif cursor.get() != " ":
-            current_element = current_element.add()
-            current_element.type = ElementType.ATOMIC
-            current_element.information += cursor.get_until(") ")
-            current_element = current_element.parent 
-
-        if cursor.peek() == "":
-            break
-        else:
-            cursor.next()
-
-    return master_section     
+    current_alternation = []
+    
+    return current_element
 
 # Run tests if ran standalone 
 if __name__ == "__main__": 
-
-    # TODO: Naive tests to confirm working
-    print(parse_sections_new("a / (b c)fff").represent())
-    print(parse_sections_new("f f f f").represent())
-    print(parse_sections_new("(ab)x4 ((a t) / c)x4").represent())
-
-    # Perform some bad faith tests
-    with pytest.raises(Exception) as x:
-        parse_sections(")))")
-        assert "orphaned closing bracket" in x.value
-        assert "no parent" in x.value
 
     # These should be OK even if they are gibberish 
     parse_sections("                ")
     parse_sections("(a c v")
     parse_sections("(((((/)))))")
 
-    def assert_type(element, type):
-        assert element.type == type, element.type 
+    def representation_test(source):
+        res = parse_sections(source).represent()
+        assert res == "(" + source + ")", res 
 
-    atomic_test = parse_sections("a")
-    assert atomic_test.type == ElementType.SECTION, atomic_test.type
-    assert len(atomic_test.elements) == 1, len(atomic_test.elements)
-    assert atomic_test.elements[0].type == ElementType.ATOMIC, atomic_test.elements[0].type
+    representation_test("a / (b c)fff")
+    representation_test("a / b / c / d")
+    representation_test("a")
+    representation_test("b (c / d / (e / f))")    
+    representation_test("a ((b / f) / (c d)f)")
+    
+    def parent_check(element):
+        for e in element.elements:
+            assert e.parent == element 
 
-    single_alt_test = parse_sections("a / b / c / d")
-    assert_type(single_alt_test, ElementType.ALTERNATION_SECTION)
-    assert len(single_alt_test.elements) == 4, len(single_alt_test.elements)
+    # Some nested alternation wrappings are harder to predict 
+    def reptest_advanced(source, expect):
+        res = parse_sections(source).represent()
+        assert res == expect, res 
 
-    nested_alt_test = parse_sections("a b c / (a (b / b2)z c / d d) c")
-    assert_type(nested_alt_test, ElementType.ALTERNATION_SECTION)
-    assert len(nested_alt_test.elements) == 2, len(nested_alt_test.elements)
-    assert_type(nested_alt_test.elements[1], ElementType.SECTION)
-    assert_type(nested_alt_test.elements[1].elements[0], ElementType.ALTERNATION_SECTION)
-    abc_nest = nested_alt_test.elements[1].elements[0].elements[0]
-    assert_type(abc_nest, ElementType.SECTION)
-    assert len(abc_nest.elements) == 3, len(abc_nest.elements)
-
-    alternation_count_test = parse_sections("b (c / d / (e / f)").alternation_count()
-    assert alternation_count_test == 6, alternation_count_test
+    reptest_advanced("a (a (b / f) / (c d)f)", "(a ((a (b / f)) / (c d)f))")
+    reptest_advanced("a b c / (a (b / b2)z c / d d) c", "((a b c) / (((a (b / b2)z c) / (d d)) c))")
     
     # TODO: Future staring here. Safe, step-by-step procedure to include parent args
     # Best if this is done before unwrapping, in case alternations want different uses
-    nested_arg_set = parse_sections("f (( ::a )b )c")
+    nested_arg_set = parse_sections("f (( ::a)b )c")
     assert len(nested_arg_set.elements) == 2
     a_node = nested_arg_set.elements[1].elements[0].elements[0]
-    assert a_node.get_information_array_ordered() == ["::a", "b", "c", ""], "was: " + ",".join([a for a in a_node.get_information_array_ordered()])
-
-    # TODO: With a way to unwrap, and a way to resolve parent args, we can start working on the atomic parse 
-    # This parse will parse (1) core symbols and indices (2) optional arg string at the end
-    # Resolve other todos first to ensure a clean codebase 
+    assert a_node.get_information_array_ordered() == ["::a", "b", "c", ""], \
+        "was: " + ",".join([a for a in a_node.get_information_array_ordered()])
 
     # Suffix tests 
 
