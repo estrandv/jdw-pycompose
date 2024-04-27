@@ -45,7 +45,7 @@ class TreeExpander:
         # Count how many times one would have to iterate the whole set to expand all nested alternations 
         req_iteratins = element.alternation_count()
         full = []
-        print("Expanding top level: " + element.represent())
+        #print("Expanding top level: " + element.represent())
         for i in range(0, req_iteratins):
             full += self.expand(element, get_repeat(element))
 
@@ -61,7 +61,7 @@ class TreeExpander:
     # Expand both alternations and repeats 
     def expand(self, element, repeat):
 
-        print("Expanding section/element: " + element.represent(), element.type)
+        #print("Expanding section/element: " + element.represent(), element.type)
         #print("Expanding an element with type", element.type, "and information", element.information, "and elements", len(element.elements))
 
         if element.type == ElementType.ATOMIC:
@@ -109,7 +109,6 @@ if __name__ == "__main__":
     assert section_split("a (f) c") == ["a", "(f)", "c"]
     assert section_split("a (f (b a ()) / tt) c") == ["a", "(f (b a ()) / tt)", "c"]
 
-
     tree = TreeExpander()
 
     # Quick assertion of atomic elements after a full tree alternations expand    
@@ -119,27 +118,11 @@ if __name__ == "__main__":
         tree_expand_string = " ".join([e.information for e in tree.tree_expand(top_element)])
         assert tree_expand_string == expect, tree_expand_string
 
-    #assert_expanded("a (b / (p f / (d / h))", "a b a p f a b a d a b a p f a b a h")
+    assert_expanded("a (b / (p f / (d / h)))", "a b a p f a b a d a b a p f a b a h")
 
     # Repeat testing
-    #assert_expanded("x3", "x3 x3 x3")
-    #assert_expanded("(a b)x2", "a b a b")
-    #assert_expanded("t / (a / b)", "t a t b")
-    #assert_expanded("x3 / (a / b)", "x3 x3 x3 a x3 x3 x3 b")
-    # TODO: Other tests commented for better debug - something isn't detecting repeats properly 
-    # Likely due to repeats being part of some hidden, nested section
-    """
-        - Top level should count as an alternation section with no information
-        - The second level becomes a regular section (a / b)x3
-        - a / b is then an alternation with no repeat argument
-            - But its parent should have it 
-            - Although, as noted for top level, there isn't always a parent  
-            - Either way, alternations will always be nested and thus never have _information_ 
-                -> See tests in parsing for what types to expect
-
-        - Evening note: I feel like there's something wrong in the logic. If 
-            top level can be alternation without section nesting, ()-parts should
-            be able to as well. Might be I misunderstand.  
-
-    """ 
+    assert_expanded("x3", "x3 x3 x3")
+    assert_expanded("(a b)x2", "a b a b")
+    assert_expanded("t / (a / b)", "t a t b")
+    assert_expanded("x3 / (a / b)", "x3 x3 x3 a x3 x3 x3 b")    
     assert_expanded("t / (a / b)x3", "t a b a t b a b")

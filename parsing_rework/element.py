@@ -30,8 +30,6 @@ class Element:
     
     # Attempt at reconstructing the contents of the element as a parseable string  
     def represent(self, recursion = 0):
-
-
         match self.type:
             case ElementType.ATOMIC:
                 return self.information

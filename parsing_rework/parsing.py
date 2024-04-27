@@ -117,19 +117,19 @@ def parse_sections(source_string) -> Element:
             # Grab meta-information and then recursively parse bracketed sections 
 
             if substring[0] != "(":
-                print("ERROR")
+                print("ERROR CANT FIND START")
                 pass # TODO: error wonky substring start 
 
             end_index = substring.rfind(")")
             if end_index == -1:
-                print("ERROR")
+                print("ERROR CANT FIND END: ", substring)
                 pass # TODO: Error orphaned starting bracket 
 
             # Perform information gathering 
             end_information = "".join(substring[end_index + 1:]) if substring[-1] != ")" else ""
 
             unwrap = "".join(substring[1:end_index])
-            #print("Unwrapped a bracket into", unwrap, "with information", end_information)
+            #print("Unwrapped a bracket", substring, "into", unwrap, "with information", end_information)
 
             sub_section = parse_sections(unwrap)
             sub_section.information = end_information
@@ -201,6 +201,7 @@ if __name__ == "__main__":
     representation_test("b (c / d / (e / f))")    
     representation_test("a ((b / f) / (c d)f)")
     
+
     def parent_check(element):
         for e in element.elements:
             assert e.parent == element 
@@ -210,11 +211,10 @@ if __name__ == "__main__":
         res = parse_sections(source).represent()
         assert res == expect, res 
 
+    reptest_advanced("a (b / (p f / (d / h)))", "(a (b / ((p f) / (d / h))))")
     reptest_advanced("a (a (b / f) / (c d)f)", "(a ((a (b / f)) / (c d)f))")
     reptest_advanced("a b c / (a (b / b2)z c / d d) c", "((a b c) / (((a (b / b2)z c) / (d d)) c))")
     
-    # TODO: Future staring here. Safe, step-by-step procedure to include parent args
-    # Best if this is done before unwrapping, in case alternations want different uses
     nested_arg_set = parse_sections("f (( ::a)b )c")
     assert len(nested_arg_set.elements) == 2
     a_node = nested_arg_set.elements[1].elements[0].elements[0]
