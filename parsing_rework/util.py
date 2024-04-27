@@ -68,11 +68,12 @@ class TreeExpander:
             return duplicate([element], repeat) 
         if element.type == ElementType.SECTION:
             flatmap = []
-            matrix = [self.expand(e, get_repeat(e)) for e in element.elements]
-            for c in matrix:
-                for r in c:
-                    flatmap.append(r)
-            return duplicate(flatmap, repeat) 
+            for _ in range(0, repeat):
+                matrix = [self.expand(e, get_repeat(e)) for e in element.elements]
+                for c in matrix:
+                    for r in c:
+                        flatmap.append(r)
+            return flatmap 
         if element.type == ElementType.ALTERNATION_SECTION:
 
             # Repeat the alternation as required, grabbing the next alternation each time
@@ -126,3 +127,4 @@ if __name__ == "__main__":
     assert_expanded("t / (a / b)", "t a t b")
     assert_expanded("x3 / (a / b)", "x3 x3 x3 a x3 x3 x3 b")    
     assert_expanded("t / (a / b)x3", "t a b a t b a b")
+    assert_expanded("t / (f ((a / b)))x2", "t f a f b t f a f b")

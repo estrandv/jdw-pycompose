@@ -200,7 +200,6 @@ if __name__ == "__main__":
     representation_test("a")
     representation_test("b (c / d / (e / f))")    
     representation_test("a ((b / f) / (c d)f)")
-    
 
     def parent_check(element):
         for e in element.elements:
@@ -269,44 +268,8 @@ if __name__ == "__main__":
     assert freetext_test_2.repeat == 44, freetext_test_2.repeat
 
     """
-        REVISITING THE FEATURE SPEC: 
-        1. Complete reconstruction (know what was entered, interpret things like alternations freely at later time).
-        2. SYNTAX
-
-            d3:1.0,mut2.0,arg0.1 e3 ((a3 / b2) b3):0.2
-    
-            - csv args (after ":" or other spacer), to simplify writing and sanctify whitespace as note-spacing
-                - "time" as convenience arg; naming not necessary
-            - first class parentheses, where everything written directly after is interpreted as for notes
-            - same old atomic note split: 
-                [prefix: non-number string] [index: number] [suffix: non-number string] [args: sub-parse if arg-symbol (always last)]
-        3. Alternation needs 
-            - (a b c (d/f))x8 should single-resolve for each "x", rather than unpack everything eight times
-                -> a b c d a b c f [...]
-            
-            => THIS IS TRICKY TO KEEP IN YOUR HEAD 
-                - Default interpretation is "repeat until unwrapped everything", so behaivour gets a bit mixed
-        
-                    a b c (d/f) -> a b c d a b c f
-
-                    a b c (d/f)x2 -> a b c d f a b c d f (rather than single-iteration "spend the whole thing")
-
-                    Ideally, expand_alternations should count how many times an alternation is ticked and be satisfied when it has expanded all contained items. 
-
-                    I think you can get around this by tinkering with alternation_count:
-                        - if xN, return max count divided by N
-
-                    REQUIREMENT: Repeat amount known early
-                        - Extra tricky because it propagates downward 
-                        - Better, then, to resolve args BEFORE alternation unwrapping
-                            -> Somewhat easy if dynamic to start with
-            
-
-            CONCLUSION:
-                - Start with "parse_suffix" which can detect both args and repeats 
-                - Make sure it returns complete information 
-
-            4. REMEMBER: We want proper syntax error handling this time as well 
-            5. Once all parsing is solid, we can move on to OSC transformation 
-
+        UP NEXT: 
+        - 
+        - Proper information detection for each type of element
+            - Atomic makes a full parse, section suffix, alternation nothing
     """
