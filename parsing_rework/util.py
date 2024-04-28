@@ -123,12 +123,10 @@ class TreeExpander:
         return []
 
 # Returns the amount of times an element should be repeated, according to its "xN" suffix
-# TODO: Naive implementation that does not account for atomics or full informations or whatever 
-# TODO: Also no inheritance or reuse or anything. It's basic. 
+# TODO: No inheritance or reuse or anything. It's basic. 
 def get_repeat(element) -> int:
-    suffix = information_parsing.parse_suffix(element.information)
-    freetext = information_parsing.parse_suffix_freetext(suffix.freetext)
-    return freetext.repeat
+    information = information_parsing.divide_information(element)
+    return information.repetition
 
 # Returns a flat list containing elements copied N times.
 def duplicate(elements, times):
@@ -154,14 +152,14 @@ if __name__ == "__main__":
         tree_expand_string = " ".join([e.information for e in tree.tree_expand(top_element)])
         assert tree_expand_string == expect, tree_expand_string
 
-    assert_expanded("a (b / (p f / (d / h)))", "a b a p f a b a d a b a p f a b a h")
+    assert_expanded("1 (2 / (3 4 / (5 / 6)))", "1 2 1 3 4 1 2 1 5 1 2 1 3 4 1 2 1 6")
 
     # Repeat testing
-    assert_expanded("x3", "x3 x3 x3")
-    assert_expanded("(a b)x2", "a b a b")
+    assert_expanded("2*3", "2*3 2*3 2*3")
+    assert_expanded("(1 2)*2", "1 2 1 2")
     assert_expanded("t / (a / b)", "t a t b")
-    assert_expanded("x3 / (a / b)", "x3 x3 x3 a x3 x3 x3 b")    
-    assert_expanded("t / (a / b)x3", "t a b a t b a b")
-    assert_expanded("t / (f ((a / b)))x2", "t f a f b t f a f b")
+    assert_expanded("2*3 / (a / b)", "2*3 2*3 2*3 a 2*3 2*3 2*3 b")    
+    assert_expanded("t / (a / b)*3", "t a b a t b a b")
+    assert_expanded("t / (f ((a / b)))*2", "t f a f b t f a f b")
 
-    assert_expanded("a (b / c / d)x3", "a b c d")
+    assert_expanded("a (b / c / d)*3", "a b c d")

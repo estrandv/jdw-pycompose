@@ -23,7 +23,7 @@ class Element:
     def represent(self, recursion = 0):
         match self.type:
             case ElementType.ATOMIC:
-                return self.information
+                return self.information # TODO: Skip repeat 
             case ElementType.SECTION:
                 return "(" + " ".join([e.represent(recursion + 1) for e in self.elements]) + ")" + self.information \
                     if len(self.elements) > 0 else "ERROR"
