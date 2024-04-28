@@ -1,6 +1,7 @@
 from element import ElementType
 from cursor import Cursor 
-import parsing
+import section_parsing
+import information_parsing
 
 # "Business logic" - explain later 
 def section_split(source_string) -> list:
@@ -125,8 +126,8 @@ class TreeExpander:
 # TODO: Naive implementation that does not account for atomics or full informations or whatever 
 # TODO: Also no inheritance or reuse or anything. It's basic. 
 def get_repeat(element) -> int:
-    suffix = parsing.parse_suffix(element.information)
-    freetext = parsing.parse_suffix_freetext(suffix.freetext)
+    suffix = information_parsing.parse_suffix(element.information)
+    freetext = information_parsing.parse_suffix_freetext(suffix.freetext)
     return freetext.repeat
 
 # Returns a flat list containing elements copied N times.
@@ -149,7 +150,7 @@ if __name__ == "__main__":
     # Quick assertion of atomic elements after a full tree alternations expand    
     # Mixing in some parse logic for faster testing ...     
     def assert_expanded(parse_source, expect):
-        top_element = parsing.parse_sections(parse_source)
+        top_element = section_parsing.parse_sections(parse_source)
         tree_expand_string = " ".join([e.information for e in tree.tree_expand(top_element)])
         assert tree_expand_string == expect, tree_expand_string
 
