@@ -17,18 +17,9 @@ class Element:
         self.elements[-1].parent = self 
         return self.elements[-1]
 
-    # TODO: Consider placing in tree instead 
-    def alternation_count(self):
-
-        base = 1
-        
-        if self.type == ElementType.ALTERNATION_SECTION:
-            base = len(self.elements)
-
-        # Max of [AC, 1]
-        return base * max([ele.alternation_count() for ele in self.elements] + [1])
-    
-    # Attempt at reconstructing the contents of the element as a parseable string  
+    # Attempt at reconstructing the contents of the element as a parseable string. 
+    # Writes the string as interpreted, not as originally written, and will thus have
+    #   implied sections written out explicitly.   
     def represent(self, recursion = 0):
         match self.type:
             case ElementType.ATOMIC:

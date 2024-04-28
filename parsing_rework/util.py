@@ -40,23 +40,52 @@ class TreeExpander:
 
     def __init__(self):
         self.tick_list = []
-    
+
+    # Count how many times one would have to use the element to fully expand it and its children. 
+    def count_required_alternations(self, element):
+
+        base = 1
+        
+        if element.type == ElementType.ALTERNATION_SECTION:
+            base = len(element.elements)
+
+        # Max of [AC, 1]
+        return base * max([self.count_required_alternations(ele) for ele in element.elements] + [1])
+
+    def all_ticked(self, element) -> bool:
+        element_ticks = self.get_ticks(element)
+
+        required_ticks = self.count_required_alternations(element) \
+            if element.type == ElementType.ALTERNATION_SECTION \
+            else 1
+        
+        children_ok = True 
+        for child in element.elements:
+            if not self.all_ticked(child):
+                children_ok = False
+
+        #print("Ticked", element_ticks, "required", required_ticks)
+        
+        return element_ticks >= required_ticks and children_ok
+
     def tree_expand(self, element):
-        # Count how many times one would have to iterate the whole set to expand all nested alternations 
-        req_iteratins = element.alternation_count()
         full = []
         #print("Expanding top level: " + element.represent())
-        for i in range(0, req_iteratins):
+
+        while not self.all_ticked(element):
             full += self.expand(element, get_repeat(element))
 
         return full
 
-    # Returns the amount of times that this particular element has been ticked so far.
-    # Used to keep track of which alternation to return. 
+    # Tick off an element, so that we can count how many times we have done so. 
+    # Alternations must be used several times to fully expand, hence the need to count. 
     def tick(self,element):
-        count = len([e for e in self.tick_list if e is element])
         self.tick_list.append(element)
-        return count 
+
+    # Returns how many times an element has been ticked so far.
+    # Does not account for children.  
+    def get_ticks(self, element):
+        return len([e for e in self.tick_list if e is element])
 
     # Expand both alternations and repeats 
     def expand(self, element, repeat):
@@ -65,10 +94,12 @@ class TreeExpander:
         #print("Expanding an element with type", element.type, "and information", element.information, "and elements", len(element.elements))
 
         if element.type == ElementType.ATOMIC:
+            self.tick(element)
             return duplicate([element], repeat) 
         if element.type == ElementType.SECTION:
             flatmap = []
             for _ in range(0, repeat):
+                self.tick(element)
                 matrix = [self.expand(e, get_repeat(e)) for e in element.elements]
                 for c in matrix:
                     for r in c:
@@ -80,7 +111,8 @@ class TreeExpander:
             full = [] 
             for i in range(0, repeat):
                 # Tick element and return amount of times it has been ticked            
-                ticks = self.tick(element)
+                ticks = self.get_ticks(element)
+                self.tick(element)
                 # Resolve an index from the tick amount (so that, in a 2-len array, 2 follows after 1, 0 after 2, etc)
                 mod = ticks % (len(element.elements))
                 current_alt = element.elements[mod]
@@ -89,6 +121,7 @@ class TreeExpander:
 
         return []
 
+# Returns the amount of times an element should be repeated, according to its "xN" suffix
 # TODO: Naive implementation that does not account for atomics or full informations or whatever 
 # TODO: Also no inheritance or reuse or anything. It's basic. 
 def get_repeat(element) -> int:
@@ -96,6 +129,7 @@ def get_repeat(element) -> int:
     freetext = parsing.parse_suffix_freetext(suffix.freetext)
     return freetext.repeat
 
+# Returns a flat list containing elements copied N times.
 def duplicate(elements, times):
     ret = []
     for _ in range(0, times):
@@ -128,3 +162,5 @@ if __name__ == "__main__":
     assert_expanded("x3 / (a / b)", "x3 x3 x3 a x3 x3 x3 b")    
     assert_expanded("t / (a / b)x3", "t a b a t b a b")
     assert_expanded("t / (f ((a / b)))x2", "t f a f b t f a f b")
+
+    assert_expanded("a (b / c / d)x3", "a b c d")

@@ -117,13 +117,14 @@ def parse_sections(source_string) -> Element:
             # Grab meta-information and then recursively parse bracketed sections 
 
             if substring[0] != "(":
-                print("ERROR CANT FIND START")
-                pass # TODO: error wonky substring start 
+                raise Exception("Malformed input - section does not start with '(' :" + substring)
 
+            # TODO: Suffix should be allowed to contain ")" - we should not look for the last index
+            #   but for the index of when all parentheses have been closed. 
             end_index = substring.rfind(")")
+
             if end_index == -1:
-                print("ERROR CANT FIND END: ", substring)
-                pass # TODO: Error orphaned starting bracket 
+                raise Exception("Malformed input - section does not have an ending ')': " + substring)
 
             # Perform information gathering 
             end_information = "".join(substring[end_index + 1:]) if substring[-1] != ")" else ""
@@ -141,8 +142,7 @@ def parse_sections(source_string) -> Element:
             if current_element.type == ElementType.ALTERNATION_SECTION:
 
                 if len(current_alternation) == 0:
-                    print("ERROR")
-                    pass # TODO: error orphaned slash, should be below 
+                    raise Exception("Malformed input - possible duplicate '/':")
 
                 # Not the first encountered / 
                 # Take all elements created since the last /
@@ -167,8 +167,7 @@ def parse_sections(source_string) -> Element:
                     current_element.elements = [sub_section]
                     
             else:
-                print("ERORORR", source_string)
-                pass # TODO: Error slash without anything ongoing 
+                raise Exception("Malformed input - '/' written before any other elements in section")
         else:
             # Regular, atomic entry 
             atomic = Element() 
@@ -186,10 +185,17 @@ def parse_sections(source_string) -> Element:
 # Run tests if ran standalone 
 if __name__ == "__main__": 
 
-    # These should be OK even if they are gibberish 
+    # This should be OK, even if gibberish 
     parse_sections("                ")
-    parse_sections("(a c v")
-    parse_sections("(((((/)))))")
+
+    def test_malformed_input(inp):
+        with pytest.raises(Exception) as exc_info:   
+            parse_sections(inp)
+            assert "Malformed input" in exc_info.value
+
+    test_malformed_input("(a c v")
+    test_malformed_input("(((((/)))))")
+    test_malformed_input("a / / b")
 
     def representation_test(source):
         res = parse_sections(source).represent()
@@ -269,7 +275,6 @@ if __name__ == "__main__":
 
     """
         UP NEXT: 
-        - 
         - Proper information detection for each type of element
             - Atomic makes a full parse, section suffix, alternation nothing
     """
