@@ -36,26 +36,42 @@ class Cursor:
                     break 
         return  
 
+    def contains_any(self, symbols):
+        for s in symbols:
+            if s in self.source_string:
+                return True 
+        return False 
+
     # Returns characters up until, but not including, any of the mentioned symbols
     # Leaves cursor before the found symbol
-    def get_until(self, symbols):
+    # "positive match" can be reversed to instead find the first symbol -not- matching
+    def get_until(self, symbols, positive_match = True):
         scan = ""
 
         if self.is_done():
             return ""
 
         while True:
-
             
             current = self.get()
-            ahead = self.peek() 
+            ahead = self.peek()
 
-            if current in symbols:
-                break 
-            else: 
-                scan += current
-                if ahead in symbols or ahead == "":
+            if positive_match: 
+
+                if current in symbols:
                     break 
-                self.next() 
+                else: 
+                    scan += current
+                    if ahead in symbols or ahead == "":
+                        break 
+                    self.next()
+            else:
+                if current not in symbols:
+                    break
+                else:
+                    scan += current
+                    if ahead not in symbols or ahead == "":
+                        break 
+                    self.next()
 
         return scan

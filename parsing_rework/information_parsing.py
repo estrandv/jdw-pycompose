@@ -4,16 +4,104 @@
 
 """
 
-
+from enum import Enum
 from cursor import Cursor
 from dataclasses import dataclass
 from decimal import Decimal
+from element import Element, ElementType
+
+"""
+    TODO: Discussion on requirements. 
+    - Can index be a float?
+    - When do we need symbols -instead- of an index? 
+    - How do we denote e.g. "mod note number of playing note"? Suffix? Symbol?  
+    - Should it even be possible to have a suffix without an index? If so, how? 
+
+"""
+@dataclass
+class ElementInformation:
+    prefix: str = "" # Contents prior to first numeric or special symbol 
+    index_string: str = "" # First numeric or special symbol
+    suffix: str = "" # Contents after first numeric or special symbol
+    arg_source: str = "" # Final contents, after ":"
+
+class InformationPart(Enum):
+    PREFIX = 0
+    INDEX = 1
+    SUFFIX = 2
+    ARGS = 3
+
+def divide_information(element: Element) -> ElementInformation:
+
+    # Initiate with blank defaults 
+    information = ElementInformation() 
+
+    # Sections start at suffix; they have no prefix or index 
+    current_part = InformationPart.SUFFIX \
+        if element.type in [ElementType.SECTION, ElementType.ALTERNATION_SECTION] \
+        else InformationPart.PREFIX
+
+    # Return blank when no information string is provided 
+    if element.information == "":
+        return information
+
+    cursor = Cursor(element.information)
+
+    NUMBERS = "0123456789"
+
+    while True:
+        match current_part:
+            case InformationPart.PREFIX:
+                if not cursor.contains_any(NUMBERS):
+                    raise Exception("Malformed input - element information has no index: " + element.information)
+                until_number = cursor.get_until(NUMBERS)
+                information.prefix = until_number
+
+                # NOTE: Cursor weakness - if first character matches get_until we don't stop "before it" 
+                if cursor.get() not in NUMBERS:
+                    cursor.next()
+
+                current_part = InformationPart.INDEX
+
+            case InformationPart.INDEX:
+                information.index_string = cursor.get_until("0123456789", False)
+                
+                # NOTE: Again, cursor weakness
+                if cursor.get() in NUMBERS:
+                    cursor.next()
+
+                current_part = InformationPart.SUFFIX
+            
+            case InformationPart.SUFFIX:
+                
+                if not cursor.is_done():
+                    information.suffix = cursor.get_until(":")
+                    cursor.move_past_next(":")
+
+                current_part = InformationPart.ARGS
+
+            case InformationPart.ARGS:
+
+                if not cursor.is_done():
+                    information.arg_source = cursor.get_remaining()
+
+                break 
+
+            case _:
+                # Shouldn't happen but w/e
+                break
+
+    return information
+
+
 
 @dataclass
 class SuffixInfo:
     freetext: str = ""
     arg_source: str = ""
 
+# TODO: Replace with full blown information data class that is 
+#   parsed based on element type 
 # Parse [freetext]:[args] part of element info 
 def parse_suffix(suffix_string) -> SuffixInfo:
 
@@ -131,3 +219,16 @@ if __name__ == "__main__":
     
     freetext_test_2 = parse_suffix_freetext("x44")
     assert freetext_test_2.repeat == 44, freetext_test_2.repeat
+
+    # Divide information testing
+
+    def make_element(source):
+        ele = Element() 
+        ele.information = source 
+        return ele 
+
+    divtest = divide_information(make_element("a3x:0.1@"))
+    assert divtest.prefix == "a", divtest.prefix
+    assert divtest.index_string == "3", divtest.index_string
+    assert divtest.suffix == "x", divtest.suffix
+    assert divtest.arg_source == "0.1@", divtest.arg_source
