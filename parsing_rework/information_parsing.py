@@ -9,6 +9,7 @@ from cursor import Cursor
 from dataclasses import dataclass
 from decimal import Decimal
 from element import Element, ElementType
+import pytest 
 
 """
     TODO: Discussion on requirements. 
@@ -222,13 +223,31 @@ if __name__ == "__main__":
 
     # Divide information testing
 
-    def make_element(source):
+    def make_element(source, etype):
         ele = Element() 
-        ele.information = source 
+        ele.information = source
+        ele.type = etype
         return ele 
 
-    divtest = divide_information(make_element("a3x:0.1@"))
-    assert divtest.prefix == "a", divtest.prefix
-    assert divtest.index_string == "3", divtest.index_string
-    assert divtest.suffix == "x", divtest.suffix
-    assert divtest.arg_source == "0.1@", divtest.arg_source
+    def divide_test(source, prefix, index, suffix, args):
+        divtest = divide_information(make_element(source, ElementType.ATOMIC))
+        assert divtest.prefix == prefix, divtest.prefix
+        assert divtest.index_string == index, divtest.index_string
+        assert divtest.suffix == suffix, divtest.suffix
+        assert divtest.arg_source == args, divtest.arg_source
+
+    divide_test("a3x:0.1@", "a", "3", "x", "0.1@")
+    divide_test("1", "", "1", "", "")
+    divide_test("9099:arg1", "", "9099", "", "arg1")
+    divide_test("001xxx", "", "001", "xxx", "")
+    divide_test("", "", "", "", "")
+
+    stest = divide_information(make_element(":fff", ElementType.SECTION))
+    assert stest.prefix == ""
+    assert stest.index_string == ""
+    assert stest.suffix == ""
+    assert stest.arg_source == "fff" 
+
+    with pytest.raises(Exception) as exc_info:   
+        divide_information(make_element(":fff", ElementType.ATOMIC))
+        assert "Malformed input" in exc_info.value
