@@ -35,6 +35,7 @@ class Element:
         
     # Returns an array of information strings, starting with self.information and then resolving parent.informaiton all the way up to the top 
     # Used to retrieve a priority-ordered information set which can then be used for e.g. argument parsing and overwriting. 
+    # TODO: Fetch information objects instead, or even args directly if that's all that matters 
     def get_information_array_ordered(self):
         full_information = [] 
         current_node = self

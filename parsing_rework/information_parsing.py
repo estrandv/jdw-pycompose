@@ -86,7 +86,13 @@ def divide_information(element: Element) -> ElementInformation:
 
                 remaining = cursor.get_remaining() 
 
-                if ("*" in remaining and ":" in remaining) or "*" in remaining:
+                star_index = remaining.find("*")
+                colon_index = remaining.find(":")
+
+                # Since * can appear inside args, we need to check for it before arg declaration 
+                star_present = star_index != -1 and (star_index < colon_index or colon_index == -1) 
+
+                if star_present:
                     information.suffix = cursor.get_until("*")
                     cursor.move_past_next("*")
                     current_part = InformationPart.REPETITION
@@ -121,10 +127,11 @@ def divide_information(element: Element) -> ElementInformation:
     return information
 
 @dataclass
-class SuffixFreetextInfo:
-    repeat: int = 1
+class DynamicArg:
+    value: Decimal
+    operator: str = ""
 
-# Parse 1.0,arg2,argb2.0 [...] part of element info suffix 
+# Parse 1.0,arg+2,argb*2.0,argc0.2 [...] part of element info suffix 
 def parse_args(arg_source) -> dict:
     args = {}
 
@@ -134,7 +141,9 @@ def parse_args(arg_source) -> dict:
         content = cursor.get_until(",")
 
         sub_cursor = Cursor(content)
-        non_numeric = sub_cursor.get_until("0123456789")
+        # Numbers or operators break the key part
+        # TODO: Consider ".2" shorthand support 
+        non_numeric = sub_cursor.get_until("0123456789+-*")
 
         # Step into the numeric part of the string unless it began immediately 
         if sub_cursor.peek() != "" and non_numeric != "":
@@ -143,17 +152,23 @@ def parse_args(arg_source) -> dict:
         numeric = sub_cursor.get_remaining()
 
         if numeric != "": 
-            numeric_decimal = Decimal(numeric)
+
+            num = "".join(numeric[1:]) if numeric[0] in "+-*" else numeric
+            sym = numeric[0] if numeric[0] in "+-*" else ""    
+
+            numeric_decimal = Decimal(num)
+
+            new_arg = DynamicArg(numeric_decimal, sym)
 
             if non_numeric == "":
                 if len(args) == 0:
                     # TODO: Some other way to provide this default 
                     # First arg is "time" unless otherwise noted 
-                    args["time"] = numeric_decimal
+                    args["time"] = new_arg
                 else:
-                    raise Exception("Parsing error: unnamed arg")
+                    raise Exception("Malformed input: unnamed non-first arg")
             else:
-                args[non_numeric] = numeric_decimal
+                args[non_numeric] = new_arg
 
         cursor.move_past_next(",")
         if cursor.is_done():
@@ -170,24 +185,30 @@ if __name__ == "__main__":
     assert len(no_arg_test) == 0
 
     arg_test_basic = parse_args("1.0")
-    assert arg_test_basic["time"] == Decimal("1.0"), arg_test_basic["time"]
+    assert arg_test_basic["time"].value == Decimal("1.0"), arg_test_basic["time"].value
     assert len(arg_test_basic) == 1, len(arg_test_basic)
 
     arg_test_basic_2 = parse_args("fish1.0,cheese0.3")
     assert "fish" in arg_test_basic_2
     assert "cheese" in arg_test_basic_2
-    assert arg_test_basic_2["fish"] == Decimal("1.0"), arg_test_basic_2["fish"]
-    assert arg_test_basic_2["cheese"] == Decimal("0.3"), arg_test_basic_2["cheese"]
+    assert arg_test_basic_2["fish"].value == Decimal("1.0"), arg_test_basic_2["fish"].value
+    assert arg_test_basic_2["cheese"].value == Decimal("0.3"), arg_test_basic_2["cheese"].value
     
-    # TODO: Consider ".2" shorthand support 
     arg_test = parse_args("0.2,;900,lob0.002")
     assert "time" in arg_test
     assert ";" in arg_test
     assert "lob" in arg_test
-    assert arg_test["time"] == Decimal("0.2"), arg_test["time"]
-    assert arg_test[";"] == Decimal("900"), arg_test[";"]
-    assert arg_test["lob"] == Decimal("0.002"), arg_test["lob"]
-    
+    assert arg_test["time"].value == Decimal("0.2"), arg_test["time"].value
+    assert arg_test[";"].value == Decimal("900"), arg_test[";"].value
+    assert arg_test["lob"].value == Decimal("0.002"), arg_test["lob"].value
+
+    symtest = parse_args("a+4,b*0.2,c-1.2,d0.3")
+    assert symtest["a"].operator == "+", symtest["a"].operator
+    assert symtest["b"].operator == "*", symtest["b"].operator
+    assert symtest["c"].operator == "-", symtest["c"].operator
+    assert symtest["d"].operator == "", symtest["d"].operator
+
+
     # Divide information testing
 
     def make_element(source, etype):
@@ -217,6 +238,9 @@ if __name__ == "__main__":
     assert stest.index_string == ""
     assert stest.suffix == ""
     assert stest.arg_source == "fff" 
+
+    startest = divide_information(make_element(":ss*s", ElementType.SECTION))
+    assert stest.suffix == ""
 
     with pytest.raises(Exception) as exc_info:   
         divide_information(make_element(":fff", ElementType.ATOMIC))
