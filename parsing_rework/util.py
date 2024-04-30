@@ -70,9 +70,8 @@ class TreeExpander:
         
         return element_ticks >= required_ticks and children_ok
 
-    def tree_expand(self, element):
+    def tree_expand(self, element) -> list:
         full = []
-        #print("Expanding top level: " + element.represent())
 
         while not self.all_ticked(element):
             full += self.expand(element, get_repeat(element))
@@ -90,10 +89,7 @@ class TreeExpander:
         return len([e for e in self.tick_list if e is element])
 
     # Expand both alternations and repeats 
-    def expand(self, element, repeat):
-
-        #print("Expanding section/element: " + element.represent(), element.type)
-        #print("Expanding an element with type", element.type, "and information", element.information, "and elements", len(element.elements))
+    def expand(self, element, repeat) -> list:
 
         if element.type == ElementType.ATOMIC:
             self.tick(element)
@@ -124,7 +120,6 @@ class TreeExpander:
         return []
 
 # Returns the amount of times an element should be repeated, according to its "xN" suffix
-# TODO: No inheritance or reuse or anything. It's basic. 
 def get_repeat(element) -> int:
     information = information_parsing.divide_information(element)
     return information.repetition
@@ -200,7 +195,7 @@ if __name__ == "__main__":
     # Quick assertion of atomic elements after a full tree alternations expand    
     # Mixing in some parse logic for faster testing ...     
     def assert_expanded(parse_source, expect):
-        top_element = section_parsing.parse_sections(parse_source)
+        top_element = section_parsing.build_tree(parse_source)
         tree_expand_string = " ".join([e.information for e in tree.tree_expand(top_element)])
         assert tree_expand_string == expect, tree_expand_string
 
@@ -219,14 +214,14 @@ if __name__ == "__main__":
     # Arg resolution testing
 
     ### Verify history logic 
-    grandparent = section_parsing.parse_sections("((0a)b)c")
+    grandparent = section_parsing.build_tree("((0a)b)c")
     child = grandparent.elements[0].elements[0].elements[0]
     h1 = [i.suffix for i in get_information_history(child)]
     assert h1 == ["a", "b", "c", ""], h1
 
     # Fake an information history using bastardized parsing 
     def build_arg_array(source):
-        elements = section_parsing.parse_sections(source).elements
+        elements = section_parsing.build_tree(source).elements
         return [information_parsing.divide_information(e) for e in elements]
 
     def arg_tree_test(array_source, expected_dict):

@@ -10,7 +10,9 @@ from element import Element, ElementType
 import json 
 import pytest 
 
-def parse_sections(source_string) -> Element:
+# Divides string into Elements, arranged in a tree structure
+#   as dictated by section syntax. 
+def build_tree(source_string) -> Element:
     
     current_element = Element()
     current_element.type = ElementType.SECTION 
@@ -61,11 +63,9 @@ def parse_sections(source_string) -> Element:
             end_information = "".join(substring[end_index + 1:]) if substring[-1] != ")" else ""
 
             unwrap = "".join(substring[1:end_index])
-            #print("Unwrapped a bracket", substring, "into", unwrap, "with information", end_information)
 
-            sub_section = parse_sections(unwrap)
+            sub_section = build_tree(unwrap)
             sub_section.information = end_information
-            #print("Storing subsection", unwrap, "<< as >>", sub_section.represent())
             store(sub_section)
 
         elif substring == "/":
@@ -117,11 +117,11 @@ def parse_sections(source_string) -> Element:
 if __name__ == "__main__": 
 
     # This should be OK, even if gibberish 
-    parse_sections("                ")
+    build_tree("                ")
 
     def test_malformed_input(inp):
         with pytest.raises(Exception) as exc_info:   
-            parse_sections(inp)
+            build_tree(inp)
             assert "Malformed input" in exc_info.value
 
     test_malformed_input("(a c v")
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     test_malformed_input("a / / b")
 
     def representation_test(source):
-        res = parse_sections(source).represent()
+        res = build_tree(source).decompile()
         assert res == "(" + source + ")", res 
 
     representation_test("a / (b c)fff")
@@ -144,14 +144,14 @@ if __name__ == "__main__":
 
     # Some nested alternation wrappings are harder to predict 
     def reptest_advanced(source, expect):
-        res = parse_sections(source).represent()
+        res = build_tree(source).decompile()
         assert res == expect, res 
 
     reptest_advanced("a (b / (p f / (d / h)))", "(a (b / ((p f) / (d / h))))")
     reptest_advanced("a (a (b / f) / (c d)f)", "(a ((a (b / f)) / (c d)f))")
     reptest_advanced("a b c / (a (b / b2)z c / d d) c", "((a b c) / (((a (b / b2)z c) / (d d)) c))")
     
-    nested_arg_set = parse_sections("f (( ::a)b )c")
+    nested_arg_set = build_tree("f (( ::a)b )c")
     assert len(nested_arg_set.elements) == 2
     a_node = nested_arg_set.elements[1].elements[0].elements[0]
     assert a_node.get_information_array_ordered() == ["::a", "b", "c", ""], \
