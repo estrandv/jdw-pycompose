@@ -141,22 +141,33 @@ def get_information_history(element) -> list:
         full_list.append(info)
         current_element = current_element.parent
 
-    return full_list
+    return full_list    
 
 # Resolve arguments from the top down of the given element information history. 
 # The topmost definition is used as base - args with operations 
 #   override the base, args without replace it. 
-def resolve_full_arguments(information_history: list) -> dict:
+# TODO: Somewhat overcomplex - including vagrant alias arg
+def resolve_full_arguments(
+    information_history: list, 
+    default_args: dict = {}, # {str:Decimal}, treated as topmost args
+    arg_aliases: dict = {} # {str:str}, see parse_args() 
+) -> dict:
 
-    # Walk to the top parent, collecting all argument dicts along the way. 
     all_arg_dicts = []
 
+    # Walk to the top parent, collecting all argument dicts along the way. 
     for info in information_history:
         if info.arg_source != "":
-            args = information_parsing.parse_args(info.arg_source)
+            args = information_parsing.parse_args(info.arg_source, arg_aliases)
             all_arg_dicts.append(args)
-        
-    # Reverse priority order; begin with topmost args. 
+
+    # Append the default args as root 
+    dyn_default_args = {}
+    for key in default_args:
+        dyn_default_args[key] = information_parsing.DynamicArg(default_args[key])
+    all_arg_dicts.append(dyn_default_args)
+
+    # Reverse priority order; begin with topmost/root args. 
     all_arg_dicts.reverse()
 
     # Non-dynamic args; dict of <str,Decimal>
@@ -224,9 +235,9 @@ if __name__ == "__main__":
         elements = section_parsing.build_tree(source).elements
         return [information_parsing.divide_information(e) for e in elements]
 
-    def arg_tree_test(array_source, expected_dict):
+    def arg_tree_test(array_source, expected_dict, defaults = {}, aliases = {}):
         history = build_arg_array(array_source)
-        args = resolve_full_arguments(history)
+        args = resolve_full_arguments(history, defaults, aliases)
 
         for key in expected_dict:
             assert args[key] == expected_dict[key], args[key]
@@ -247,7 +258,20 @@ if __name__ == "__main__":
     
     arg_tree_test("0:a0.2 0:a*44 0:a1", {
             "a": Decimal("0.2")
-    })
-    
+    })    
+
+    # Simple default
+    arg_tree_test("0", {
+            "sus": Decimal("1.0")
+    }, {"sus": Decimal("1.0")})
 
 
+    # Simple alias
+    arg_tree_test("0:>1.0", {
+            "sus": Decimal("1.0")
+    }, aliases={">": "sus"})
+
+    # Aliased default
+    arg_tree_test("0:>1.0", {
+            "sus": Decimal("1.0")
+    }, defaults={"sus": Decimal("2.0")}, aliases={">": "sus"})

@@ -132,7 +132,9 @@ class DynamicArg:
     operator: str = ""
 
 # Parse 1.0,arg+2,argb*2.0,argc0.2 [...] part of element info suffix 
-def parse_args(arg_source) -> dict:
+# Aliases, provided as {alias:name}, changes <alias> into <name> where
+#   keys match. 
+def parse_args(arg_source, aliases: dict = {}) -> dict:
     args = {}
 
     cursor = Cursor(arg_source)
@@ -168,6 +170,10 @@ def parse_args(arg_source) -> dict:
                 else:
                     raise Exception("Malformed input: unnamed non-first arg")
             else:
+                # Apply alias
+                if non_numeric in aliases:
+                    non_numeric = aliases[non_numeric]
+
                 args[non_numeric] = new_arg
 
         cursor.move_past_next(",")
