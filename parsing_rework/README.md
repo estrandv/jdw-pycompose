@@ -10,14 +10,15 @@ The main use case is for musical note sequencing, for which the following core f
     introduced: 
     1. Syntax for sequences that alternate with each iteration.
     2. Syntax for repeated elements in sequences. 
-    3. User-defined, named numerical arguments for each element in each sequence (such as "amplitude").
+    3. User-defined, named, numerical arguments for each element in each sequence (such as "amplitude").
     4. Integer-based indices as the defining data of each element in 
         each sequence (such as note numbers in a scale). 
 
 A simple example, denoting a series of notes of the same length with no particular user configuration,
-    might look like this: "c4 c4 g4 d4". 
+    might look like this: "c4 c4 g4 d4" or like this "1 2 1 2 3".
 
-A more advanced example can instead look like this: "c3:sus3.4 c3:0.5 (a3 / b3 / f3 / g3)x2:0.5sus0.2".
+A more advanced example can instead look like this: 
+    "c3:sus3.4 c3:0.5 (a3 / b3:+sus1 / f3 / g3)x2:0.5sus0.2".
 
 This file will give a short introduction to the different functions and elements of <name>. 
 
@@ -28,6 +29,9 @@ TODO
 TODO 
 
 ## Sections & Shared Data
+TODO 
+
+### Relative Arguments
 TODO 
 
 ## Alternations

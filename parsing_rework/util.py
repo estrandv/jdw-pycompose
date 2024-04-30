@@ -2,6 +2,7 @@ from element import ElementType
 from cursor import Cursor 
 import section_parsing
 import information_parsing
+from decimal import Decimal
 
 # "Business logic" - explain later 
 def section_split(source_string) -> list:
@@ -136,6 +137,57 @@ def duplicate(elements, times):
             ret.append(e)
     return ret 
 
+# Get the information of the element and all its parents, in that order
+def get_information_history(element) -> list:
+    full_list = []
+    current_element = element
+    while current_element != None:
+        info = information_parsing.divide_information(current_element)
+        full_list.append(info)
+        current_element = current_element.parent
+
+    return full_list
+
+# Resolve arguments from the top down of the given element information history. 
+# The topmost definition is used as base - args with operations 
+#   override the base, args without replace it. 
+def resolve_full_arguments(information_history: list) -> dict:
+
+    # Walk to the top parent, collecting all argument dicts along the way. 
+    all_arg_dicts = []
+
+    for info in information_history:
+        if info.arg_source != "":
+            args = information_parsing.parse_args(info.arg_source)
+            all_arg_dicts.append(args)
+        
+    # Reverse priority order; begin with topmost args. 
+    all_arg_dicts.reverse()
+
+    # Non-dynamic args; dict of <str,Decimal>
+    resolved_args = {}
+
+    for arg_dict in all_arg_dicts:
+        for dynamic_arg_key in arg_dict:
+            dynamic_arg = arg_dict[dynamic_arg_key]
+            # Arg present at a higher level and can be modified 
+            if dynamic_arg_key in resolved_args:
+                match dynamic_arg.operator:
+                    case "*":
+                        resolved_args[dynamic_arg_key] *= dynamic_arg.value
+                    case "+":
+                        resolved_args[dynamic_arg_key] += dynamic_arg.value
+                    case "-":
+                        resolved_args[dynamic_arg_key] *= dynamic_arg.value
+                    case _:
+                        # Blank or unknown operator should overwrite
+                        resolved_args[dynamic_arg_key] = dynamic_arg.value
+            else:
+                # Introduce without any operators if no higher level version exists
+                resolved_args[dynamic_arg_key] = dynamic_arg.value
+
+    return resolved_args
+
 # Run tests if ran standalone 
 if __name__ == "__main__":
 
@@ -163,3 +215,44 @@ if __name__ == "__main__":
     assert_expanded("t / (f ((a / b)))*2", "t f a f b t f a f b")
 
     assert_expanded("a (b / c / d)*3", "a b c d")
+
+    # Arg resolution testing
+
+    ### Verify history logic 
+    grandparent = section_parsing.parse_sections("((0a)b)c")
+    child = grandparent.elements[0].elements[0].elements[0]
+    h1 = [i.suffix for i in get_information_history(child)]
+    assert h1 == ["a", "b", "c", ""], h1
+
+    # Fake an information history using bastardized parsing 
+    def build_arg_array(source):
+        elements = section_parsing.parse_sections(source).elements
+        return [information_parsing.divide_information(e) for e in elements]
+
+    def arg_tree_test(array_source, expected_dict):
+        history = build_arg_array(array_source)
+        args = resolve_full_arguments(history)
+
+        for key in expected_dict:
+            assert args[key] == expected_dict[key], args[key]
+
+    arg_tree_test("a3:aa0.2,ab+0.2,ac-0.2", {
+        "aa": Decimal("0.2"),
+        "ab": Decimal("0.2"),
+        "ac": Decimal("0.2")
+    })
+
+    arg_tree_test("0:a+0.1 0:a+0.1 0:a+0.1", {
+            "a": Decimal("0.3")
+    })
+        
+    arg_tree_test("0:a+0.1 0:a*0.5 0:a2.0", {
+            "a": Decimal("1.1")
+    })
+    
+    arg_tree_test("0:a0.2 0:a*44 0:a1", {
+            "a": Decimal("0.2")
+    })
+    
+
+
