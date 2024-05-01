@@ -21,6 +21,7 @@ tracks = {}
 
 # CUTE LIL PIANO 
 #tracks["example:piano"] = "d3[=0 >2] d4 d4 g4 d4 c3[=0 >2] c4 c4 d4 c4 f3[=0 >2 #0.2] f4 f4 c4 f4 c3[=0 >2] c4 c4 (d4 / (d4 d4)[=0.5]) c4 :: =1 #0.3 >0.1"
+# new syntax? "d3:0,>2 d4*2 g4 d4 c3:0,>2 .... "
 
 # CUTE LIL TRACK 
 #tracks["SP_Roland808:drum1"] = "bd1 hh1 bd2 hh1 :: ofs0"

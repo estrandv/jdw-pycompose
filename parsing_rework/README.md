@@ -1,3 +1,8 @@
+# TODO: Name brainstorm 
+- chimestone script 
+- treadmill notation
+- liner script 
+
 # <name> Script 
 <name> is a shorthand script for defining sequential data, with a similar purpose to sheet music.
 

@@ -29,7 +29,13 @@ class Parser:
                 args = util.resolve_full_arguments(
                     history, self.arg_defaults, self.arg_aliases
                 )
-                resolved = ResolvedElement(info.prefix, int(info.index_string), info.suffix, args)
+                
+                resolved = ResolvedElement(
+                    info.prefix, 
+                    int(info.index_string) if info.index_string != "" else 0,  
+                    info.suffix, 
+                    args
+                )
                 return resolved 
 
             case _:
