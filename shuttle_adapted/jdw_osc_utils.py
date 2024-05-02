@@ -2,10 +2,30 @@ from pythonosc import osc_message_builder, udp_client, osc_bundle_builder
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from shuttle_notation import ResolvedElement
-from note_utils import resolve_freq
+from jdw_shuttle_utils import resolve_freq
+
 
 SC_DELAY_MS = 70
 
+def create_nrt_record_bundle(
+    sequence: list[OscMessage], # timed 
+    file_name: str,
+    end_time: float, 
+    bpm: float = 120.0 # TODO: Fix type when the expectation in jdw-sc is corrected
+):
+
+    main_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
+    note_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
+    
+    for timed_message in sequence:
+        note_bundle.add_content(timed_message)
+        
+    main_bundle.add_content(create_msg("/bundle_info", ["nrt_record"]))
+    # TODO: BPM and project output 
+    main_bundle.add_content(create_msg("/nrt_record_info", [bpm, file_name, end_time]))
+    main_bundle.add_content(note_bundle.build())
+
+    return main_bundle.build() 
 
 def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> OscBundle:
 
