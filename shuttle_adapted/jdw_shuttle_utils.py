@@ -8,12 +8,17 @@ class MessageType(Enum):
     NOTE_MOD = 1
     DRONE = 2
     EMPTY = 3
+    IGNORE = 4
 
 def _is_empty_element(element: ResolvedElement):
-    return element.suffix == "." \
+    return element.suffix.lower() == "x" \
         and element.prefix == "" \
-        and element.index == 0 \
-        and len(element.args) == 0
+        and element.index == 0 
+
+def _is_spacer_element(element: ResolvedElement):
+    return element.suffix.lower() == "." \
+        and element.prefix == "" \
+        and element.index == 0 
 
 def resolve_message_type(element: ResolvedElement) -> MessageType:
     if element.suffix != "":
@@ -21,6 +26,8 @@ def resolve_message_type(element: ResolvedElement) -> MessageType:
             return MessageType.NOTE_MOD
         elif _is_empty_element(element):
             return MessageType.EMPTY
+        elif _is_spacer_element(element):
+            return MessageType.IGNORE
         elif element.suffix[0] == "$":
             return MessageType.DRONE
     return MessageType.DEFAULT 
