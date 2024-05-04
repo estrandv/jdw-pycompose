@@ -4,7 +4,6 @@ from pythonosc.osc_message import OscMessage
 from shuttle_notation import ResolvedElement
 from jdw_shuttle_utils import resolve_freq
 
-
 SC_DELAY_MS = 70
 
 def create_nrt_record_bundle(
@@ -21,7 +20,6 @@ def create_nrt_record_bundle(
         note_bundle.add_content(timed_message)
         
     main_bundle.add_content(create_msg("/bundle_info", ["nrt_record"]))
-    # TODO: BPM and project output 
     main_bundle.add_content(create_msg("/nrt_record_info", [bpm, file_name, end_time]))
     main_bundle.add_content(note_bundle.build())
 
@@ -49,8 +47,6 @@ def create_msg(adr: str, args = []):
     for arg in args:
         builder.add_arg(arg)
     return builder.build()
-
-# TODO: silence is just a bullshit address message with no arg 
 
 def to_note_on(element: ResolvedElement, synth_name: str):
     freq = resolve_freq(element)
@@ -90,12 +86,9 @@ def to_note_mod(element: ResolvedElement, external_id: str):
             osc_args.append(key)
             osc_args.append(float(element.args[key]))
 
-    print("ATTEMPTING MOD WITH ID", external_id, element)
-
     return create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
 
 def to_note_on_timed(element: ResolvedElement, synth_name: str):
-
 
     freq = resolve_freq(element)
 
