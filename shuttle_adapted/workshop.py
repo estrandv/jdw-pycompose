@@ -115,18 +115,21 @@ tracks = {}
 
 # Example regular synth
 # Note special jdw characters: "x" is EMPTY, "." is IGNORE/SPACER
-#tracks["chords:brute"] = "(d4:8,attT0.5 g4:0,attT0.3 (b4 / c4 / a4 / d3):0,attT0.1,relT6):sus2,relT4,amp0.2,fx0.5"
+tracks["chords:pycompose"] = "(d4:8,attT0.5 g4:0,attT0.3 (b4 / c4 / a4 / d3):0,attT0.1,relT6):sus2,relT4,amp0.2,fx0.5"
 #tracks["hum:pluck"] = "(g6:0 d5 c5 d5 (b5 / a5) d5 x g5:4):2,relT4,fx0.5,amp1"
 
-#tracks["bass:dbass"] = "(g3:relT2,attT0.2 x x g3 . g3 x x g3 . x x g3 x . x x (g3 / b3 / c3 / b3) x):0.25,relT0.05,sus0.1"
+#tracks["bass:pycompose"] = "(g3:relT2,attT0.2 x x g3 . g3 x x g3 . x x g3 x . x x (g3 / b3 / c3 / b3) x):0.25,relT0.05,sus0.1"
 #tracks["bass:dbass"] = "(g2:relT2,attT0.2 x x g2 . g2 x x g2 . x x g2 x . x x (g2 / b2 / c2 / b2) x):0.25,relT0.2,sus0.1"
 #tracks["dee:pluck"] = "(x (x / c5) x d5 b4 x g4 x):0.5,relT0.3"
 
 #tracks["gba:SP_RP200"] = "(2 2 3 x 2 x (3 / 8) (x / 8)):0.5,ofs0.02,amp1"
-#tracks["basicbass:example"] = "(g2*8 d3*8 eb3*8 c3*8):0.5,sus0.3,relT0.5"
-tracks["basicbass2:pycompose"] = "(g1*8 d1*8 eb1*8 c1*8):0.5,sus0.1,relT0.1"
+#tracks["basicbass:pycompose"] = "(g2*8 d3*8 eb3*8 c3*8):0.5,sus0.3,relT0.5"
+#tracks["basicbass2:pycompose"] = "(g1*8 d1*8 eb1*8 c1*8):0.5,sus0.1,relT0.1"
 #tracks["basicbass3:example"] = "(g4*8 d4*8 eb4*8 c4*8):0.5,sus0.1,relT0.005,amp0.2"
-#tracks["dee:pluck"] = "(x (x / c6) x d5 g6 x g5 x):0.5,relT0.3"
+#tracks["dee:pycompose"] = "(x (x / c6) x d5 g6 x g5 x):0.5,relT0.3"
+#tracks["hum:pycompose"] = "(g6:0 d5 c5 d5 (g5 / a5) d5 x g5:4):2,relT4,fx0.5,amp1"
+
+#tracks["somedrum:SP_[KB6]_EMU_E-Drum"] = "(17 (1 / 1 / 1 / (3 1):0.25) (12 / 12 / 12 / (12 x 12 12):0.125) (2 / 93)):ofs0"
 
 # Example sample synth
 #tracks["drums:SP_Roland808"] = "(bd3 mi1:0,ofs0.05 bd4 (mi40:0 sn3 / sn4) (x / bd7 / x / (to3)*4:0.125)):amp1,ofs0"
@@ -148,7 +151,7 @@ for track in tracks:
     # Example nrt send 
     file_name = "/home/estrandv/jdw_output/track_" + track_id + ".wav"
     end_time = sum([float(e.args["time"]) for e in elements]) + 4.0 # A little extra 
-    output_bundle = jdw_osc_utils.create_nrt_record_bundle(sequence, file_name, end_time, bpm)
+    #output_bundle = jdw_osc_utils.create_nrt_record_bundle(sequence, file_name, end_time, bpm)
 
     client.send(output_bundle)
 
