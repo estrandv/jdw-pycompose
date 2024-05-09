@@ -7,7 +7,6 @@ from jdw_tracking_utils import Tracker
 import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
 import configure_jdw_sc
 
-#####################################
 
 """
 
@@ -32,70 +31,12 @@ FEATURE BRAINSTORMING:
                 - This can be a custom definition here in pycompose 
 
 ONGOING TODOS:
-    - Create a library, so that jams can be in their own repo 
-        - Question is: what is library, what is jam? 
-            - The library core should always be "JDW interpretation of Shuttle Notation"
-                - That is: taking elements and converting them into JDW-compatible messages
-                - This includes custom definitions such as "x" for silence
-        - A jam is everything else!
-            - Tracker, client, definitions, whatever 
-        - This means that the library should not contain CLIENTS, but can contain MESSAGE DICTS
-            - So "get bpm message" is a valid library function 
-
-    => IMplementation 
-        - We can separate the jdw-shuttle-lib-py utilities into a new repo and keep the current one as the jam repo 
-            - Since everything is a mess, it's fine to start with separating into two dirs: JAM and LIB
-
-FEATURE BRAINSTORM:
-    - Effects! 
-        - TODO: 
-            1. bus stack and an "assert buses" call that makes sure a certain amount of buses are loaded 
-                - I've added a hardcode of bus creations in the NRT script, via native loop which is clean 
-                - There seems to be some buses available from the get go, as bus 4 was usable as a reverb bus
-                    - UPDATE: default s.numAudioBusChannels=1024, so there is really no need to assert extra buses  
-                - Verified that an effect synth (note_on) should be started -before- any other synths (note_on) are created
-                    - This will almost always be the case automatically, as new synths play as the sequencer loops
-                    - The proper way is of course to have separate groups, with the effects group being created before the synth group
-                        and thus located before it 
-            2. NRT
-                - I think it should just work native (default s.numAudioBusChannels=1024), but I haven't tested NRT yet
-                - ON ANOTHER NOTE: effects don't work with nrt yet, since freeform note_on calls are not recorded 
-                    -> This is a jdw-pycompose problem; we should record these messages as part of the nrt message package 
-
-                         zero_time_messages = []
-                         append(...)
-                         
-
-    - LIVEMOD 
-        - WHY A MOD LOOKUP IN JDW-SC IS A BAD IDEA: 
-            - Every single new note will need to perform a lookup of all mods with all regex matches and modify BEFORE playing 
-            - This is infeasible since it introduces vartime in note_on calls
-            - It is still, somewhat, feasible to implement some kind of "latency after receiving" logic, but that will in itself
-                come with some hurdles and add lots of gnarly code across different message types, 
-            - This method also doesn't magically solve things like recording the live mod for NRT, and so on.
-        - WHY CONTROL BUSES MIGHT JUST BE A GOOD IDEA 
-            - There are tens of thousands of default control buses available without any additional configuration
-            - Synthdefs are dynamically defined now and can use bus mods where needed on a make-to-order basis 
-            - Which bus number to read from can be supplied as and arg, making the value NOTE-INDIVIDUAL
-                ... which works -at least- as well as regex lookup of external ids! 
-            - Bus writing has extensive native support and can even be part of other synths
-                ... with portamento! 
-                ... and their own sequences for NRT!
-
-            # In synthdef
-            freq = freq + In.kr(fBus);
-
-            # Setting the bus in a synthdef
-            myVal = prt(myVal) ... 
-            Out.kr(oBus, myVal)
-
-            # Setting the bus with OSC 
-            ["/c_set", fBusIndex, fModValue]
-
-        - REQUIREMENTS
-            x1. A synth with an "fBus" index arg and a modification of freq from that value. 
-            x2. c_set support in jdw_sc, with the router updated. Simple create_msg() call to it here. 
-            x3. (future) experiments with a control bus synth for varied control 
+    - Lib separation
+        - Parsing and jdw-interpretation separated into its own submodule
+        - Should also separate the utils, like tracker, into its own separate module
+        - A "jam repo" should ideally only contain server_config and jam_file
+    - Effect Synths
+        - Still no groups separation of new nodes; effects should be in group 0 (before) and notes in group 1 (after)
 
 """
 
@@ -122,6 +63,7 @@ zero_time_messages = []
 zero_time_messages.append(jdw_osc_utils.create_msg("/note_modify", ["reverb_effect_2", 0, "mix", 0.0, "room", 0.75]))
 # Control bus setting example - synths can use In.kr(bus) to read val!
 #zero_time_messages.append(jdw_osc_utils.create_msg("/c_set", [44, -4.0]))
+# Drone example
 #zero_time_messages.append(jdw_osc_utils.create_msg("/note_on", ["pycompose", "drone", 0, "bus", 4.0, "amp", 1.0, "sus", 10.0]))
 
 # Send before anything else 

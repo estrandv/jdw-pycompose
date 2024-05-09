@@ -10,8 +10,12 @@ import time
 # TODO: make something smarter later - for now just run it directly... 
 client = udp_client.SimpleUDPClient("127.0.0.1", 13339) # Router
 
+# Messages that should only fire when this particular script is run (once per server boot), but also
+#   be available for NRT record messages 
 def get_oneshot_messages() -> list[OscPacket]:
     return [
+        # Note that effects, control tracks and drones all work well in this category
+        # Note also that a drone can be launched with amp0 and then modified during sequence tracks as needed 
         jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_1", 0, "inBus", 4.0, "outBus", 0.0]),
         jdw_osc_utils.create_msg("/note_on", ["control", "cs", 0, "bus", 55.0, "prt", 0.5])
     ]
