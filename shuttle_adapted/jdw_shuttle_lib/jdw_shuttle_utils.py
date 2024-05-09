@@ -32,7 +32,7 @@ def resolve_external_id(element: ResolvedElement) -> str:
     else:
         # Remove the starter symbol denoting mod type 
         if len(element.suffix) > 1:
-            resolved = "".join(element.suffix)
+            resolved = "".join(element.suffix[1:])
 
     return resolved if resolved != "" else "NOID" 
 

@@ -12,7 +12,8 @@ client = udp_client.SimpleUDPClient("127.0.0.1", 13339) # Router
 
 def get_oneshot_messages() -> list[OscPacket]:
     return [
-        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 4.0, "outBus", 0.0])
+        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_1", 0, "inBus", 4.0, "outBus", 0.0]),
+        jdw_osc_utils.create_msg("/note_on", ["control", "cs", 0, "bus", 55.0, "prt", 0.5])
     ]
 
 if __name__ == "__main__":
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     for synthdef in default_synthdefs.get():
         client.send(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
 
-    time.sleep(0.2)
+    time.sleep(0.5)
 
     for oneshot in get_oneshot_messages():
         client.send(oneshot)

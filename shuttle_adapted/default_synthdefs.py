@@ -18,10 +18,10 @@ def get() -> list[str]:
 
     synthdefs.append("""
     SynthDef("pycompose",
-    {|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002|
+    {|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, fBus=0|
         var osc1, osc2, filter, filter2, env, filterenv, ab;
         amp = amp * 0.2;
-        freq = freq * fmod; 
+        freq = (freq + In.kr(fBus)) * fmod; 
         
         osc1 = Saw.ar(freq);
         osc2 = Mix(Saw.ar(freq * [0.125,1,1.5], [0.5,0.4,0.1]));
@@ -166,6 +166,15 @@ def get() -> list[str]:
     snd = FreeVerb.ar(snd, mix: mix, room: room, damp: 0.5, mul: 1.0, add: 0.0);
     snd = Pan2.ar(snd, 0.0); // Always re-center! 
     Out.ar(outBus,snd)
+    })
+    """)
+
+    # Bus control synth 
+    synthdefs.append("""
+    SynthDef("control",
+    {|val=0,bus=0,prt=0|
+    val = Lag.kr(val, prt);
+    Out.kr(bus,val)
     })
     """)
 

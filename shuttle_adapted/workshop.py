@@ -66,19 +66,36 @@ FEATURE BRAINSTORM:
                          append(...)
                          
 
+    - LIVEMOD 
+        - WHY A MOD LOOKUP IN JDW-SC IS A BAD IDEA: 
+            - Every single new note will need to perform a lookup of all mods with all regex matches and modify BEFORE playing 
+            - This is infeasible since it introduces vartime in note_on calls
+            - It is still, somewhat, feasible to implement some kind of "latency after receiving" logic, but that will in itself
+                come with some hurdles and add lots of gnarly code across different message types, 
+            - This method also doesn't magically solve things like recording the live mod for NRT, and so on.
+        - WHY CONTROL BUSES MIGHT JUST BE A GOOD IDEA 
+            - There are tens of thousands of default control buses available without any additional configuration
+            - Synthdefs are dynamically defined now and can use bus mods where needed on a make-to-order basis 
+            - Which bus number to read from can be supplied as and arg, making the value NOTE-INDIVIDUAL
+                ... which works -at least- as well as regex lookup of external ids! 
+            - Bus writing has extensive native support and can even be part of other synths
+                ... with portamento! 
+                ... and their own sequences for NRT!
 
-    - IDEA: Control buses as a way of running mods on as-yet-fired sequenced notes
-        - previously planned as a middleman microservice, but it could be doable native! 
-        - In.kr() reads a value, which you of course can set here and there
-            - As in freq+=In.kr() 
-            - This does limit ext-id lookups and individuality quote a lot 
-                -> It's a fun way to hack when jamming, but doesn't solve the core issue
+            # In synthdef
+            freq = freq + In.kr(fBus);
 
-    - MORE THOUGHTS: LIVEMOD 
-        - Core issue: lookup is potentially costly in terms of time 
-            - Iterate all mod regexes, resolve them for all incoming notes, apply relative args, THEN send the note 
-            - Ideally, the time at which a message -arrives- should be noted, with the given delay adjusting to that
-                -> This is true even today, even if there are very few operations performed atm (sample lookup is a bit slow!)
+            # Setting the bus in a synthdef
+            myVal = prt(myVal) ... 
+            Out.kr(oBus, myVal)
+
+            # Setting the bus with OSC 
+            ["/c_set", fBusIndex, fModValue]
+
+        - REQUIREMENTS
+            x1. A synth with an "fBus" index arg and a modification of freq from that value. 
+            x2. c_set support in jdw_sc, with the router updated. Simple create_msg() call to it here. 
+            x3. (future) experiments with a control bus synth for varied control 
 
 """
 
@@ -103,6 +120,8 @@ tracks.parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "am
 # (Messages that are sent immediately; not part of a sequence, that should also be included in any eventual NRT record message)
 zero_time_messages = []
 zero_time_messages.append(jdw_osc_utils.create_msg("/note_modify", ["reverb_effect_2", 0, "mix", 0.0, "room", 0.75]))
+# Control bus setting example - synths can use In.kr(bus) to read val!
+#zero_time_messages.append(jdw_osc_utils.create_msg("/c_set", [44, -4.0]))
 #zero_time_messages.append(jdw_osc_utils.create_msg("/note_on", ["pycompose", "drone", 0, "bus", 4.0, "amp", 1.0, "sus", 10.0]))
 
 # Send before anything else 
@@ -114,10 +133,13 @@ for msg in zero_time_messages:
 
 ### DEMO 
 #tracks["somedrumYO:SP_[KB6]_EMU_E-Drum"] = "(12 x 17 x ):ofs0,bus4,amp1"
-#tracks["basicbass:pycompose"] = "(g2*16 d2*16 c2*16 ab2*8 d2*8):0.5,sus0.3,relT0.5"
+#tracks["basicbass:pycompose"] = "(g2*16 d2*16 c2*16 ab2*8 d2*8):0.5,sus0.3,relT0.5,fBus55"
+
+# Example of a control bus modifier - synths can use In.kr(bus) to read val!
+#tracks["cseq:control"] = "(0@cs:val200 0@cs:val0):16,bus55,prt8"
 
 #tracks["somedrumYO:SP_[KB6]_EMU_E-Drum"] = "(12 x 17 x 12 12 17 (x / (12 / (to3)*4:0.125))):ofs0,bus4,amp1"
-#tracks["basicbass:pycompose"] = "(g2):0.5,sus0.3,relT0.5"
+#tracks["basicbass:pycompose"] = "(g2):0.5,sus0.3,relT0.5,fBus55"
 #tracks["hum:pycompose"] = "(g6:0 d5 c5 d5 (g5 / a5) d5 x g5:4):2,relT4,fx0.5,amp1"
 #tracks["dee:pycompose"] = "(x (x / c5) x d5 b4 x g4 x):0.5,relT2.3"
 #tracks["chords:pycompose"] = "(d4:8,attT0.5 g4:0,attT0.3 (b4 / c4 / a4 / d3):0,attT0.1,relT6):sus2,relT4,amp0.5,fx0.5"
