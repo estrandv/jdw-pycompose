@@ -57,7 +57,9 @@ def resolve_freq(element: ResolvedElement) -> float:
     if letter_check == -1:
 
         # Placeholders 
-        octave = 3
+        # TODO: Complete bullshit, but helps with keybaoard usage for now 
+        #octave = 0 if element.index > 12 else 3
+        octave = 0
 
         extra = (12 * (octave + 1)) if octave > 0 else 0
         new_index = element.index + extra

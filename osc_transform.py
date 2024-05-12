@@ -22,7 +22,6 @@ class SendType(Enum):
     NOTE_ON = 3
     EMPTY = 4
 
-
 # Wrap a parsig.Message in an execution time - used by generic message transform after parsing 
 def to_timed_osc(time: float, osc_packet):
     bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
@@ -88,7 +87,7 @@ class MessageWrapper:
             self.message.create_freq_arg(scale, octave)
 
         # Silly external note id default - not sure what a good other option is if tone is not mandatory 
-        ext_id = self.message.suffix if self.message.suffix != "" else "random_nset_id"
+        ext_id = self.message.suffix if self.message.suffix != "t" else "random_nset_id"
         osc_args = []
         for key in self.message.args:
             osc_args.append(key)

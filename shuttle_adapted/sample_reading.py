@@ -36,7 +36,7 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
 
                 correct_ext = False 
                 for a in allowed_extensions:
-                    if a in file:
+                    if a in file.lower():
                         correct_ext = True 
 
                 if correct_ext:

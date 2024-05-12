@@ -25,6 +25,34 @@ if __name__ == "__main__":
     # BPM set example
     #client.send(create_msg("/set_bpm", [tracks.bpm]))
 
+    # Keyboard configurations
+
+    def synth_settings():
+
+        client.send(jdw_osc_utils.create_msg("/keyboard_mode_synth"))
+        client.send(jdw_osc_utils.create_msg("/keyboard_quantization"), ["0.125"])
+        client.send(jdw_osc_utils.create_msg("/keyboard_instrument_name", ["pycompose"]))
+        client.send(jdw_osc_utils.create_msg("/keyboard_args", ["ofs", 0.0, "relT", 0.5, "sus", 0.5, "amp", 1.0]))
+        octave = 4
+        for char in "q2w3er5t6y7ui9o0p":
+            client.send(jdw_osc_utils.create_msg("/keyboard_letter_index", [char, octave]))
+
+    def sampler_settings():
+
+        client.send(jdw_osc_utils.create_msg("/keyboard_mode_sampler"))
+        client.send(jdw_osc_utils.create_msg("/keyboard_quantization", ["0.125"]))
+        client.send(jdw_osc_utils.create_msg("/keyboard_instrument_name", ["Roland808"]))
+        client.send(jdw_osc_utils.create_msg("/keyboard_args", ["ofs", 0.0, "relT", 0.5, "sus", 0.5, "amp", 1.0]))
+        sample_key = 0
+        for char in "q2w3er5t6y7ui9o0p":
+            client.send(jdw_osc_utils.create_msg("/keyboard_letter_index", [char, sample_key]))
+            sample_key += 4
+
+    #synth_settings() 
+    sampler_settings()
+
+    # Run everything
+
     for sample in sample_reading.read_sample_packs("~/sample_packs"):
         client.send(jdw_osc_utils.create_msg("/load_sample", sample.as_args()))
 
