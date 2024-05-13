@@ -7,8 +7,8 @@ from pythonosc import osc_message_builder, udp_client, osc_bundle_builder
 from pythonosc.osc_packet import OscPacket
 
 import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
-import jdw_shuttle_lib.jdw_shuttle_utils as jdw_shuttle_utils
-from jdw_shuttle_lib.jdw_shuttle_utils import MessageType
+from jdw_shuttle_lib.shuttle_jdw_translation import ElementWrapper, MessageType
+
 
 @dataclass
 class Tracker(dict):
@@ -68,7 +68,9 @@ def _create_notes(elements: list[ResolvedElement], synth_name) -> list[OscBundle
                 is_sample = True 
                 resolved_name = "".join(synth_name[3:])
 
-        msg = jdw_osc_utils.to_jdw_note_message(element, resolved_name, is_sample)
+        wrapper = ElementWrapper(element, resolved_name, MessageType.PLAY_SAMPLE if is_sample else MessageType.NOTE_ON_TIMED)
+        
+        msg = jdw_osc_utils.create_jdw_note(wrapper)
 
         if msg != None:
             sequence.append(msg)

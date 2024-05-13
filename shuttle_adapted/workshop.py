@@ -77,17 +77,17 @@ for msg in zero_time_messages:
 # Note special jdw characters: "x" is EMPTY, "." is IGNORE/SPACER
 
 ### DEMO 
-#tracks["somedrumYO:SP_[KB6]_EMU_E-Drum"] = "(12 x 17 x ):ofs0,bus4,amp1"
+
+#tracks["metronome:SP_Roland808"] = "(56 x 56 x 56 x 56 40):ofs0"
+
 #tracks["basicbass:pycompose"] = "(g2*16 d2*16 c2*16 d2*8 c2*8):0.5,sus0.3,relT0.5,fBus55"
-#67:0.875 62:0.625 67:1 62:0.5 67:1 67:1.5 69:1.375 67:1 67:1 62:0.5 67:1 62:0.5 67:1 67:1.625 71:1.375 69:1.125
-tracks["riff:pycompose"] = "(67:0.875 62:0.625 67:1 62:0.5 67:1 67:1.5 69:1.375 67:1 67:1 62:0.5 67:1 62:0.5 67:1 67:1.625 71:1.375 69:1.125):relT2"
 
 # TODO: These INDEX-based notes appear not to respect the "x" symbol properly 
-#tracks["metronome:SP_[KB6]_EMU_E-Drum"] = "(12 x 12 x 12 x 17 x):ofs0"
+#tracks["basic_drum:SP_[KB6]_EMU_E-Drum"] = "(12 x 12 x 12 x 17 x):ofs0"
 #tracks["chordififi:pycompose"] = "(60:0.125 64:3.875 60:0 65:4 62:0.125 60:4 65:0 60:2 64:0 60:1.875):relT2"
 #tracks["notememe:pycompose"] = "(60:0.5 65:0.5 65:0.5 60:0.25 65:0.5 65:0.5 60:0.25 65:0.5 65:0.5):relT0.5"
 
-tracks["notememe:pycompose"] = "((26 / 27):0.75 26:0.75 26:2.5):bus4"
+#tracks["notememe:pycompose"] = "((26 / 27):0.75 26:0.75 26:2.5):bus4"
 #tracks["notememe3:pycompose"] = "(62:0.75 69:0.25 69:0.5 69:1 67:0.5 (69 / 65 / 69 / 62):1):relT1"
 #tracks["notememe4:pycompose"] = "(0:1 62:0.5 62:0.5 62:0.5 62:1.5):relT2"
 #tracks["schre:pycompose"] = "(105:1 105:3 0:4):sus1,relT3,amp1"

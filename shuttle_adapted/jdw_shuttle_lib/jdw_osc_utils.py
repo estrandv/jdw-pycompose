@@ -4,8 +4,9 @@ from pythonosc import osc_message_builder, udp_client, osc_bundle_builder
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from shuttle_notation import ResolvedElement
-from jdw_shuttle_lib.jdw_shuttle_utils import resolve_freq, MessageType, resolve_external_id
-import jdw_shuttle_lib.jdw_shuttle_utils as jdw_shuttle_utils
+from jdw_shuttle_lib.shuttle_jdw_translation import MessageType
+
+from jdw_shuttle_lib.shuttle_jdw_translation import ElementWrapper
 
 # TODO: Pass in, somehow... 
 SC_DELAY_MS = 70
@@ -15,7 +16,7 @@ def create_nrt_record_bundle(
     file_name: str,
     end_time: float, 
     bpm: float = 120.0 # TODO: Fix type when the expectation in jdw-sc is corrected
-):
+) -> OscBundle:
 
     main_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
     note_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
@@ -46,91 +47,47 @@ def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> Osc
     return queue_bundle.build()
 
 # Basic quick-syntax for OSC message building, ("/s_new, [1,2,3...]")
-def create_msg(adr: str, args = []):
+def create_msg(adr: str, args = []) -> OscMessage:
     builder = osc_message_builder.OscMessageBuilder(address=adr)
     for arg in args:
         builder.add_arg(arg)
     return builder.build()
 
-def to_note_on(element: ResolvedElement, synth_name: str):
-    freq = resolve_freq(element)
-
-    # Just expecting it to be there with this name 
-    gate_time = str(element.args["sus"])
-
-    osc_args = ["freq", freq]
-    for key in element.args:
-        if key not in ["sus", "freq"]:
-            osc_args.append(key)
-            osc_args.append(float(element.args[key])) 
-    
-    return create_msg("/note_on", [synth_name, resolve_external_id(element), SC_DELAY_MS] + osc_args)
-
-def to_sample_play(element: ResolvedElement, sample_pack: str):
-
-    ext_id = resolve_external_id(element)
-    
-    osc_args = []
-    for key in element.args:
-        osc_args.append(key)
-        osc_args.append(float(element.args[key]))
-    return create_msg("/play_sample", [ext_id, sample_pack, element.index, element.prefix, SC_DELAY_MS] + osc_args)
-
-def to_note_mod(element: ResolvedElement, external_id: str):
-   
-    freq = resolve_freq(element)
-   
-    osc_args = ["freq", freq]
-    for key in element.args:
-        if key != "freq":
-            osc_args.append(key)
-            osc_args.append(float(element.args[key]))
-
-    return create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
-
-def to_note_on_timed(element: ResolvedElement, synth_name: str):
-
-    freq = resolve_freq(element)
-
-    # Just expecting it to be there with this name 
-    gate_time = str(element.args["sus"])
-    
-    osc_args = ["freq", freq]
-    for key in element.args:
-        if key not in ["sus", "freq"]:
-            osc_args.append(key)
-            osc_args.append(float(element.args[key])) 
-    return create_msg("/note_on_timed", [synth_name, resolve_external_id(element), gate_time, SC_DELAY_MS] + osc_args)
-
-def to_timed_osc(time: str, osc_packet):
+def to_timed_osc(time: str, osc_packet) -> OscBundle:
     bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
     bundle.add_content(create_msg("/bundle_info", ["timed_msg"]))
     bundle.add_content(create_msg("/timed_msg_info", [time]))
     bundle.add_content(osc_packet)
     return bundle.build()
 
-# Default_as_sample was "SP_ in synth_name"
-def to_jdw_note_message(element: ResolvedElement, synth_name, default_as_sample=False) -> OscBundle | None:
+def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
+    external_id = element.resolve_external_id()
+    freq = element.resolve_freq()
+    msg_type = element.resolve_message_type()
 
-        msg = None 
-        match jdw_shuttle_utils.resolve_message_type(element):
-            case MessageType.DEFAULT:
+    msg = None 
 
-                if default_as_sample:
-                    msg = to_sample_play(element, synth_name)
-                else:
-                    msg = to_note_on_timed(element, synth_name)
+    match msg_type:
+        case MessageType.NOTE_ON_TIMED:
+            gate_time = str(element.element.args["sus"])
+            osc_args = element.args_as_osc(["freq", freq])
+            msg = create_msg("/note_on_timed", [element.instrument_name, external_id, gate_time, SC_DELAY_MS] + osc_args)
 
-            case MessageType.DRONE:
-                msg = to_note_on(element, synth_name)
-            case MessageType.NOTE_MOD:
-                msg = to_note_mod(element, resolve_external_id(element))
-            case MessageType.EMPTY:
-                msg = create_msg("/empty_msg", [])
-            case _:
-                pass  
+        case MessageType.PLAY_SAMPLE:
+            osc_args = element.args_as_osc()
+            msg = create_msg("/play_sample", [external_id, element.instrument_name, element.element.index, element.element.prefix, SC_DELAY_MS] + osc_args)
+        
+        case MessageType.DRONE:
+            osc_args = element.args_as_osc(["freq", freq])
+            msg = create_msg("/note_on", [synth_name, external_id, SC_DELAY_MS] + osc_args)
 
-        if msg != None:
-            msg = to_timed_osc(str(element.args["time"]), msg)    
+        case MessageType.NOTE_MOD:
+            osc_args = element.args_as_osc(["freq", freq])
+            msg = create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
 
-        return msg 
+        case MessageType.EMPTY:
+            msg = create_msg("/empty_msg", [])
+        case _:
+            pass
+
+    return to_timed_osc(str(element.element.args["time"]), msg) if msg != None else None 
