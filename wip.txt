@@ -1,9 +1,0 @@
-# BUS args and Effects 
-- Every single note should contain a bus argument:
-    - Incorporate this in the defaults (bus 0), perhaps also a symbol
-- Message support for effect creation is needed 
-    - name, bus and args should be enough args
-    - Should have some form of safety to avoid spamming 
-- In PROSC:
-    - New message handling for effect creation 
-    - BUS arg for ALL synths including sampler 
