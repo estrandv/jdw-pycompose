@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dataclasses import dataclass
+from natsort import natsorted # Proper sorting of strings that might contain numbers
 
 @dataclass
 class Sample:
@@ -32,7 +33,7 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
     for pack in os.listdir(samples_root):
         pack_path = samples_root + pack + "/"
         if os.path.isdir(pack_path):
-            for file in os.listdir(pack_path):
+            for file in natsorted(os.listdir(pack_path)):
 
                 correct_ext = False 
                 for a in allowed_extensions:
@@ -47,6 +48,6 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
                         "" # TODO: Resolve somehow 
                     ))
                     buffer_index += 1
-                    print(samples[-1])    
+                    #print(samples[-1])    
 
     return samples 
