@@ -39,6 +39,12 @@ class Tracker(dict):
 
         return bundles 
 
+    # Creates a batch queue bundle to queue all mentioned tracks at once
+    def into_sequencer_queue_bundle(self, stop_missing = True) -> OscBundle:
+        
+        bundles = self.into_sequencer_queue_bundles() 
+        return jdw_osc_utils.create_batch_queue_bundle(bundles, stop_missing)
+
     def into_sequencer_queue_bundles(self) -> list[OscBundle]:
         bundles = []
         for track in self:

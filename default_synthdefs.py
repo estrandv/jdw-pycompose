@@ -18,7 +18,7 @@ def get() -> list[str]:
 
     synthdefs.append("""
     SynthDef("pycompose",
-    {|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, fBus=0|
+    {|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, fBus=0,gate=1|
         var osc1, osc2, filter, filter2, env, filterenv, ab;
         amp = amp * 0.2;
         freq = (freq + In.kr(fBus)) * fmod; 
@@ -153,6 +153,76 @@ def get() -> list[str]:
     snd = Pan2.ar(snd, pan);
 
     Out.ar(bus, snd)})
+    """)
+
+    synthdefs.append("""
+
+SynthDef.new("feedbackPad1", {
+	arg
+	// Standard Values
+	out = 0, amp = 1, gate = 1, freq = 75, pan = 0,
+	// Controls for ampEnv
+	att = 2, dec = 1, sus = 1, rel = 4, crv = 0,
+	// Controls for fbEnv
+	fbStartStop = 0, fbAtt = 3, fbPeak = 0.8, fbDec = 2, fbSus = 0.67, fbRel = 5,
+	// Confrols for delEnv
+	delStartStop = 0.55, delAtt = 1, delPeak = 0, delDec = 2, delSus = 0.25, delRel = 3.5;
+
+	var snd, fbIn, fbOut, ampEnv, fbEnv, delEnv;
+
+	// Set up the Envelopes
+	ampEnv = Env.adsr(
+		attackTime: att,
+		decayTime: dec,
+		sustainLevel: sus,
+		releaseTime: rel,
+		curve: crv).ar(gate: gate);
+
+	fbEnv = Env.adsr(
+		attackTime: fbAtt,
+		decayTime: fbDec,
+		sustainLevel: fbSus,
+		releaseTime: fbRel,
+		peakLevel: fbPeak,
+		curve: \lin,
+		bias: fbStartStop).ar(gate: gate);
+
+	delEnv = Env.adsr(
+		attackTime: delAtt,
+		decayTime: delDec,
+		sustainLevel: delSus,
+		releaseTime: delRel,
+		peakLevel: delPeak,
+		curve: \lin,
+		bias: delStartStop).ar(gate: gate);
+
+	// Receive the feedback
+	fbIn = LocalIn.ar;
+
+	// The Sound (yup, that's all it is)
+	snd = SinOsc.ar(
+		freq: freq,
+		phase: fbIn * pi);
+
+	// Delay the feedback
+	fbOut = DelayC.ar(
+		in: snd,
+		maxdelaytime: delStartStop.max(delPeak.max(delSus)),
+		delaytime: delEnv,
+		mul: fbEnv);
+
+	// Send the feedback
+	LocalOut.ar(fbOut);
+
+	// Output Stuff
+	snd = Mix.ar(snd) * ampEnv * amp;
+	snd = Limiter.ar(snd);
+
+    DetectSilence.ar(in: snd, doneAction: 2);
+
+	Out.ar(out, Pan2.ar(snd, pan))})
+    
+    
     """)
 
 

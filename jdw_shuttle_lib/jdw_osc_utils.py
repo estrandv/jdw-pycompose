@@ -11,6 +11,19 @@ from jdw_shuttle_lib.shuttle_jdw_translation import ElementWrapper
 # TODO: Pass in, somehow... 
 SC_DELAY_MS = 70
 
+def create_batch_queue_bundle(queues: list[OscBundle], stop_missing: bool) -> OscBundle:
+    queue_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
+    queue_bundle.add_content(create_msg("/bundle_info", ["batch_update_queues"]))
+    queue_bundle.add_content(create_msg("/batch_update_queues_info", [1 if stop_missing else 0]))
+
+    nested_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
+    for queue in queues:
+        nested_bundle.add_content(queue)
+
+    queue_bundle.add_content(nested_bundle.build())
+
+    return queue_bundle.build()
+
 def create_nrt_record_bundle(
     sequence: list[OscMessage], # timed 
     file_name: str,
