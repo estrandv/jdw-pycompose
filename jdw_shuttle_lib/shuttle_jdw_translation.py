@@ -13,6 +13,7 @@ class MessageType(Enum):
     EMPTY = 3
     IGNORE = 4
     NOTE_ON_TIMED = 5
+    LOOP_START_MARKER = 6
 
 @dataclass
 class ElementWrapper:
@@ -61,6 +62,8 @@ class ElementWrapper:
                 return MessageType.EMPTY
             elif self.is_symbol("."):
                 return MessageType.IGNORE
+            elif self.is_symbol("§"):
+                return MessageType.LOOP_START_MARKER
             elif element.suffix[0] == "$":
                 return MessageType.DRONE
         return self.default_message_type 

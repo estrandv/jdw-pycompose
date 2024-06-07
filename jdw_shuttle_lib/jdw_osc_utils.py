@@ -100,6 +100,9 @@ def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
 
         case MessageType.EMPTY:
             msg = create_msg("/empty_msg", [])
+
+        case MessageType.LOOP_START_MARKER:
+            msg = create_msg("/loop_started", [])
         case _:
             pass
 
