@@ -3,14 +3,14 @@ def get() -> list[str]:
 
     synthdefs.append("""
     SynthDef.new("pluck",
-    {|amp=1, sus=1, pan=0, freq=0, vib=0, fmod=0, rate=0, bus=0, blur=1, beat_dur=1, atk=0.01, decay=0.01, rel=0.01, peak=1, level=0.8|
+    {|amp=1, susT=1, pan=0, freq=0, vib=0, fmod=0, rate=0, bus=0, blur=1, beat_dur=1, atk=0.01, decay=0.01, rel=0.01, peak=1, level=0.8|
     var osc, env;
-    sus = sus * blur;
+    susT = susT * blur;
     freq = [freq, freq+fmod];
     amp=(amp + 1e-05);
     freq=(freq + [0, LFNoise2.ar(50).range(-2, 2)]);
     osc=((SinOsc.ar((freq * 1.002), phase: VarSaw.ar(freq, width: Line.ar(1, 0.2, 2))) * 0.3) + (SinOsc.ar(freq, phase: VarSaw.ar(freq, width: Line.ar(1, 0.2, 2))) * 0.3));
-    osc=((osc * XLine.kr(amp, (amp / 10000), (sus * 4), doneAction: 2)) * 0.3);
+    osc=((osc * XLine.kr(amp, (amp / 10000), (susT * 4), doneAction: 2)) * 0.3);
     osc = Mix(osc) * 0.5;
     osc = Pan2.ar(osc, pan);
     Out.ar(bus, osc)})
@@ -18,7 +18,7 @@ def get() -> list[str]:
 
     synthdefs.append("""
     SynthDef("pycompose",
-    {|amp=1, sus=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, fBus=0,gate=1|
+    {|amp=1, susT=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, fBus=0,gate=1|
         var osc1, osc2, filter, filter2, env, filterenv, ab;
         amp = amp * 0.2;
         freq = (freq + In.kr(fBus)) * fmod; 
@@ -27,14 +27,14 @@ def get() -> list[str]:
         osc2 = Mix(Saw.ar(freq * [0.125,1,1.5], [0.5,0.4,0.1]));
         osc2 = Mix(Saw.ar(freq * 2) * [fxs, 0.1], osc2);
 
-        filterenv = EnvGen.ar(Env.adsr(0.0, 0.5, 0.2, sus), 1, doneAction:Done.none);
+        filterenv = EnvGen.ar(Env.adsr(0.0, 0.5, 0.2, susT), 1, doneAction:Done.none);
         filter =  RLPF.ar(osc1 + osc2, cutoff * filterenv + 100, rq);
         ab = abs(filter);
         filter2 = (filter * (ab + 2) / (filter ** 2 + 1 * ab + 1));
         filter2 = BLowShelf.ar(filter2, fxf, fxa, -12);
         filter2 = BPeakEQ.ar(filter2, 1600, 1.0, -6);
 
-        env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.01, 0, sus, relT]), doneAction:Done.freeSelf);
+        env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.01, 0, susT, relT]), gate: gate,doneAction:Done.freeSelf);
 
         Out.ar(bus,Pan2.ar((filter + filter2) * env * amp, pan))
     })
@@ -221,6 +221,21 @@ SynthDef.new("feedbackPad1", {
     DetectSilence.ar(in: snd, doneAction: 2);
 
 	Out.ar(out, Pan2.ar(snd, pan))})
+    
+    
+    """)
+
+    synthdefs.append("""
+    
+    // Overrides default in jdw-sc - used for shared-arg-bug hunting
+SynthDef("sampler", { |bus = 0, start = 0, sus = 10, amp = 1, rate = 1, buf = 0, pan = 0, ofs=0.05|
+    var osc = PlayBuf.ar(1, buf, BufRateScale.kr(buf) * rate, startPos: start);
+    amp = amp * 2.0; // I have found that sample amp usually lands way lower than any synth amp
+    osc = osc * EnvGen.ar(Env([0,1 * amp,1 * amp,0],[ofs, sus-0.05, 0.05]), doneAction: Done.freeSelf);
+    osc = Mix(osc);
+    osc = Pan2.ar(osc, pan);
+	Out.ar(bus, osc)
+})
     
     
     """)

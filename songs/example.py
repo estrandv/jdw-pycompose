@@ -13,7 +13,7 @@ import configure_keyboard
 one_shot_messages = [
         jdw_osc_utils.create_msg("/free_notes", ["(.*)_effect(.*)"]),
         jdw_osc_utils.create_msg("/free_notes", ["bdr"]),
-        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_1", 0, "inBus", 4.0, "outBus", 0.0, "mix", 0.64, "room", 0.24]),
+        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_1", 0, "inBus", 4.0, "outBus", 0.0, "mix", 0.34, "room", 0.24]),
         jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 5.0, "outBus", 0.0, "mix", 0.94, "room", 0.34]),
         jdw_osc_utils.create_msg("/note_on", ["control", "cs", 0, "bus", 55.0, "prt", 0.5]),
         jdw_osc_utils.create_msg("/note_on", ["brute", "bdr", 0, "amp", 0.0]),
@@ -47,67 +47,86 @@ def run():
     tracks = Tracker() 
     tracks.parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("0.5")}
 
-
     # TODO: pycompose does not have a working gate setting, sadly
 
     # Drum presets 
-    #configure_keyboard.as_sampler("EMU_EDrum") 
+    configure_keyboard.as_sampler("EMU_EDrum") 
 
+    # TODO: All messages can be shuttle string billboards 
 
     # Low cutoff pycompose is good bass! 
     #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
     
-    #configure_keyboard.as_synth(4, "pycompose", args=["amp", 0.9, "att", 0.2, "relT", 0.8, "fxa", 22.4])
-    configure_keyboard.as_synth(4, "pluck", args=["amp", 0.9, "att", 0.2, "relT", 0.8, "fxa", 22.4])
-    #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.8, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
-    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.1, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
+    configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
+    #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 4.8, "fx", 2.002, "hpf", 7300.0])
+    #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
+    #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.8, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 3200.0, "bus", 5.0])
+    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.01, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
 
     #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
 
-    billboard = """
-    @brute
-    a4:4
-    
-    """
+    # TODO: Fix wrong octave in keyboard-based keys app 
 
-    billboard2 = """
-    
+    # TODO: Sampler doesn't allow different tracks to run thei own args, for some reason
+    #   - s_new is used, so that's not the problem
+    #   - could be some fine print in the sampler def
+
+    # TODO: Nice-to-haves
+    #   - Full-octave transpose, outside of shuttle 
+    #   - Easier synth switching, ideally without having to move the cursor from the billboard 
+
+
+    billboard = """
+
+    ### Billboard quirks
+    # Tracks are named based on their line index and should not be moved around after being defined
+
     ### Billboard symbols 
     # '@' denotes 'use this synth for below lines'
     # '#' denotes comment line
+    # '<N>' as first text adds the track to group 'N'
+    # '>>>123' defines which groups should be included (others behave as if commented)
     
     ### Note symbols 
     # '§' denotes loop start time for keyboard
 
-    @brute
-(_:0.00,amp0 bb4:0.75,sus0.09974 a4:0.75,sus0.08848 g4:0.5,sus0.09547 f4:2,sus0.1101 f4:0.75,sus0.1047 g4:0.75,sus0.1175 a4:0.5,sus0.09208 bb4:0.75,sus0.09966 a4:0.75,sus0.09474 g4:0.5,sus0.1121 eb4:2,sus0.1459 c4:0.75,sus0.1205 f4:0.75,sus0.1001 g4:0.5,sus0.07715 eb4:2,sus0.1316 c4:0.75,sus0.1064 eb4:0.75,sus0.09516 g4:0.5,sus0.1309 bb4:0.75,sus0.1309 a4:0.75,sus0.1070 g4:0.5,sus0.07676 f4:2,sus0.1011 f4:0.75,sus0.09093 g4:0.75,sus0.09177 a4:0.5,sus0.1006 bb4:0.75,sus0.1021 a4:0.75,sus0.1114 g4:0.5,sus0.1056 f4:2,sus0.1022 c4:2,sus0.1208 f4:1,sus0.1008 eb4:1,sus0.1201 f4:1,sus0.1349 g4:1,sus0.1098 g4:2.25,sus0.1173 f4:1.75,sus0.1120):amp0.25,fxa22.4,att0.2,relT0.8,len36.00
+    >>>1
 
     @pluck
-(_:0.00,amp0 c4:1.5,sus0.09088 f4:0.5,sus0.06649 g4:0.75,sus0.09566 a4:0.75,sus0.1045 f4:0.5,sus0.07216 g4:4,sus0.07416 c4:1.5,sus0.06484 f4:0.5,sus0.06637 g4:0.75,sus0.09982 a4:0.75,sus0.08236 f4:0.5,sus0.1032 g4:2,sus0.1149 f4:2,sus0.1367):sus+1,fxa22.4,rel2.8,att0.2,amp0.9,len16
-    @SP_Roland808
+    <4> (x:1.5 eb7:1,sus0.25 f7:1,sus0.25 c7:0.5,sus0.25 eb7:1.5,sus0.25 f7:1,sus0.25 eb7:0.5,sus0.25 c7:0,sus0.25 x:1):relT0.8,att0,fxa22.4,amp0.6,len8,tot7.00
 
+    @brute
 
-    @feedbackPad1
-#(_:0.00,amp0 g4:4,sus1.783 bb4:1.75,sus0.7166 a4:2,sus0.6711 f4:8,sus0.6821 bb4:1.5,sus0.6621 bb4:1.5,sus0.1473 a4:1.5,sus0.4699 g4:1.5,sus0.4412 f4:2,sus0.6559 c4:0.25,sus0.1054 c4:0,sus0.4668):att0.2,fxa22.4,amp0.1,relT0.1,cutoff200,len24
+    @SP_EMU_EDrum
+
+    <3> x:4 8:28
+
+    # Good metro! 
+    <1> §:0 (4 4:0.5 4:1.5 3):1,amp0.8    
+    <4> (4 16 x 4 x 13 x x)
 
     @pycompose
-#(§:0 c2:0.75,sus0.09579 a2:0.75,sus0.09592 f2:0.5,sus0.08290 g2:0.75,sus0.1750 a2:0.75,sus0.09980 f2:0.5,sus0.06643 g2:0.75,sus0.09916 a2:0.75,sus0.08132 f2:0.5,sus0.08707 g2:1,sus0.09572 f2:1,sus0.08421):relT0.4,attT0.0,amp1.8,fxa22.4,cutoff200,len8
+    <2> (g7:0 bb4*16 g4*16 eb4*16 c4*16):relT0.2,susT0.8
+    
+    <3> (c6:1,sus0.5 eb6:0.5,sus0.25 eb6:1,sus0.25 f6:0.5,sus0.25 g6:5,sus0.25 f6:1,sus0.25 eb6:0.5,sus0.25 eb6:1,sus0.25 c6:0.5,sus0.25 c6:0,sus0.25 x:3.5 x:1.5):relT0.8,amp0.6,fxa22.4,att0,len16,tot12.50
 
-(_:0.00,amp0 c3:0.5,sus0.05391 bb2:0.75,sus0.08171 a2:0.75,sus0.06662 f2:0.75,sus0.08744 a2:0.75,sus0.06141 bb2:0.5,sus0.09421):att0.2,fxa22.4,cutoff200,relT0.1,amp1.5,len4.0
-    
-    @SP_EMU_EDrum
-    #(20*3 4):ofs0
-    (§:0 20:0.75 20:0.25 44:0.5 20:0.5 20:0.75 20:0.25 44:1):ofs0,amp1,sus0.5,relT2.5,len4
-    (x:3.5,amp0 40:4.5):sus0.5,ofs0,relT2.5,amp1,len4.00
-    #(x:3.25,amp0 83:0.5 83:4.25):ofs0.2,sus0.5,relT2.5,amp0.2,len4.00
-    
+    <4> (x:1.5 f8:0.5,sus0.25 eb8:0.5,sus0.25 c8:0.5,sus0.25 f8:0.5,sus0.25 eb8:0.5,sus0.25 c8:0,sus0.25 x:0):amp0.6,att0,relT0.8,fxa22.4,len4.0,tot4.00
+
+    @SP_Roland808
+
+    #12 23 24 25 26 27 28 19
+    <3> (26:1.5 27*3:0.5 x:1)
+    <3> x:16 28:16,ofs0,bus4
+
+    @feedbackPad1
+
+    <3> eb6:16,amp0.004,sus6,relT2,bus4
+
     @gentle
-(_:0.00,amp0 f4:0.5,sus0.07446 a4:0.5,sus0.06949 bb4:0.5,sus0.07103 a4:0.5,sus0.06695 bb4:0.5,sus0.05788 a4:0.25,sus0.06844 bb4:0.75,sus0.06117 (a4 / c5):0.5,sus0.07439):relT0.1,att0.2,amp0.2,fxa22.4,len4.0
-
-(_:0.00,amp0 a3:0.5,sus0.07325 b3:0.5,sus0.08740 c4:0.5,sus0.06724 a3:2.5,sus0.05455):amp0.8,fxa22.4,att0.2,cutoff200,relT0.1,len4.0
 
     """
 
+    line_filter = "" # Populated with ">>>" 
     line_index = 0
     synth = "pycompose" # Default value 
     for line in billboard.split("\n"):
@@ -115,16 +134,38 @@ def run():
         data = line.strip()
 
         if data != "":
-            # Increase even for comments, to avoid renaming tracks on uncomment
-            line_index += 1
 
-            if data[0] == "@":
-                synth = "".join(data[1:])
-                line_index = 0
-            elif data[0] != "#":
+            # Consume group symbol, if existing
+            group_symbol = ""
+            if len(data) > 2 and data[0] == "<" and data[2] == ">":
+                group_symbol = data[1]
+                print("Group detected!", group_symbol)
+                data = "".join(data[3:])
 
-                name = "chunk_track_" + synth + "_" + str(line_index)
-                tracks[name + ":" + synth] = data
+            group_pass = group_symbol == "" or line_filter == "" or group_symbol in line_filter
+
+            # Group filter definition
+
+            is_filter_definition = len(data) > 3 and "".join(data[0:3]) == ">>>"
+
+            if is_filter_definition:
+                line_filter = "".join(data[3:])
+                print("Group filter detected!", line_filter)
+
+            if not is_filter_definition:
+
+                # Increase even for ignored tracks, to avoid renaming tracks on uncomment
+                line_index += 1
+
+                if group_pass:
+
+                    if data[0] == "@":
+                        synth = "".join(data[1:])
+                        line_index = 0
+                    elif data[0] != "#":
+
+                        name = "chunk_track_" + synth + "_" + str(line_index)
+                        tracks[name + ":" + synth] = data
 
         """
     

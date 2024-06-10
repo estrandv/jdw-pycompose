@@ -49,7 +49,7 @@ class ElementWrapper:
             if len(element.suffix) > 1:
                 resolved = "".join(element.suffix[1:])
 
-        return resolved if resolved != "" else "NOID" 
+        return resolved if resolved != "" else "id_" + str(element.index)
 
     def resolve_message_type(self) -> MessageType:
         
@@ -100,8 +100,10 @@ class ElementWrapper:
             octave = element.index if element.index != None else 1
 
             # Math, same as for index freq calculation
-            extra = (12 * (octave + 1)) if octave > 0 else 0
+            extra = (12 * (octave - 1)) if octave > 0 else 0
             new_index = letter_check + extra
+
+            print("DEBUG: Resolved note number", new_index, "from", element.prefix, element.index)
 
             return note_number_to_hz(new_index)
 
