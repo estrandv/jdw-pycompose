@@ -18,7 +18,7 @@ one_shot_messages = [
         jdw_osc_utils.create_msg("/note_on", ["control", "cs", 0, "bus", 55.0, "prt", 0.5]),
         jdw_osc_utils.create_msg("/note_on", ["brute", "bdr", 0, "amp", 0.0]),
         # Control bus example 
-        #jdw_osc_utils.create_msg("/c_set", [44, -4.0])
+        jdw_osc_utils.create_msg("/c_set", [2, -114.0])
 
     ]
 
@@ -50,17 +50,17 @@ def run():
     # TODO: pycompose does not have a working gate setting, sadly
 
     # Drum presets 
-    configure_keyboard.as_sampler("EMU_EDrum") 
+    configure_keyboard.as_sampler("EMU_EDrum")
 
     # TODO: All messages can be shuttle string billboards 
 
     # Low cutoff pycompose is good bass! 
-    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
+    #configure_keyboard.as_synth(2, x:16 "pycomp7se", a16gs=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
     
-    configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
+    #configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
     #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 4.8, "fx", 2.002, "hpf", 7300.0])
-    #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
-    #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.8, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 3200.0, "bus", 5.0])
+    configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
+    #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.1, "att", 0.2, "relT", 0.1, "fxa", 22.4])
     #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.01, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
 
     #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
@@ -70,11 +70,19 @@ def run():
     # TODO: Sampler doesn't allow different tracks to run thei own args, for some reason
     #   - s_new is used, so that's not the problem
     #   - could be some fine print in the sampler def
+    #   - Could be something happening here - investigate result of send_jam when multiple sampler runs 
 
     # TODO: Nice-to-haves
     #   - Full-octave transpose, outside of shuttle 
     #   - Easier synth switching, ideally without having to move the cursor from the billboard 
 
+
+    # TODO: Road ahead for track groups
+    #   - Still missing a good way to do "break right before new track" without heavily duplicating things
+    #   - Still missing an easy way to say "replace this track" in order to avoid waiting for start (man ext id?)
+
+    # TODO: Negative arg values don't work
+    #   - "-0.2" is interpreted as a relative reduction, not a flat negative. 
 
     billboard = """
 
@@ -90,39 +98,37 @@ def run():
     ### Note symbols 
     # '§' denotes loop start time for keyboard
 
-    >>>1
+    #>>>1 t c d e b r
+    >>> 1 2
+
+    @FMRhodes
 
     @pluck
-    <4> (x:1.5 eb7:1,sus0.25 f7:1,sus0.25 c7:0.5,sus0.25 eb7:1.5,sus0.25 f7:1,sus0.25 eb7:0.5,sus0.25 c7:0,sus0.25 x:1):relT0.8,att0,fxa22.4,amp0.6,len8,tot7.00
-
+    (e7:3,sus0.5 f7:0.5,sus0.25 e7:0,sus0.25 x:12.5 e7:3,sus0.25 c7:0.5,sus0.25 a6:0,sus0.25 x:12.5):amp0.2,relT0.8,att0,fxa22.4,len4.0,tot3.50,pan0.5
+    
     @brute
+
+
+    #g4:4,sus0.2,fBus2,amp0.2,relT2,attT0.2,lfoD1,lfoS1,lfBS2,lfBD3
 
     @SP_EMU_EDrum
 
-    <3> x:4 8:28
-
-    # Good metro! 
-    <1> §:0 (4 4:0.5 4:1.5 3):1,amp0.8    
-    <4> (4 16 x 4 x 13 x x)
+    <m> (14 14 14 23):1,sus4
 
     @pycompose
-    <2> (g7:0 bb4*16 g4*16 eb4*16 c4*16):relT0.2,susT0.8
-    
-    <3> (c6:1,sus0.5 eb6:0.5,sus0.25 eb6:1,sus0.25 f6:0.5,sus0.25 g6:5,sus0.25 f6:1,sus0.25 eb6:0.5,sus0.25 eb6:1,sus0.25 c6:0.5,sus0.25 c6:0,sus0.25 x:3.5 x:1.5):relT0.8,amp0.6,fxa22.4,att0,len16,tot12.50
-
-    <4> (x:1.5 f8:0.5,sus0.25 eb8:0.5,sus0.25 c8:0.5,sus0.25 f8:0.5,sus0.25 eb8:0.5,sus0.25 c8:0,sus0.25 x:0):amp0.6,att0,relT0.8,fxa22.4,len4.0,tot4.00
+    (a5 a5 b6 c5 c6 a5 a5 (c5 / e6)):amp0.02
+(a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 c4:0.5,sus0.25 d4:0.5,sus0.25 a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 g3:0.5,sus0.25 f3:0,sus0.25 x:0.5):att0.2,relT0.1,amp1.5,fxa22.4,cutoff119,len8,tot7.50,pan0.05
 
     @SP_Roland808
-
-    #12 23 24 25 26 27 28 19
-    <3> (26:1.5 27*3:0.5 x:1)
-    <3> x:16 28:16,ofs0,bus4
+(24:0.75 24:0.75 24:0.5 24:0 x:2):att0,amp0.6,relT0.8,fxa22.4,len4.0,tot2.00,ofs0.02,sus0.1,pan-0.26
+(26:0.75 26:0.75 26:1 26:0.5 26:0 x:1):att0,amp0.6,relT0.8,fxa22.4,len4.0,tot3.00
+    (x:16 x:7.5 27:0.5 (x:1 28:1)*4):ofs0,sus4,bus4
+    (x:3.5 27:0.5):att0,fxa22.4,amp0.6,relT0.8,len4.0,tot0.00 
 
     @feedbackPad1
-
-    <3> eb6:16,amp0.004,sus6,relT2,bus4
-
+    
     @gentle
+    (c7:2 a6:1 g6:1 e7:1.5 c7:0 x:10.5 c7:2 a6:1 g6:1 a6:1.5 g6:0 x:10.5):att0.2,relT0.8,amp0.1,fxa22.4,len8,tot5.50,sus0.5,bus4,pan-0.8
 
     """
 

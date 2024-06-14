@@ -21,7 +21,7 @@ def get() -> list[str]:
     {|amp=1, susT=0.2, pan=0, bus=0, freq=440, cutoff=1000, rq=0.5, fmod=1, relT=0.04, fxa=1.0, fxf=300, fxs=0.002, fBus=0,gate=1|
         var osc1, osc2, filter, filter2, env, filterenv, ab;
         amp = amp * 0.2;
-        freq = (freq + In.kr(fBus)) * fmod; 
+        freq = (freq * (In.kr(fBus) + 1)) * fmod; 
         
         osc1 = Saw.ar(freq);
         osc2 = Mix(Saw.ar(freq * [0.125,1,1.5], [0.5,0.4,0.1]));
@@ -41,12 +41,43 @@ def get() -> list[str]:
     """)
 
     synthdefs.append("""
+    
+SynthDef(\FMRhodes, {|out = 0, freq = 440, gate = 1, pan = 0, amp = 0.1, attT = 0.001, rel = 1, lfoS = 4.8, inputLevel = 0.2,
+    // all of these range from 0 to 1
+    modIndex = 0.2, mix = 0.2, lfoD = 0.1|
+
+    var env1, env2, env3, env4;
+    var osc1, osc2, osc3, osc4, snd;
+
+    env1 = Env.perc(attT, rel * 1.25, inputLevel, curve: \lin).kr;
+    env2 = Env.perc(attT, rel, inputLevel, curve: \lin).kr;
+    env3 = Env.perc(attT, rel * 1.5, inputLevel, curve: \lin).kr;
+    env4 = Env.perc(attT, rel * 1.5, inputLevel, curve: \lin).kr;
+
+    osc4 = SinOsc.ar(freq) * 6.7341546494171 * modIndex * env4;
+    osc3 = SinOsc.ar(freq * 2, osc4) * env3;
+    osc2 = SinOsc.ar(freq * 30) * 0.683729941 * env2;
+    osc1 = SinOsc.ar(freq * 2, osc2) * env1;
+    snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
+  	snd = snd * (SinOsc.ar(lfoS).range((1 - lfoD), 1));
+
+    snd = snd * Env.asr(0, 1, 0.1).kr(gate: gate, doneAction: 2);
+    snd = Pan2.ar(snd, pan, amp);
+
+    Out.ar(out, snd)})
+    
+    """)
+
+    synthdefs.append("""
     SynthDef.new("brute",
     {|amp=1, sus=1, pan=0, freq=340, hpf=200, ace=0.6, fcx=4, prt=0, bus=0,
-    attT=0.02, decT=0.0, susL=1.0, relT=0.0, gate=1, lfoS=0.0, lfoD=0.0, gain=1.0, fx=0.06|
+    attT=0.02, decT=0.0, susL=1.0, relT=0.0, gate=1, lfoS=0.0, lfoD=0.0, lfBS=0, lfBD=0, gain=1.0, fx=0.06|
     var osc, snd, env, gen, filterenv, filter, lfosc, snd2, saw1, saw2, saw3;
 
     amp = amp * gain;
+
+    lfoS = lfoS * In.kr(lfBS);
+    lfoD = lfoD * In.kr(lfBD);
 
     // Portamento
     freq = Lag.kr(freq, prt);

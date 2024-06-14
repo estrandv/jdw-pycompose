@@ -23,11 +23,15 @@ class ElementWrapper:
 
     def args_as_osc(self, override: list = []) -> list:
         
-        osc_args = override
+        osc_args = []
+        for arg in override:
+            osc_args.append(arg)
+
         for arg in self.element.args:
-            if arg not in override:
-                override.append(arg)
-                override.append(float(self.element.args[arg]))
+            if arg not in osc_args:
+                osc_args.append(arg)
+                osc_args.append(float(self.element.args[arg]))
+        print("ARgs as resolved", osc_args, "override", override)
         return osc_args
 
     def is_symbol(self, sym: str) -> bool:

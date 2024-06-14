@@ -87,8 +87,7 @@ def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
             msg = create_msg("/note_on_timed", [element.instrument_name, external_id, gate_time, SC_DELAY_MS] + osc_args)
 
         case MessageType.PLAY_SAMPLE:
-            osc_args = element.args_as_osc()
-            msg = create_msg("/play_sample", [external_id, element.instrument_name, element.element.index, element.element.prefix, SC_DELAY_MS] + osc_args)
+            msg = create_msg("/play_sample", [external_id, element.instrument_name, element.element.index, element.element.prefix, SC_DELAY_MS] + element.args_as_osc())
         
         case MessageType.DRONE:
             osc_args = element.args_as_osc(["freq", freq])
