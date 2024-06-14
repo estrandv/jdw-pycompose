@@ -14,7 +14,7 @@ one_shot_messages = [
         jdw_osc_utils.create_msg("/free_notes", ["(.*)_effect(.*)"]),
         jdw_osc_utils.create_msg("/free_notes", ["bdr"]),
         jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_1", 0, "inBus", 4.0, "outBus", 0.0, "mix", 0.34, "room", 0.24]),
-        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 5.0, "outBus", 0.0, "mix", 0.94, "room", 0.34]),
+        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 5.0, "outBus", 0.0, "mix", 0.94, "room", 0.64]),
         jdw_osc_utils.create_msg("/note_on", ["control", "cs", 0, "bus", 55.0, "prt", 0.5]),
         jdw_osc_utils.create_msg("/note_on", ["brute", "bdr", 0, "amp", 0.0]),
         # Control bus example 
@@ -58,10 +58,11 @@ def run():
     #configure_keyboard.as_synth(2, x:16 "pycomp7se", a16gs=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
     
     #configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
+    #configure_keyboard.as_synth(5, "FMRhodes", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
     #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 4.8, "fx", 2.002, "hpf", 7300.0])
-    configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
+    #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
     #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.1, "att", 0.2, "relT", 0.1, "fxa", 22.4])
-    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.01, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
+    configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.4, "relT", 10.1, "fxa", 22.4, "cutoff", 200.0, "fbAtt", 0.0])
 
     #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
 
@@ -98,37 +99,55 @@ def run():
     ### Note symbols 
     # '§' denotes loop start time for keyboard
 
-    #>>>1 t c d e b r
-    >>> 1 2
+    #>>> s a y
+    #>>> D d b a
+    #>>> b D d a r
+    #>>> o d b a y f
+    #>>> b D d c a s r y
+    #>>> b D d c a s r y z
+    >>> a o r b s f
+    #>>> a o d z
 
     @FMRhodes
+    <s> (a6:0.5,sus0.5 e7:1,sus0.5 a6:0.5,sus0.5 e7:1,sus0.5 f7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 e7:0.5,sus0.25 f7:0.5,sus0.25 e7:0.5,sus0.25 g7:1,sus0.5 f7:1,sus0.25 e7:0.5,sus0.25 d7:1,sus0.25 e7:0.5,sus0.25 c7:1,sus0.25 d7:0.5,sus0.25 e7:1.5,sus0.25 e7:0.5,sus0.25 d7:0.5,sus0.25 c7:1,sus0.5 d7:1,sus0.25 a6:0.5,sus0.5 e7:1,sus0.5 c7:0.5,sus0.25 e7:1,sus0.25 f7:0.5,sus0.25 e7:1,sus0.25 g7:1,sus0.25 g7:0.75,sus0.25 g7:0.75,sus0.25 e7:0.75,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:1,sus0.5 a6:0,sus0.5 x:0.75):amp0.3,att0,relT0.8,fxa22.4,len32,tot31.25,pan-0.3
+    <z> (a5:0.5,sus0.5 e5:0.5,sus0.5 f5:0.5,sus0.5 g5:0,sus0.5 x:0.5):relT0.8,amp0.13,fxa22.4,att0,len4.0,tot1.50,pan0.5
 
     @pluck
-    (e7:3,sus0.5 f7:0.5,sus0.25 e7:0,sus0.25 x:12.5 e7:3,sus0.25 c7:0.5,sus0.25 a6:0,sus0.25 x:12.5):amp0.2,relT0.8,att0,fxa22.4,len4.0,tot3.50,pan0.5
+    <r> (e7:3,sus0.5 f7:0.5,sus0.25 e7:0,sus0.25 x:12.5 e7:3,sus0.25 c7:0.5,sus0.25 a6:0,sus0.25 x:12.5):amp0.2,relT0.8,att0,fxa22.4,len4.0,tot3.50,pan0.5
     
     @brute
-
+    <r> x:8 (a5:0.5,sus0.25 e5:0.5,sus0.25 f5:1,sus0.25 e5:0.5,sus0.25 a5:1,sus0.25 e5:0.5,sus0.25 g5:0.5,sus0.25 e5:0.5,sus0.25 f5:1,sus0.25 e5:0,sus0.5 x:2):amp0.08,attT0,relT0.8,len8,tot6.00
 
     #g4:4,sus0.2,fBus2,amp0.2,relT2,attT0.2,lfoD1,lfoS1,lfBS2,lfBD3
 
     @SP_EMU_EDrum
 
+    <D> (33:1.5,rate1.95 33:1,rate1.4 x:0.25 34:0.25 33:1,rate0.9)
+
     <m> (14 14 14 23):1,sus4
 
     @pycompose
-    (a5 a5 b6 c5 c6 a5 a5 (c5 / e6)):amp0.02
-(a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 c4:0.5,sus0.25 d4:0.5,sus0.25 a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 g3:0.5,sus0.25 f3:0,sus0.25 x:0.5):att0.2,relT0.1,amp1.5,fxa22.4,cutoff119,len8,tot7.50,pan0.05
+    <a> (a5 a5 b6 c5 c6 a5 a5 (c5 / e6)):amp0.16,bus4
+<b> (a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 c4:0.5,sus0.25 d4:0.5,sus0.25 a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 g3:0.5,sus0.25 f3:0,sus0.25 x:0.5):att0.2,relT0.1,amp1.5,fxa22.4,cutoff119,len8,tot7.50,pan0.05
 
     @SP_Roland808
-(24:0.75 24:0.75 24:0.5 24:0 x:2):att0,amp0.6,relT0.8,fxa22.4,len4.0,tot2.00,ofs0.02,sus0.1,pan-0.26
-(26:0.75 26:0.75 26:1 26:0.5 26:0 x:1):att0,amp0.6,relT0.8,fxa22.4,len4.0,tot3.00
-    (x:16 x:7.5 27:0.5 (x:1 28:1)*4):ofs0,sus4,bus4
-    (x:3.5 27:0.5):att0,fxa22.4,amp0.6,relT0.8,len4.0,tot0.00 
+<d> (24:0.75 24:0.75 24:0.5 24:0 x:2):att0,amp0.6,relT0.8,fxa22.4,len4.0,tot2.00,ofs0.02,sus0.1,pan-0.26
+<d> (x:0.75 x:0.75 26:1 26:0.5 26:0 x:1):att0,amp0.5,relT0.8,fxa22.4,len4.0,tot3.00,rate1.3
+#<d> (x:0.75 x:0.75 74:1 74:0.5 74:0 x:1):att0,amp0.1,relT0.8,fxa22.4,len4.0,tot3.00,rate0.9,sus5,bus4,ofs0
+
+
+
+    <c> ((x:1 28:1)*4):ofs0,sus4,bus4,amp0.3
+    #<5> (x:7.5 27:0.5 (x:1 28:1)*4):ofs0,sus4,bus4
+    #<d> (x:3.5 27:0.5):att0,fxa22.4,amp0.6,relT0.8,len4.0,tot0.00 
+
+    <y> (x:31 33:1):relT0.8,fxa22.4,amp0.6,att0,len4.0,tot0.00,sus10,bus4
 
     @feedbackPad1
+    <f> (x:7 a3:1 a4:0 a5:0 x:8):fbAtt0,fxa22.4,amp0.002,relT10.1,cutoff200,len4.0,tot0.00,sus5
     
     @gentle
-    (c7:2 a6:1 g6:1 e7:1.5 c7:0 x:10.5 c7:2 a6:1 g6:1 a6:1.5 g6:0 x:10.5):att0.2,relT0.8,amp0.1,fxa22.4,len8,tot5.50,sus0.5,bus4,pan-0.8
+    <o> (c7:2 a6:1 g6:1 e7:1.5 c7:0 x:10.5 c7:2 a6:1 g6:1 a6:1.5 g6:0 x:10.5):att0.2,relT0.8,amp0.1,fxa22.4,len8,tot5.50,sus0.5,bus4,pan-0.8
 
     """
 
