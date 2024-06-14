@@ -58,11 +58,11 @@ def run():
     #configure_keyboard.as_synth(2, x:16 "pycomp7se", a16gs=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
     
     #configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
-    #configure_keyboard.as_synth(5, "FMRhodes", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
+    configure_keyboard.as_synth(5, "FMRhodes", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
     #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 4.8, "fx", 2.002, "hpf", 7300.0])
     #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
     #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.1, "att", 0.2, "relT", 0.1, "fxa", 22.4])
-    configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.4, "relT", 10.1, "fxa", 22.4, "cutoff", 200.0, "fbAtt", 0.0])
+    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.4, "relT", 10.1, "fxa", 22.4, "cutoff", 200.0, "fbAtt", 0.0])
 
     #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
 
@@ -99,17 +99,18 @@ def run():
     ### Note symbols 
     # '§' denotes loop start time for keyboard
 
-    #>>> s a y
+    #>>> a y
     #>>> D d b a
+    #>>> b D d a o y
     #>>> b D d a r
-    #>>> o d b a y f
+    #>>> d b a y f
     #>>> b D d c a s r y
     #>>> b D d c a s r y z
-    >>> a o r b s f
+    #>>> a o r b s f
     #>>> a o d z
 
     @FMRhodes
-    <s> (a6:0.5,sus0.5 e7:1,sus0.5 a6:0.5,sus0.5 e7:1,sus0.5 f7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 e7:0.5,sus0.25 f7:0.5,sus0.25 e7:0.5,sus0.25 g7:1,sus0.5 f7:1,sus0.25 e7:0.5,sus0.25 d7:1,sus0.25 e7:0.5,sus0.25 c7:1,sus0.25 d7:0.5,sus0.25 e7:1.5,sus0.25 e7:0.5,sus0.25 d7:0.5,sus0.25 c7:1,sus0.5 d7:1,sus0.25 a6:0.5,sus0.5 e7:1,sus0.5 c7:0.5,sus0.25 e7:1,sus0.25 f7:0.5,sus0.25 e7:1,sus0.25 g7:1,sus0.25 g7:0.75,sus0.25 g7:0.75,sus0.25 e7:0.75,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:1,sus0.5 a6:0,sus0.5 x:0.75):amp0.3,att0,relT0.8,fxa22.4,len32,tot31.25,pan-0.3
+    <s> (a6:0.5,sus0.5 e7:1,sus0.5 a6:0.5,sus0.5 e7:1,sus0.5 f7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 e7:0.5,sus0.25 f7:0.5,sus0.25 e7:0.5,sus0.25 g7:1,sus0.5 f7:1,sus0.25 e7:0.5,sus0.25 d7:1,sus0.25 e7:0.5,sus0.25 c7:1,sus0.25 d7:0.5,sus0.25 e7:1.5,sus0.25 e7:0.5,sus0.25 d7:0.5,sus0.25 c7:1,sus0.5 d7:1,sus0.25 a6:0.5,sus0.5 e7:1,sus0.5 c7:0.5,sus0.25 e7:1,sus0.25 f7:0.5,sus0.25 e7:1,sus0.25 g7:1,sus0.25 g7:0.5,sus0.25 g7:0.75,sus0.25 e7:0.75,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 . c7:0.5,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:1,sus0.5 a6:0,sus0.5 x:1):amp0.3,att0,relT0.8,fxa22.4,len32,tot31.25,pan-0.3
     <z> (a5:0.5,sus0.5 e5:0.5,sus0.5 f5:0.5,sus0.5 g5:0,sus0.5 x:0.5):relT0.8,amp0.13,fxa22.4,att0,len4.0,tot1.50,pan0.5
 
     @pluck
