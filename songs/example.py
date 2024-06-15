@@ -65,81 +65,13 @@ def run():
 
     #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
 
-    # TODO: Fix wrong octave in keyboard-based keys app 
-
-    # TODO: Sampler doesn't allow different tracks to run thei own args, for some reason
-    #   - s_new is used, so that's not the problem
-    #   - could be some fine print in the sampler def
-    #   - Could be something happening here - investigate result of send_jam when multiple sampler runs 
-
-    # TODO: Nice-to-haves
-    #   - Full-octave transpose, outside of shuttle 
-    #   - Easier synth switching, ideally without having to move the cursor from the billboard 
-
+    # TODO: Fix wrong octave in keyboard-based keys app
+    # - And you know, fix it in general 
 
     # TODO: Road ahead for track groups
     #   - Still missing a good way to do "break right before new track" without heavily duplicating things
     #   - Still missing an easy way to say "replace this track" in order to avoid waiting for start (man ext id?)
 
-
-"""
-
-Billboard planning
-- Ideally: One single definition with everything
-    - Sections for synthdefs, drones, keyboard config, tracks
-- Less ideally: Different definitions, but clever ways to parse all different categories 
-
-### Tracks
-- Currently parses via the tracker, which is perhaps a bit stiff
-- Certain meta-rules would be nice, like transpose-all
-    -> So we'd like a system that neatly separates the parsing info from other things
-    -> Group notation could also be better defined with this in mind
-
-    "riff_group___(g3 g3 g4 g3):amp4,x4.0___up3"
-    "<riff_group,+3> (g3 g3 g4 g3):amp4,x4.0"
-
-- Track length is an issue, but it's hard to solve
-    - A backslash-joiner could be one way forward
-
-### Effects
-- Main differences: 
-    - Effects should ideally be (1) recreate on ctrl+u (2) mod on ctrl+j
-        - So: One-shot delete/create and jam-update should come from the same line
-        - ... which means that denoting them as either note_on or play isn't useful
-        - Time isn't useful either
-
-        @reverb
-        rev_one:inBus4,outBus0,mix0.4
-
-
-### Keyboard config
-
-
-    For synth is very basic
-    "brute:arg1.0,..."
-
-    ... but we also have: 
-        - reconfigure pad indices
-        - change sampler for pads  
-        - keys/keyboard distinction 
-
-    @synth brute:arg1
-    @sampler Roland808:arg2
-    @pads 1:8 2:3 4:6 ... 
-
-"""
-
-
-    effect_board = """
-    
-    ### Billboard for effects and drones, represented as a single shuttle note with args
-
-    @reverb
-    
-    $revOne_effect:0,inBus4,outBus2,mix0.74,room0.74
-
-    
-    """
 
     # TODO: Somewhat working, albeit a bit hacky (see redundant args)
     effect_parser = Parser() 

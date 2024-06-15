@@ -131,8 +131,65 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
         
     return tracks 
 
+### TODO: OSC stuff below, might move to its own lib 
+
+from jdw_shuttle_lib.shuttle_jdw_translation import ElementWrapper, MessageType
+import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
+from pythonosc.osc_bundle import OscBundle
+from pythonosc.osc_packet import OscPacket
+
+
+def create_notes_b(elements: list[ResolvedElement], synth_name, is_sample = False) -> list[OscBundle]:
+    sequence = []
+    for element in elements:
+
+        wrapper = ElementWrapper(element, synth_name, MessageType.PLAY_SAMPLE if is_sample else MessageType.NOTE_ON_TIMED)
+        
+        msg = jdw_osc_utils.create_jdw_note(wrapper)
+
+        if msg != None:
+            sequence.append(msg)
+
+    return sequence
+
+def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack]) -> list[OscBundle]:
+    bundles = []
+    for track_name in tracks:
+        track = tracks[track_name]
+
+        sequence = create_notes_b(track.elements, track.synth_name, track.is_sampler)
+        
+        bundles.append(jdw_osc_utils.create_queue_update_bundle(track_name, sequence))
+
+    return bundles 
+
+# Creates a batch queue bundle to queue all mentioned tracks at once
+def create_sequencer_queue_bundle(tracks: dict[str,BillboardTrack], stop_missing = True) -> OscBundle:
+    
+    bundles = create_sequencer_queue_bundles(tracks)
+    return jdw_osc_utils.create_batch_queue_bundle(bundles, stop_missing)
+
+def create_nrt_record_bundles(tracks: dict[str,BillboardTrack], zero_time_messages: list[OscPacket] = [], bpm = 120) -> list[OscBundle]:
+
+    bundles = []
+    for track in tracks:
+
+        # Append zero time messages before converting all sequences
+        sequence = [jdw_osc_utils.to_timed_osc("0.0", msg) for msg in zero_time_messages] \
+            + create_notes_b(tracks[track].elements, tracks[track].synth_name, tracks[track].is_sampler)
+
+        # Example nrt send 
+        # TODO: Hardcodes, but fine for now since it's not public-facing 
+        file_name = "/home/estrandv/jdw_output/track_" + track + ".wav"
+        end_time = sum([float(e.args["time"]) for e in tracks[track].elements]) + 4.0 # A little extra 
+        
+        bundles.append(jdw_osc_utils.create_nrt_record_bundle(sequence, file_name, end_time, bpm))
+
+    return bundles 
+
 if __name__ == "__main__":
     parser = Parser() 
+    parser.arg_defaults = {"time": 0.0, "sus": 0.0} # Because of to_timed_osc expectation + timed_play expectation
 
     effects = parse_drone_billboard("""
     @reverb
@@ -177,3 +234,6 @@ if __name__ == "__main__":
     assert keyboard_conf["moop"][1].index == 3
     assert keyboard_conf["mäp"][0].suffix == "fish"
     assert "miss" not in keyboard_conf
+
+    create_sequencer_queue_bundle(tracks)
+    create_nrt_record_bundles(tracks, bpm=111)

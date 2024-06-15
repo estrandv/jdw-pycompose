@@ -82,3 +82,37 @@ def create_notes(elements: list[ResolvedElement], synth_name) -> list[OscBundle]
             sequence.append(msg)
 
     return sequence
+
+### TODO: Billboard stuff below, placing here for convenience, might replace tracker altogether
+
+from billboarding import *
+
+def create_notes_b(elements: list[ResolvedElement], synth_name, is_sample = False) -> list[OscBundle]:
+    sequence = []
+    for element in elements:
+
+        wrapper = ElementWrapper(element, synth_name, MessageType.PLAY_SAMPLE if is_sample else MessageType.NOTE_ON_TIMED)
+        
+        msg = jdw_osc_utils.create_jdw_note(wrapper)
+
+        if msg != None:
+            sequence.append(msg)
+
+    return sequence
+
+def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack]) -> list[OscBundle]:
+    bundles = []
+    for track_name in tracks:
+        track = tracks[track_name]
+
+        sequence = create_notes_b(track.elements, track.synth_name, track.is_sampler)
+        
+        bundles.append(jdw_osc_utils.create_queue_update_bundle(track_id, sequence))
+
+    return bundles 
+
+# Creates a batch queue bundle to queue all mentioned tracks at once
+def create_sequencer_queue_bundle(tracks: dict[str,BillboardTrack], stop_missing = True) -> OscBundle:
+    
+    bundles = create_sequencer_queue_bundles(tracks)
+    return jdw_osc_utils.create_batch_queue_bundle(bundles, stop_missing)
