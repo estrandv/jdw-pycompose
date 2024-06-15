@@ -187,6 +187,43 @@ def create_nrt_record_bundles(tracks: dict[str,BillboardTrack], zero_time_messag
 
     return bundles 
 
+def create_keyboard_config_packets(configs: dict[str,list[ResolvedElement]]) -> list[OscPacket]:
+    packets = []
+    
+    for config_key in configs:
+        config = configs[config_key]
+        # TODO: Some overhead here, with the wrapper args 
+        content = [ElementWrapper(e, config_key, MessageType.NOTE_ON_TIMED) for e in config]
+        if config_key == "synth":
+            args = content[0].args_as_osc()
+            subtype = content[0].instrument_name
+            packets.append(jdw_osc_utils.create_msg("/keyboard_instrument_name", [subtype]))
+            packets.append(jdw_osc_utils.create_msg("/keyboard_args", args))
+        elif config_key == "pads":
+            for e in config:
+                # e.g. 22:5
+                pad_id = e.index
+                sample_index = int(e.args["time"])
+
+                # TODO: Currently not a real message 
+                packets.append(jdw_osc_utils.create_msg("/keyboard_pad_sample", [pad_id, sample_index]))
+        elif config_key == "sampler":
+            args = content[0].args_as_osc()
+            subtype = content[0].instrument_name
+            # TODO: Currently not real messages
+            packets.append(jdw_osc_utils.create_msg("/keyboard_sample_pack", [subtype]))
+            packets.append(jdw_osc_utils.create_msg("/keyboard_sample_args", args))
+
+    packets.append(jdw_osc_utils.create_msg("/keyboard_quantization", [0.25])) # TODO: Not yet in billboard 
+
+    return packets 
+
+def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[OscPacket]:
+    return [] # TODO: The wipe message and the note_on messages
+
+def create_effect_mod_packets(effects: dict[str,BillboardEffect]) -> list[OscPacket]:
+    return [] # TODO: Simple mod messages 
+
 if __name__ == "__main__":
     parser = Parser() 
     parser.arg_defaults = {"time": 0.0, "sus": 0.0} # Because of to_timed_osc expectation + timed_play expectation
@@ -225,15 +262,16 @@ if __name__ == "__main__":
 
     keyboard_conf = parse_keyboard_config("""
     
-    @moop 1:2 3:4
-    @mäp fish:arg1,arg2
+    @synth 1:2 3:4
+    @pads fish:arg1,arg2
     # @miss 1:0
     
     """, parser)
 
-    assert keyboard_conf["moop"][1].index == 3
-    assert keyboard_conf["mäp"][0].suffix == "fish"
+    assert keyboard_conf["synth"][1].index == 3
+    assert keyboard_conf["pads"][0].suffix == "fish"
     assert "miss" not in keyboard_conf
 
     create_sequencer_queue_bundle(tracks)
     create_nrt_record_bundles(tracks, bpm=111)
+    create_keyboard_config_packets(keyboard_conf)
