@@ -45,33 +45,8 @@ def run():
     tracks = Tracker() 
     tracks.parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("0.5")}
 
-    # TODO: pycompose does not have a working gate setting, sadly
-
-    # Drum presets 
-    #configure_keyboard.as_sampler("EMU_EDrum")
-
-    # TODO: All messages can be shuttle string billboards 
-
     # Low cutoff pycompose is good bass! 
-    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
-    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.0, "att", 0.0, "relT", 1.1, "bus", 5.0])
-    
-    #configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.1, "fxa", 22.4])
-    #configure_keyboard.as_synth(5, "FMRhodes", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
-    #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 4.8, "fx", 2.002, "hpf", 7300.0])
-    configure_keyboard.as_synth(4, "brute", args=["amp", 0.2, "attT", 0.0, "relT", 0.8, "fx", 22.0, "hpf", 500.0])
-    #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.1, "att", 0.2, "relT", 0.1, "fxa", 22.4])
-    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.04, "relT", 10.1, "fxa", 22.4, "cutoff", 200.0, "fbAtt", 0.0])
-
-    #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
-
-    # TODO: Fix wrong octave in keyboard-based keys app
-    # - And you know, fix it in general 
-
-    # TODO: Road ahead for track groups
-    #   - Still missing a good way to do "break right before new track" without heavily duplicating things
-    #   - Still missing an easy way to say "replace this track" in order to avoid waiting for start (man ext id?)
-
+    configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
 
     # TODO: Somewhat working, albeit a bit hacky (see redundant args)
     effect_parser = Parser() 
@@ -87,15 +62,7 @@ def run():
                 note = create_notes([element], cur_effect)[0]
                 one_shot_messages.append(note)
 
-
     billboard = """
-    
-    @pycompose
-    g6:4,relT2,bus4
-    
-    """
-
-    billboard2 = """
 
     ### Billboard quirks
     # Tracks are named based on their line index and should not be moved around after being defined
@@ -103,32 +70,21 @@ def run():
     ### Billboard symbols 
     # '@' denotes 'use this synth for below lines'
     # '#' denotes comment line
-    # '<N>' as first text adds the track to group 'N'
-    # '>>>123' defines which groups should be included (others behave as if commented)
+    # '<myGroup>' as first text adds the track to group 'myGroup'
+    # '>>>1 2 fish' defines which groups should be included (others behave as if commented)
     
     ### Note symbols 
     # '§' denotes loop start time for keyboard
-
-    #>>> a y
-
-    # TODO: THINGS GET MURKY, READY A HPF EFFECT
+    # 'x' denotes an empty message; silence
+    # '.' is ignored by the parser
+    # '$' denotes droning; the note will be set to on with no automated off call 
+    # '@' denotes modding an existing note with the suffix as id
 
     @FMRhodes
-#    (f5:1.5,sus1.25 db5:2.5,sus1.75 f5:1.5,sus1.25 db5:1.5,sus1.5 eb5:1,sus1.25 bb4:1.5,sus1.25 db5:2.5,sus1.5 bb4:1.5,sus1.25 db5:1.5,sus1.5 eb5:1,sus1 f5:1.5,sus1 db5:2.5,sus1.25 f5:1.5,sus1 db5:1.5,sus1.5 eb5:1,sus1.25 gb5:1.5,sus1 eb5:2.75,sus1.5 gb5:1.5,sus1 f5:0,sus1.25 x:2.25):amp0.6,att0,relT0.8,fxa22.4,len32,tot29.75
     @pluck
-    
     @brute
-    (db6:0,sus31.5 eb7:1.5,sus1.5 db7:2.5,sus2.5 eb7:1.5,sus1.5 db7:1,sus1 ab6:1.5,sus1.75 bb6:1.5,sus1.5 db7:6.5,sus6.5 bb6:1.5,sus1.5 ab6:2.5,sus2.5 ab7:1.5,sus1.5 eb7:1.75,sus1.75 db7:1,sus1 eb7:1.5,sus1.5 gb7:1.5,sus1.5 eb7:1,sus1 db7:0,sus3 x:3.75):relT0.8,amp0.05,attT0,fx22,hpf00,len32,tot28.25
-    @SP_EMU_EDrum
-    (33:0.75 26:0.75 26:1 33:0.5 26:0 x:1):amp1,ofs0,relT2.5,sus0.5,len4.0,tot3.00,bus4
-(x:3.5 (x / 24):0.5):ofs0,amp1,sus0.5,relT2.5,len4.0,tot0.00
-
-
     @pycompose
-(f6:0.5,sus0.25 eb6:0.5,sus0.25 db6:1,sus0.25 db6:1,sus0.5 eb6:1,sus0.25 f6:0.5,sus0.25 eb6:0.75,sus0.25 db6:0.75,sus0.25 db6:1,sus0.5 c6:0.5,sus0.5 bb5:0.5,sus0.5 db6:1,sus0.5 eb6:0.5,sus0.25 eb6:3.25,sus0.5 c6:0.75,sus0.25 c6:0.5,sus0.25 c6:0.5,sus0.25 db6:0.5,sus0.25 eb6:1,sus0.25 bb5:0.75,sus0.25 db6:0.75,sus0.25 eb6:0.5,sus0.25 f6:2.75,sus0.25 f6:0.75,sus0.25 gb6:0.5,sus0.25 f6:0.75,sus0.25 eb6:0.75,sus0.25 db6:0.5,sus0.25 c6:0.75,sus0.25 db6:0.5,sus0.25 eb6:0,sus0.25 x:6.75):fxa22.4,amp0.6,relT0.1,att0,len32,tot25.25
-
     @SP_Roland808
-
     # <m> (27:1 27:1 27:1 54:1):1,ofs0,amp0.5
     @feedbackPad1
     @gentle
@@ -178,103 +134,34 @@ def run():
 
         """
     
-        YES HELLO THIS IS FEATURE PLANNING AGAIN
+        ISSUES & FEATURES
 
-        - Annoying things while jamming:
-            * If some tracks are very long, calling queue will stop shorter tracks until a new loop begins
-                - This has something to do with wipe_on_finish, but feels a bit hard to explain
-                    - wipe is called: all tracks will end when finishing
-                    - queue is called: all mentioned tracks remove the wipe flag
-                - Could also be the new bilboard solution causing different track names  
-                    -> I think this was the case
-                - ANOTHER ISSUE THOU: If a track is notably shorter than the longest, it will stop too soon
-                    -> Ideally, tracks should stop when the next long loop finishes 
-            * AMP arg in SAMPLER appears breakable
-                - Sometimes when there are multiple sampler synths active..? 
-            * Relative args should have smarter resolution
-                - E.g. setting "sus+4" on top level so that one can tinker with times that got messed up by keyboard 
-                    -> Math rules is one way to handle it 
-                    -> Custom mod also works, of course. One can keep the shuttle rules and just
-                        eat into the string to process the args after the fact 
+        - Synths
+            - gate streamlining for existing
+            - generally just expanding the library with better stuff
 
-        - Jamming with friends
-            - TODAY: 
-                - If one person could play while the other controls the text, it would create a neat dynamic in itself
-                    - Requirements: 
-                        - Non-main keyboard input device (that other person can sit with elsewhere)
-                        - Universal input reading, without window focus 
-                        -> Generally: Wiring up the MIDI keyboard would have a lot of good results 
-                        -> Should not replace current keyboard, but be an alternative to it 
-                        -> "Please save that one" is an easy way to transfer data when jamming, even if there is 
-                            no way to send directly 
-            - Secondary input sources 
-                - For a device to be independent, it must be able to send queues to the jam without a clipboard middleman 
-                    - OPTION A: Interface, with hidden sequences
-                        - Requires: Tracks, Send, Wipe, 
-                    - OPTION B: Auto-write to common file 
-                        - Similar requirements, honestly, but could hack it as a pure print-to in beginning of course 
-                        - 
+        - Full billboarding support
+            - Bonus: "replace this track with this if running other group" 
+            - Bonus: "\" as line breaker
+
+        - Keyboard 
+            - Separate key backend parts of keys and use it to revive input_lab
+            - Implement all different config messages  
 
         - Delay Unification
-            ?? Because we should have a general idea, across applications, of when an actual sound is played 
-            - Keyboard has a hard time differentiating between message arrival and play time due to SC delay
-            - Also: JDW_SC still has that awkward middleman problem where most added features are just ways 
-                around doing things "natively". 
-            - NOTE_ON_TIMED
-                - The gate_off message can be sent as part of the sequence if it is allowed to be delayed 
-                - The main issue is that the sequencer does not know the contents of its messages
-                    -> And so, each loop can only have the same constant time
-                    -> ... while supercollider uses absolute time for delayed execution
-                - A SEND_DELAYED message can be implemented in supercollider
-                    + Would remove need for delay arg in other messages
-                    + Would remove need for note_on_timed altogether
-                    + Can be a bundle with many messages
-                    + Can be interpreted by other applications
-                    + Can probably be implemented as native supercollider code, somehow 
-                        -> See: read_scd  
-                        -> It's possible that a native "beat delay" or "sec delay" already exists, as opposed to 
-                            calculating time from beats. 
-                    - Does not solve issue with wanting absolute time of execution
-                - Getting around the sequencer limitation: 
-                    - Messages can pre-calculate their intervals...
-                        ... but then the sequencer bpm changes ...  
-                    - Sequencer can append info to messages sent as "send_time" 
-                        - Sadly, this would mean another wrapping of the message and more confusion in the router
-                        - Not necessarily a performance hog or inconvenience, but the gain would have to be very clear 
-                            for this to be worth it  
+            - Since Supercollider has an internal delay, it is impossible for jackdaw apps to know <exactly> when
+                a note is played for the human ear. 
+            - The only way to get anywhere near this is to emit some form of event in jdw_sc to the router when 
+                a note <actually> plays, either going via supercollider callback or as a delay-send to router
 
         - CPU Usage
             - input_lab sits at a constant 33% and makes the fans run 
-            - input_lab also struggles to produce the stringify it beomes very long
-                -> Ideally this hsould be threaded - there's no need to stringify while trying to play 
-                -> Another thread, a stringify flag in state, off ye go 
-                    -> Sometihng something don't lock keys while performing stringify 
             - Sequencer eats a decent amount of CPU even when stopped
-                -> Ideally it should have some kind of dead-poll that is a lot slower than the current 4ms 
-            
+                -> Ideally it should have some kind of dead-poll that is a lot slower than the current 4ms             
 
-        - Vector Queues
-            ?? To facilitate drum breaks and smoother jamming of longer songs
-            - STEPS:
-                1. Implement support in sequecer, but with the queue always being a singleton list
-                2. Change sequencer queue message to contain a list, then change pycompose and tests to use a singleton queue list
-
-
-                4. Add support in pycompose for splitting queues into separate sections 
-                5. Add support in pycompose for the now different queue and nrt messages 
-        
-        - Entry point messages
-            ?? Because we might want manually defined points where new queues can start 
-            ?? Because it's a quicker way to implement some of the value of vector queues 
-            - So: 
-                - Sequencer receives a message that says "entry toggle" (basically sends to itself)
-                - A switch is flipped so that a single start is possible, after which the switch goes off again 
-
-        - Knobstation
-            ?? To have some fun with the Minilab 
-            - STEPS:
-                1. Add a knobreader application, similar to the keyboard, that detects input via the Minilab
-                2. Add OSC configuration for binding specific knobs to specific buses 
+        - Meta-sequencer as a new app
+            - Longer notes in e.g. dev-diary, but this solves many composition issues wihtout 
+                making the regular sequencer more complex 
 
         - A return to Timeline Scores 
             ?? To better help construct longer compositions
