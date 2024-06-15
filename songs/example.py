@@ -3,7 +3,8 @@ import time
 from decimal import Decimal
 
 import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
-from jdw_tracking_utils import Tracker
+from jdw_tracking_utils import Tracker, create_notes
+from shuttle_notation import Parser, ResolvedElement
 import sample_reading
 import default_synthdefs
 
@@ -13,10 +14,7 @@ import configure_keyboard
 one_shot_messages = [
         jdw_osc_utils.create_msg("/free_notes", ["(.*)_effect(.*)"]),
         jdw_osc_utils.create_msg("/free_notes", ["bdr"]),
-        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_1", 0, "inBus", 4.0, "outBus", 0.0, "mix", 0.34, "room", 0.24]),
-        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 5.0, "outBus", 0.0, "mix", 0.94, "room", 0.64]),
-        jdw_osc_utils.create_msg("/note_on", ["control", "cs", 0, "bus", 55.0, "prt", 0.5]),
-        jdw_osc_utils.create_msg("/note_on", ["brute", "bdr", 0, "amp", 0.0]),
+        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 5.0, "outBus", 0.0, "mix", 0.44, "room", 0.64]),
         # Control bus example 
         jdw_osc_utils.create_msg("/c_set", [2, -114.0])
 
@@ -50,19 +48,20 @@ def run():
     # TODO: pycompose does not have a working gate setting, sadly
 
     # Drum presets 
-    configure_keyboard.as_sampler("EMU_EDrum")
+    #configure_keyboard.as_sampler("EMU_EDrum")
 
     # TODO: All messages can be shuttle string billboards 
 
     # Low cutoff pycompose is good bass! 
-    #configure_keyboard.as_synth(2, x:16 "pycomp7se", a16gs=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
+    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
+    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.0, "att", 0.0, "relT", 1.1, "bus", 5.0])
     
-    #configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
-    configure_keyboard.as_synth(5, "FMRhodes", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
+    #configure_keyboard.as_synth(5, "pluck", args=["amp", 0.6, "att", 0.0, "relT", 0.1, "fxa", 22.4])
+    #configure_keyboard.as_synth(5, "FMRhodes", args=["amp", 0.6, "att", 0.0, "relT", 0.8, "fxa", 22.4])
     #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 4.8, "fx", 2.002, "hpf", 7300.0])
-    #configure_keyboard.as_synth(4, "brute", args=["amp", 0.1, "attT", 0.0, "relT", 0.8])
+    configure_keyboard.as_synth(4, "brute", args=["amp", 0.2, "attT", 0.0, "relT", 0.8, "fx", 22.0, "hpf", 500.0])
     #configure_keyboard.as_synth(4, "gentle", args=["amp", 0.1, "att", 0.2, "relT", 0.1, "fxa", 22.4])
-    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.4, "relT", 10.1, "fxa", 22.4, "cutoff", 200.0, "fbAtt", 0.0])
+    #configure_keyboard.as_synth(4, "feedbackPad1", args=["amp", 0.04, "relT", 10.1, "fxa", 22.4, "cutoff", 200.0, "fbAtt", 0.0])
 
     #tracks["metronome:SP_Roland808"] = "(56 36 56 36 56 36 56 40):ofs0"
 
@@ -82,10 +81,89 @@ def run():
     #   - Still missing a good way to do "break right before new track" without heavily duplicating things
     #   - Still missing an easy way to say "replace this track" in order to avoid waiting for start (man ext id?)
 
-    # TODO: Negative arg values don't work
-    #   - "-0.2" is interpreted as a relative reduction, not a flat negative. 
+
+"""
+
+Billboard planning
+- Ideally: One single definition with everything
+    - Sections for synthdefs, drones, keyboard config, tracks
+- Less ideally: Different definitions, but clever ways to parse all different categories 
+
+### Tracks
+- Currently parses via the tracker, which is perhaps a bit stiff
+- Certain meta-rules would be nice, like transpose-all
+    -> So we'd like a system that neatly separates the parsing info from other things
+    -> Group notation could also be better defined with this in mind
+
+    "riff_group___(g3 g3 g4 g3):amp4,x4.0___up3"
+    "<riff_group,+3> (g3 g3 g4 g3):amp4,x4.0"
+
+- Track length is an issue, but it's hard to solve
+    - A backslash-joiner could be one way forward
+
+### Effects
+- Main differences: 
+    - Effects should ideally be (1) recreate on ctrl+u (2) mod on ctrl+j
+        - So: One-shot delete/create and jam-update should come from the same line
+        - ... which means that denoting them as either note_on or play isn't useful
+        - Time isn't useful either
+
+        @reverb
+        rev_one:inBus4,outBus0,mix0.4
+
+
+### Keyboard config
+
+
+    For synth is very basic
+    "brute:arg1.0,..."
+
+    ... but we also have: 
+        - reconfigure pad indices
+        - change sampler for pads  
+        - keys/keyboard distinction 
+
+    @synth brute:arg1
+    @sampler Roland808:arg2
+    @pads 1:8 2:3 4:6 ... 
+
+"""
+
+
+    effect_board = """
+    
+    ### Billboard for effects and drones, represented as a single shuttle note with args
+
+    @reverb
+    
+    $revOne_effect:0,inBus4,outBus2,mix0.74,room0.74
+
+    
+    """
+
+    # TODO: Somewhat working, albeit a bit hacky (see redundant args)
+    effect_parser = Parser() 
+    cur_effect = ""
+    for line in effect_board.split("\n"):
+        data = line.strip().split("#")[0]
+        if data != "":
+            if data[0] == "@":
+                cur_effect = "".join(data[1:])
+            elif cur_effect != "":
+                element: ResolvedElement = effect_parser.parse(data)[0]
+                print(element)
+                note = create_notes([element], cur_effect)[0]
+                one_shot_messages.append(note)
+
 
     billboard = """
+    
+    @pycompose
+    g6:4,relT2,bus4
+    
+    """
+
+    billboard2 = """
 
     ### Billboard quirks
     # Tracks are named based on their line index and should not be moved around after being defined
@@ -100,55 +178,28 @@ def run():
     # '§' denotes loop start time for keyboard
 
     #>>> a y
-    #>>> D d b a
-    #>>> b D d a o y
-    #>>> b D d a r
-    #>>> d b a y f
-    #>>> b D d c a s r y
-    #>>> b D d c a s r y z
-    #>>> a o r b s f
-    #>>> a o d z
+
+    # TODO: THINGS GET MURKY, READY A HPF EFFECT
 
     @FMRhodes
-    <s> (a6:0.5,sus0.5 e7:1,sus0.5 a6:0.5,sus0.5 e7:1,sus0.5 f7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 e7:0.5,sus0.25 f7:0.5,sus0.25 e7:0.5,sus0.25 g7:1,sus0.5 f7:1,sus0.25 e7:0.5,sus0.25 d7:1,sus0.25 e7:0.5,sus0.25 c7:1,sus0.25 d7:0.5,sus0.25 e7:1.5,sus0.25 e7:0.5,sus0.25 d7:0.5,sus0.25 c7:1,sus0.5 d7:1,sus0.25 a6:0.5,sus0.5 e7:1,sus0.5 c7:0.5,sus0.25 e7:1,sus0.25 f7:0.5,sus0.25 e7:1,sus0.25 g7:1,sus0.25 g7:0.5,sus0.25 g7:0.75,sus0.25 e7:0.75,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 . c7:0.5,sus0.25 d7:0.5,sus0.25 e7:1,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 e7:0.5,sus0.25 c7:1,sus0.5 a6:0,sus0.5 x:1):amp0.3,att0,relT0.8,fxa22.4,len32,tot31.25,pan-0.3
-    <z> (a5:0.5,sus0.5 e5:0.5,sus0.5 f5:0.5,sus0.5 g5:0,sus0.5 x:0.5):relT0.8,amp0.13,fxa22.4,att0,len4.0,tot1.50,pan0.5
-
+#    (f5:1.5,sus1.25 db5:2.5,sus1.75 f5:1.5,sus1.25 db5:1.5,sus1.5 eb5:1,sus1.25 bb4:1.5,sus1.25 db5:2.5,sus1.5 bb4:1.5,sus1.25 db5:1.5,sus1.5 eb5:1,sus1 f5:1.5,sus1 db5:2.5,sus1.25 f5:1.5,sus1 db5:1.5,sus1.5 eb5:1,sus1.25 gb5:1.5,sus1 eb5:2.75,sus1.5 gb5:1.5,sus1 f5:0,sus1.25 x:2.25):amp0.6,att0,relT0.8,fxa22.4,len32,tot29.75
     @pluck
-    <r> (e7:3,sus0.5 f7:0.5,sus0.25 e7:0,sus0.25 x:12.5 e7:3,sus0.25 c7:0.5,sus0.25 a6:0,sus0.25 x:12.5):amp0.2,relT0.8,att0,fxa22.4,len4.0,tot3.50,pan0.5
     
     @brute
-    <r> x:8 (a5:0.5,sus0.25 e5:0.5,sus0.25 f5:1,sus0.25 e5:0.5,sus0.25 a5:1,sus0.25 e5:0.5,sus0.25 g5:0.5,sus0.25 e5:0.5,sus0.25 f5:1,sus0.25 e5:0,sus0.5 x:2):amp0.08,attT0,relT0.8,len8,tot6.00
-
-    #g4:4,sus0.2,fBus2,amp0.2,relT2,attT0.2,lfoD1,lfoS1,lfBS2,lfBD3
-
+    (db6:0,sus31.5 eb7:1.5,sus1.5 db7:2.5,sus2.5 eb7:1.5,sus1.5 db7:1,sus1 ab6:1.5,sus1.75 bb6:1.5,sus1.5 db7:6.5,sus6.5 bb6:1.5,sus1.5 ab6:2.5,sus2.5 ab7:1.5,sus1.5 eb7:1.75,sus1.75 db7:1,sus1 eb7:1.5,sus1.5 gb7:1.5,sus1.5 eb7:1,sus1 db7:0,sus3 x:3.75):relT0.8,amp0.05,attT0,fx22,hpf00,len32,tot28.25
     @SP_EMU_EDrum
+    (33:0.75 26:0.75 26:1 33:0.5 26:0 x:1):amp1,ofs0,relT2.5,sus0.5,len4.0,tot3.00,bus4
+(x:3.5 (x / 24):0.5):ofs0,amp1,sus0.5,relT2.5,len4.0,tot0.00
 
-    <D> (33:1.5,rate1.95 33:1,rate1.4 x:0.25 34:0.25 33:1,rate0.9)
-
-    <m> (14 14 14 23):1,sus4
 
     @pycompose
-    <a> (a5 a5 b6 c5 c6 a5 a5 (c5 / e6)):amp0.16,bus4
-<b> (a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 c4:0.5,sus0.25 d4:0.5,sus0.25 a3:0.75,sus0.25 a3:0.75,sus0.25 a3:1,sus0.25 a3:0.5,sus0.25 g3:0.5,sus0.25 f3:0,sus0.25 x:0.5):att0.2,relT0.1,amp1.5,fxa22.4,cutoff119,len8,tot7.50,pan0.05
+(f6:0.5,sus0.25 eb6:0.5,sus0.25 db6:1,sus0.25 db6:1,sus0.5 eb6:1,sus0.25 f6:0.5,sus0.25 eb6:0.75,sus0.25 db6:0.75,sus0.25 db6:1,sus0.5 c6:0.5,sus0.5 bb5:0.5,sus0.5 db6:1,sus0.5 eb6:0.5,sus0.25 eb6:3.25,sus0.5 c6:0.75,sus0.25 c6:0.5,sus0.25 c6:0.5,sus0.25 db6:0.5,sus0.25 eb6:1,sus0.25 bb5:0.75,sus0.25 db6:0.75,sus0.25 eb6:0.5,sus0.25 f6:2.75,sus0.25 f6:0.75,sus0.25 gb6:0.5,sus0.25 f6:0.75,sus0.25 eb6:0.75,sus0.25 db6:0.5,sus0.25 c6:0.75,sus0.25 db6:0.5,sus0.25 eb6:0,sus0.25 x:6.75):fxa22.4,amp0.6,relT0.1,att0,len32,tot25.25
 
     @SP_Roland808
-<d> (24:0.75 24:0.75 24:0.5 24:0 x:2):att0,amp0.6,relT0.8,fxa22.4,len4.0,tot2.00,ofs0.02,sus0.1,pan-0.26
-<d> (x:0.75 x:0.75 26:1 26:0.5 26:0 x:1):att0,amp0.5,relT0.8,fxa22.4,len4.0,tot3.00,rate1.3
-#<d> (x:0.75 x:0.75 74:1 74:0.5 74:0 x:1):att0,amp0.1,relT0.8,fxa22.4,len4.0,tot3.00,rate0.9,sus5,bus4,ofs0
 
-
-
-    <c> ((x:1 28:1)*4):ofs0,sus4,bus4,amp0.3
-    #<5> (x:7.5 27:0.5 (x:1 28:1)*4):ofs0,sus4,bus4
-    #<d> (x:3.5 27:0.5):att0,fxa22.4,amp0.6,relT0.8,len4.0,tot0.00 
-
-    <y> (x:31 33:1):relT0.8,fxa22.4,amp0.6,att0,len4.0,tot0.00,sus10,bus4
-
+    # <m> (27:1 27:1 27:1 54:1):1,ofs0,amp0.5
     @feedbackPad1
-    <f> (x:7 a3:1 a4:0 a5:0 x:8):fbAtt0,fxa22.4,amp0.002,relT10.1,cutoff200,len4.0,tot0.00,sus5
-    
     @gentle
-    <o> (c7:2 a6:1 g6:1 e7:1.5 c7:0 x:10.5 c7:2 a6:1 g6:1 a6:1.5 g6:0 x:10.5):att0.2,relT0.8,amp0.1,fxa22.4,len8,tot5.50,sus0.5,bus4,pan-0.8
 
     """
 

@@ -31,7 +31,6 @@ class ElementWrapper:
             if arg not in osc_args:
                 osc_args.append(arg)
                 osc_args.append(float(self.element.args[arg]))
-        print("ARgs as resolved", osc_args, "override", override)
         return osc_args
 
     def is_symbol(self, sym: str) -> bool:
@@ -106,8 +105,6 @@ class ElementWrapper:
             # Math, same as for index freq calculation
             extra = (12 * (octave - 1)) if octave > 0 else 0
             new_index = letter_check + extra
-
-            print("DEBUG: Resolved note number", new_index, "from", element.prefix, element.index)
 
             return note_number_to_hz(new_index)
 

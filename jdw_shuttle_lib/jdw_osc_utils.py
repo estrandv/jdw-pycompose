@@ -91,7 +91,7 @@ def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
         
         case MessageType.DRONE:
             osc_args = element.args_as_osc(["freq", freq])
-            msg = create_msg("/note_on", [synth_name, external_id, SC_DELAY_MS] + osc_args)
+            msg = create_msg("/note_on", [element.instrument_name, external_id, SC_DELAY_MS] + osc_args)
 
         case MessageType.NOTE_MOD:
             osc_args = element.args_as_osc(["freq", freq])

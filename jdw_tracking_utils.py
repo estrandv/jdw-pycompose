@@ -28,7 +28,7 @@ class Tracker(dict):
             elements = self.parser.parse(self[track])
 
             # Append zero time messages before converting all sequences
-            sequence = [jdw_osc_utils.to_timed_osc("0.0", msg) for msg in zero_time_messages] + _create_notes(elements, synth_name)
+            sequence = [jdw_osc_utils.to_timed_osc("0.0", msg) for msg in zero_time_messages] + create_notes(elements, synth_name)
 
             # Example nrt send 
             # TODO: Hardcodes, but fine for now since it's not public-facing 
@@ -55,13 +55,13 @@ class Tracker(dict):
 
             elements = self.parser.parse(self[track])
 
-            sequence = _create_notes(elements, synth_name)
+            sequence = create_notes(elements, synth_name)
             
             bundles.append(jdw_osc_utils.create_queue_update_bundle(track_id, sequence))
 
         return bundles 
 
-def _create_notes(elements: list[ResolvedElement], synth_name) -> list[OscBundle]:
+def create_notes(elements: list[ResolvedElement], synth_name) -> list[OscBundle]:
     sequence = []
     for element in elements:
 
