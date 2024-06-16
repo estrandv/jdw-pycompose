@@ -276,12 +276,37 @@ SynthDef("sampler", { |bus = 0, start = 0, sus = 10, amp = 1, rate = 1, buf = 0,
 
     synthdefs.append("""
     SynthDef("reverb",
-    {|amp=1, inBus=0, outBus=0, room=0.7, mix=0.33|
+    {|amp=1, inBus=0, outBus=0, room=0.7, mix=0.33, damp=0.5,mul=1.0,add=0.0|
     var snd;
     snd = In.ar(inBus,1);
-    snd = FreeVerb.ar(snd, mix: mix, room: room, damp: 0.5, mul: 1.0, add: 0.0);
+    snd = FreeVerb.ar(snd, mix: mix, room: room, damp: damp, mul: mul, add: add);
     snd = Pan2.ar(snd, 0.0); // Always re-center! 
     Out.ar(outBus,snd)
+    })
+    """)
+
+    # 
+
+    synthdefs.append("""
+    SynthDef("lowpass",
+    {|in=0, out=0, freq=8000, mul=1.0, add=0.0|
+    var snd;
+    snd = In.ar(in,1);
+    snd = LPF.ar(in: snd, freq: freq, mul: mul, add: add);
+    snd = Pan2.ar(snd, 0.0); // Always re-center! 
+    Out.ar(out,snd)
+    })
+    """)
+
+
+    synthdefs.append("""
+    SynthDef("highpass",
+    {|in=0, out=0, freq=8000, mul=1.0, add=0.0|
+    var snd;
+    snd = In.ar(in,1);
+    snd = HPF.ar(in: snd, freq: freq, mul: mul, add: add);
+    snd = Pan2.ar(snd, 0.0); // Always re-center! 
+    Out.ar(out,snd)
     })
     """)
 

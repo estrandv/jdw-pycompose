@@ -52,6 +52,8 @@ def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardE
                 element = parser.parse(data)[0]
                 effect_id = element.suffix
 
+                print(effect_id, element.args)
+
                 effects[effect_id] = BillboardEffect(current_instrument, element.args)
 
     return effects 
@@ -83,7 +85,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
             continue 
 
         # Up count for actual tracks, even if commented
-        if "#" in line and data != "" and data[0] != "@":
+        if "#" in line or (data != "" and data[0] != "@"):
             instrument_count += 1
 
         if data != "":
@@ -104,6 +106,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 # Create track 
                 track_data = data
                 meta_data = "" 
+                group_name = ""
                 if data[0] == "<" and ">" in data:
                     track_data = "".join(data.split(">")[1:])
                     # Between <...>
@@ -112,21 +115,23 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     # TODO: No further meta_data atm
                     group_name = meta_data.split(",")[0]
 
-                    filter_ok = group_filter == "" or group_name == "" \
-                        or (group_name in group_filter.split(" "))
+                filter_ok = group_filter == "" or group_name == "" \
+                    or (group_name in group_filter.split(" "))
 
-                    if filter_ok:
+                if filter_ok:
 
-                        elements = parser.parse(track_data)
+                    elements = parser.parse(track_data)
 
-                        track_id = current_instrument + "_" + str(instrument_count)
+                    track_id = current_instrument + "_" + str(instrument_count)
 
-                        tracks[track_id] = BillboardTrack(
-                            current_instrument,
-                            current_is_sampler,
-                            group_name,
-                            elements
-                        )
+                    print(track_id)
+
+                    tracks[track_id] = BillboardTrack(
+                        current_instrument,
+                        current_is_sampler,
+                        group_name,
+                        elements
+                    )
 
         
     return tracks 
@@ -192,11 +197,11 @@ def create_keyboard_config_packets(configs: dict[str,list[ResolvedElement]]) -> 
     
     for config_key in configs:
         config = configs[config_key]
+        subtype = config[0].suffix
         # TODO: Some overhead here, with the wrapper args 
-        content = [ElementWrapper(e, config_key, MessageType.NOTE_ON_TIMED) for e in config]
+        content = [ElementWrapper(e, subtype, MessageType.NOTE_ON_TIMED) for e in config]
         if config_key == "synth":
             args = content[0].args_as_osc()
-            subtype = content[0].instrument_name
             packets.append(jdw_osc_utils.create_msg("/keyboard_instrument_name", [subtype]))
             packets.append(jdw_osc_utils.create_msg("/keyboard_args", args))
         elif config_key == "pads":
@@ -214,7 +219,7 @@ def create_keyboard_config_packets(configs: dict[str,list[ResolvedElement]]) -> 
             packets.append(jdw_osc_utils.create_msg("/keyboard_sample_pack", [subtype]))
             packets.append(jdw_osc_utils.create_msg("/keyboard_sample_args", args))
 
-    packets.append(jdw_osc_utils.create_msg("/keyboard_quantization", [0.25])) # TODO: Not yet in billboard 
+    packets.append(jdw_osc_utils.create_msg("/keyboard_quantization", ["0.25"])) # TODO: Not yet in billboard 
 
     return packets 
 
@@ -234,8 +239,6 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[O
         external_id = common_prefix + effect_name
 
         packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
-
-        #packets.append(jdw_osc_utils.create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args))
 
     return packets
 

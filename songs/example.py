@@ -11,16 +11,83 @@ import default_synthdefs
 import client as my_client
 import configure_keyboard
 
-one_shot_messages = [
-        jdw_osc_utils.create_msg("/free_notes", ["(.*)_effect(.*)"]),
-        jdw_osc_utils.create_msg("/free_notes", ["bdr"]),
-        jdw_osc_utils.create_msg("/note_on", ["reverb", "reverb_effect_2", 0, "inBus", 5.0, "outBus", 0.0, "mix", 0.44, "room", 0.64]),
-        # Control bus example 
-        jdw_osc_utils.create_msg("/c_set", [2, -114.0])
+import billboarding
 
-    ]
+# NOTE EFFECT CHAIN QUIRK! Out bus must refer to a bus already mentioned.
+# Something something creation order of synths 
+effect_billboard = """
+@reverb
+revone:inBus4,outBus12,mix0.15,room0.8,mul6,damp0.8,add0.02
+
+orevtwooooo:inBus5,outBus0,mix0.2,room0.8,mul1,damp0.8,add0.02
+@brute
+#drone:amp0.2,freq440,bus4
+
+@lowpass
+masterlpf:in22,out0,freq7200,mul2
+
+@highpass
+masterhpf:in12,out22,freq40,mul2
+
+
+"""
+
+keyboard_config = """
+
+#@synth pluck:amp0.2,susT1.5,relT0.4,bus4
+@synth FMRhodes:amp0.8,susT1.5,relT0.4,bus4
+#@synth pycompose:amp0.2,cutoff200,susT1.5,relT0.4,bus4
+
+"""
+
+billboard = """
+
+### Billboard quirks
+# Tracks are named based on their line index and should not be moved around after being defined
+
+### Billboard symbols 
+# '@' denotes 'use this synth for below lines'
+# '#' denotes comment line
+# '<myGroup>' as first text adds the track to group 'myGroup'
+# '>>>1 2 fish' defines which groups should be included (others behave as if commented)
+
+### Note symbols 
+# '§' denotes loop start time for keyboard
+# 'x' denotes an empty message; silence
+# '.' is ignored by the parser
+# '$' denotes droning; the note will be set to on with no automated off call 
+# '@' denotes modding an existing note with the suffix as id
+
+
+
+@FMRhodes
+(a6:0.5,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 a6:0.5,sus0.25 e7:0.5,sus0.25 d7:0.5,sus0.25 (c7 / g7):0,sus0.25 x:5):time0.5,relT0.4,amp0.8,sus0.2,susT1.5,out5,len4.0,tot3.00
+@pluck
+(e6:0.75,sus0.25 e6:0.75,sus0.25 e6:0.5,sus0.25 e6:0.75,sus0.25 d6:0.75,sus0.25 c6:0.5,sus0.25 c6:3.5,sus0.25 f6:0.5,sus0.25 e6:0.75,sus0.25 c6:3.25,sus0.25 c6:4,sus0.25 e6:0.75,sus0.25 e6:0.75,sus0.25 e6:0.5,sus0.25 e6:0.75,sus0.25 d6:0.75,sus0.25 c6:0.5,sus0.25 c6:3,sus0.25 g6:0.5,sus0.25 f6:3.25,sus0.25 c7:0.75,sus0.25 f6:2,sus0.25 e6:0,sus0.25 x:2.5):relT0.4,amp0.5,sus0.2,cutoff200,time0.5,susT1.5,len32,tot29.50
+
+@brute
+@pycompose
+<yo> (g4 c4 x g4 x (c4 / a4) x x):amp2,cutoff200,susT0.8
+@SP_Roland808
+ #<m> (27:1 27:1 27:1 54:1):1,ofs0,amp0.5
+@feedbackPad1
+@gentle
+@SP_EMU_EDrum
+(33:0.75 33:0.25 26:0.5 33:0.5 33:0.5 x:0.5 26:0 x:1):bus4,amp0.2,cutoff200,susT1.5,time0.5,sus0.2,relT0.4,len4.0,tot3.00,ofs0
+"""
+
+parser = Parser()
+parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("0.5")}
+
+tracks = billboarding.parse_track_billboard(billboard, parser)
+konfig = billboarding.parse_keyboard_config(keyboard_config, parser)
+effects = billboarding.parse_drone_billboard(effect_billboard, parser)
+
+print(effects)
 
 def configure():
+
+    one_shot_messages = []
 
     client = my_client.get_default()
 
@@ -36,105 +103,25 @@ def configure():
 
     time.sleep(0.5)
 
+    one_shot_messages += billboarding.create_effect_recreate_packets(effects)
+    one_shot_messages += billboarding.create_keyboard_config_packets(konfig)
+
     for oneshot in one_shot_messages:
         client.send(oneshot)
 
 def run():
     client = my_client.get_default()
 
-    tracks = Tracker() 
-    tracks.parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("0.5")}
 
     # Low cutoff pycompose is good bass! 
-    configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
-
-    # TODO: Somewhat working, albeit a bit hacky (see redundant args)
-    effect_parser = Parser() 
-    cur_effect = ""
-    for line in effect_board.split("\n"):
-        data = line.strip().split("#")[0]
-        if data != "":
-            if data[0] == "@":
-                cur_effect = "".join(data[1:])
-            elif cur_effect != "":
-                element: ResolvedElement = effect_parser.parse(data)[0]
-                print(element)
-                note = create_notes([element], cur_effect)[0]
-                one_shot_messages.append(note)
-
-    billboard = """
-
-    ### Billboard quirks
-    # Tracks are named based on their line index and should not be moved around after being defined
-
-    ### Billboard symbols 
-    # '@' denotes 'use this synth for below lines'
-    # '#' denotes comment line
-    # '<myGroup>' as first text adds the track to group 'myGroup'
-    # '>>>1 2 fish' defines which groups should be included (others behave as if commented)
-    
-    ### Note symbols 
-    # '§' denotes loop start time for keyboard
-    # 'x' denotes an empty message; silence
-    # '.' is ignored by the parser
-    # '$' denotes droning; the note will be set to on with no automated off call 
-    # '@' denotes modding an existing note with the suffix as id
-
-    @FMRhodes
-    @pluck
-    @brute
-    @pycompose
-    @SP_Roland808
-    # <m> (27:1 27:1 27:1 54:1):1,ofs0,amp0.5
-    @feedbackPad1
-    @gentle
+    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
 
     """
-
-    line_filter = "" # Populated with ">>>" 
-    line_index = 0
-    synth = "pycompose" # Default value 
-    for line in billboard.split("\n"):
-
-        data = line.strip()
-
-        if data != "":
-
-            # Consume group symbol, if existing
-            group_symbol = ""
-            if len(data) > 2 and data[0] == "<" and data[2] == ">":
-                group_symbol = data[1]
-                print("Group detected!", group_symbol)
-                data = "".join(data[3:])
-
-            group_pass = group_symbol == "" or line_filter == "" or group_symbol in line_filter
-
-            # Group filter definition
-
-            is_filter_definition = len(data) > 3 and "".join(data[0:3]) == ">>>"
-
-            if is_filter_definition:
-                line_filter = "".join(data[3:])
-                print("Group filter detected!", line_filter)
-
-            if not is_filter_definition:
-
-                # Increase even for ignored tracks, to avoid renaming tracks on uncomment
-                line_index += 1
-
-                if group_pass:
-
-                    if data[0] == "@":
-                        synth = "".join(data[1:])
-                        line_index = 0
-                    elif data[0] != "#":
-
-                        name = "chunk_track_" + synth + "_" + str(line_index)
-                        tracks[name + ":" + synth] = data
-
-        """
     
         ISSUES & FEATURES
+
+        - BUG: First parts of alternations don't inherit their args properly 
+            - Shuttle notation issue, example: (a (b / c)):amp4 <-- b does not get amp4
 
         - Synths
             - gate streamlining for existing
@@ -186,15 +173,12 @@ def run():
     
     """
 
+    for packet in billboarding.create_effect_mod_packets(effects) + billboarding.create_keyboard_config_packets(konfig):
+        client.send(packet)
 
-    # Sequencer queue 
-    client.send(tracks.into_sequencer_queue_bundle())
+    queue_bundle = billboarding.create_sequencer_queue_bundle(tracks, True)
 
-    # NRT Record 
-    for bundle in tracks.into_nrt_record_bundles(one_shot_messages):
-        #client.send(bundle)
-        pass 
-
+    client.send(queue_bundle)
 
     # Graceful ending  
     #client.send_message("/wipe_on_finish", [])
