@@ -219,10 +219,41 @@ def create_keyboard_config_packets(configs: dict[str,list[ResolvedElement]]) -> 
     return packets 
 
 def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[OscPacket]:
-    return [] # TODO: The wipe message and the note_on messages
+
+    packets = []
+    common_prefix = "effect_"
+    packets.append(jdw_osc_utils.create_msg("/free_notes", ["^" + common_prefix + "(.*)"]))
+    for effect_name in effects:
+        effect = effects[effect_name]
+        osc_args = []
+        for arg in effect.args:
+            if arg not in osc_args:
+                osc_args.append(arg)
+                osc_args.append(float(effect.args[arg]))
+
+        external_id = common_prefix + effect_name
+
+        packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
+
+        #packets.append(jdw_osc_utils.create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args))
+
+    return packets
 
 def create_effect_mod_packets(effects: dict[str,BillboardEffect]) -> list[OscPacket]:
-    return [] # TODO: Simple mod messages 
+    packets = []
+    common_prefix = "effect_"
+    for effect_name in effects:
+        effect = effects[effect_name]
+        osc_args = []
+        for arg in effect.args:
+            if arg not in osc_args:
+                osc_args.append(arg)
+                osc_args.append(float(effect.args[arg]))
+
+        external_id = common_prefix + effect_name
+
+        packets.append(jdw_osc_utils.create_msg("/note_modify", [external_id, 0] + osc_args))
+    return packets
 
 if __name__ == "__main__":
     parser = Parser() 
@@ -275,3 +306,5 @@ if __name__ == "__main__":
     create_sequencer_queue_bundle(tracks)
     create_nrt_record_bundles(tracks, bpm=111)
     create_keyboard_config_packets(keyboard_conf)
+    create_effect_mod_packets(effects)
+    create_effect_recreate_packets(effects)
