@@ -389,6 +389,30 @@ SynthDef("sampler", { |bus = 0, start = 0, sus = 10, amp = 1, rate = 1, buf = 0,
     })
     """)
 
+    synthdefs.append("""
+    SynthDef("clamp",
+    {|in=0, out=0, over=0, under=9000, mul=1.0, add=0.0|
+    var snd;
+    snd = In.ar(in,2);
+    snd = HPF.ar(in: snd, freq: over, mul: mul, add: add);
+    snd = LPF.ar(in: snd, freq: under, mul: mul, add: add);
+    //snd = Pan2.ar(snd, 0.0); // Always re-center! 
+    Out.ar(out,snd)
+    })
+    """)
+
+    synthdefs.append("""
+    
+    
+SynthDef.new(\distortion,
+{|in=0, out=0, drive=0.5|
+var osc;
+osc = In.ar(in, 2);
+osc = (osc * (drive * 50)).clip(0,0.2).fold2(2);
+Out.ar(out, osc)})
+    
+    """)
+
     # Bus control synth 
     synthdefs.append("""
     SynthDef("control",
