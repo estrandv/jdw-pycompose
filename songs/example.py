@@ -13,30 +13,45 @@ import configure_keyboard
 
 import billboarding
 
-# NOTE EFFECT CHAIN QUIRK! Out bus must refer to a bus already mentioned.
+# NOTE EFFECT CHAIN QUIRK! Out bus must refer to an inbus already mentioned.
 # Something something creation order of synths 
 effect_billboard = """
 @reverb
 revone:inBus4,outBus12,mix0.15,room0.8,mul6,damp0.8,add0.02
 
-orevtwooooo:inBus5,outBus0,mix0.2,room0.8,mul1,damp0.8,add0.02
+orevtwooooo:inBus5,outBus0,mix0.35,room0.6,mul0.8,damp0.8,add0.02
 @brute
 #drone:amp0.2,freq440,bus4
 
 @lowpass
-masterlpf:in22,out0,freq7200,mul2
+masterlpf:in22,out0,freq1200,mul2
+reedpassl:in76,out0,freq520,mul2
+basspassl:in80,out0,freq260,mul2
+brutepassl:in94,out4,freq2900
 
 @highpass
-masterhpf:in12,out22,freq40,mul2
+masterhpf:in12,out22,freq40,mul1
+brutepassh:in43,out94,freq900,mul1
+reedpassh:in77,out76,freq270,mul2
+padpassh:in111,out0,freq2500
+
+@reverb
+revthree:inBus15,outBus44,mix0.5,room0.2,mul5,damp0.8,add0.02
 
 
 """
 
 keyboard_config = """
 
-#@synth pluck:amp0.2,susT1.5,relT0.4,bus4
+#@synth pluck:amp0.8,susT1.5,relT0.4,bus4
+#@synth distortedGuitar:amp0.1,rel5,out4,gain233
+#@synth strings:amp0.5,rel2
+#@synth organReed:amp1
+#@synth brute:amp0.8,susT1.5,relT0.4,bus44
 @synth FMRhodes:amp0.8,susT1.5,relT0.4,bus4
-#@synth pycompose:amp0.2,cutoff200,susT1.5,relT0.4,bus4
+#@synth pycompose:amp1,cutoff200,susT0.1,relT0.4
+#@synth gentle:amp1,susT0.1,relT0.4
+#@synth feedbackPad:amp0.2,out111
 
 """
 
@@ -59,21 +74,40 @@ billboard = """
 # '@' denotes modding an existing note with the suffix as id
 
 
+#>>> riff reed bass chug break drum
+#>>> drum break
+#>>> drum break bass
+#>>> drum break bass reed chug clap
+>>> drum break bass riff s
+#>>> drum break bass clap chug
+#>>> drum break bass reed
 
 @FMRhodes
-(a6:0.5,sus0.25 c7:0.5,sus0.25 d7:0.5,sus0.25 a6:0.5,sus0.25 e7:0.5,sus0.25 d7:0.5,sus0.25 (c7 / g7):0,sus0.25 x:5):time0.5,relT0.4,amp0.8,sus0.2,susT1.5,out5,len4.0,tot3.00
+<riff> (c8:0.5,sus0.25 f7:0.5,sus0.5 ab7:1,sus0.5 g7:0.5,sus0.25 ab7:0.5,sus0.5 g7:1,sus0.25 ab7:1,sus0.5 ab7:0.5,sus0.5 g7:0.5,sus0.25 ab7:0.5,sus0.25 f7:0.5,sus0.25 ab7:1,sus0.5 (g7 / eb7):0,sus0.5 x:8):sus0.2,susT1.5,relT0.4,out43,time0.5,amp0.8,len8,tot8.00,pan0.2
+
 @pluck
-(e6:0.75,sus0.25 e6:0.75,sus0.25 e6:0.5,sus0.25 e6:0.75,sus0.25 d6:0.75,sus0.25 c6:0.5,sus0.25 c6:3.5,sus0.25 f6:0.5,sus0.25 e6:0.75,sus0.25 c6:3.25,sus0.25 c6:4,sus0.25 e6:0.75,sus0.25 e6:0.75,sus0.25 e6:0.5,sus0.25 e6:0.75,sus0.25 d6:0.75,sus0.25 c6:0.5,sus0.25 c6:3,sus0.25 g6:0.5,sus0.25 f6:3.25,sus0.25 c7:0.75,sus0.25 f6:2,sus0.25 e6:0,sus0.25 x:2.5):relT0.4,amp0.5,sus0.2,cutoff200,time0.5,susT1.5,len32,tot29.50
+<chug> (g6:0.25,sus0.5 g6:0.5 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 eb6:0.5,sus0.25 eb6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 ab6:0.5,sus0.25 ab6:0,sus0.25 x:0.5):time0.5,sus0.2,relT0.4,susT1.5,amp0.8,bus15,len8,tot7.50
 
 @brute
+
+@strings
+<s> (c6:4.25,sus1.25 f6:2,sus1.25 eb6:2,sus1 c6:0,sus2 x:7.75 x:16):amp0.05,rel2,time0.5,len16,tot8.25
+
+@organReed
+<reed> (g6:4 c6:4 g6:2 c6:2 (eb6:2 f6:0) x:2 g6:4 c6:4 g6:2 c6:2 (f6:2 eb6:0) x:2):time0.5,sus1.5,amp0.7,len16,tot14.00,rel2,out77
+<reed> (c5:4 eb5:4):time0.5,sus3,amp1,len4.0,tot4.00,out77
+
 @pycompose
-<yo> (g4 c4 x g4 x (c4 / a4) x x):amp2,cutoff200,susT0.8
+#
+<bass> (c4:0.75,sus0.25 g4:0.75,sus0.25 eb4:1,sus0.25 c4:0.5,sus0.25 eb4:0.5,sus0.25 c4:0.5,sus0.25 ab3:0.75,sus0.25 ab3:0.75,sus0.25 ab3:0,sus0.25 x:2.5 c4:0.75,sus0.25 g4:0.75,sus0.25 eb4:1,sus0.25 c4:0.5,sus0.25 eb4:0.5,sus0.5 c4:0.5,sus0.25 g4:0.75,sus0.25 g4:0.75,sus0.25 ab4:0.5,sus0.25 g4:1,sus0.25 eb4:0,sus0.25 x:1):time0.5,cutoff200,susT0.05,relT0.4,amp1.2,len8,tot5.50,bus80
 @SP_Roland808
  #<m> (27:1 27:1 27:1 54:1):1,ofs0,amp0.5
 @feedbackPad1
 @gentle
 @SP_EMU_EDrum
-(33:0.75 33:0.25 26:0.5 33:0.5 33:0.5 x:0.5 26:0 x:1):bus4,amp0.2,cutoff200,susT1.5,time0.5,sus0.2,relT0.4,len4.0,tot3.00,ofs0
+<drum> (33:0.75 33:0.25 26:0.5 33:0.5 33:0.5 x:0.5 26:0 (x:1 / x:0.25 26:0.25 27:0.5)):amp1,cutoff200,susT1.5,time0.5,sus0.2,relT0.4,len4.0,tot3.00,ofs0,bus5
+<clap> (x:1 (30):3):time0.5,sus0.2,amp0.8,susT1.5,relT0.4,bus4,len4.0,tot0.00
+<break> x:31 (25:0.25 25:0.25 25:0.5):time0.5,amp2,sus0.2,len4.0,tot0.50,bus4
 """
 
 parser = Parser()
@@ -82,8 +116,6 @@ parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Dec
 tracks = billboarding.parse_track_billboard(billboard, parser)
 konfig = billboarding.parse_keyboard_config(keyboard_config, parser)
 effects = billboarding.parse_drone_billboard(effect_billboard, parser)
-
-print(effects)
 
 def configure():
 

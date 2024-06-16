@@ -52,8 +52,6 @@ def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardE
                 element = parser.parse(data)[0]
                 effect_id = element.suffix
 
-                print(effect_id, element.args)
-
                 effects[effect_id] = BillboardEffect(current_instrument, element.args)
 
     return effects 
@@ -82,6 +80,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
         # Establish group filter
         if ">>>" in data:
             group_filter = "".join(data.split(">>>")[1:])
+            print("GROUP FILTER", group_filter)
             continue 
 
         # Up count for actual tracks, even if commented
@@ -123,8 +122,6 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     elements = parser.parse(track_data)
 
                     track_id = current_instrument + "_" + str(instrument_count)
-
-                    print(track_id)
 
                     tracks[track_id] = BillboardTrack(
                         current_instrument,
