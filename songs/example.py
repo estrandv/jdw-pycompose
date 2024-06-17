@@ -20,11 +20,6 @@ BILLBOARD REVIEW, SO FAR
 - Slightly annoying that new effects need complete reset while 
     existing ones can just be tweaked live. 
     * One way around it is existing effects, but that's hard to prep. 
-- Keeping track of bus chains is a chore
-    * ReplaceOut would at least limit us to one bus per track
-        - Order becomes important, but I think that's ok 
-        - Chaining still possible, but we will need separate definitions for 
-            many different tracks
 - Need plenty more synths and effects
     - and streamlining ... 
 - bus-as-arg can be a bit of a pain to track
@@ -36,12 +31,40 @@ BILLBOARD REVIEW, SO FAR
 * dot-on-start for keyboard would really help with quickly determining e.g. where to cut off
     an overlong solo 
 
-
 There are more issues, but the above should give a good headstart 
 
 - REMINDER, FOR NEWLY IMPORTED FOXDOT SYNTHS
     - Done.freeSelf needs to be added 
 
+
+"""
+
+
+"""
+
+# Billboard Cheat Sheet (tracks)
+
+### Billboard quirks
+# Tracks are named based on their line index and should not be moved around after being defined
+
+### Billboard symbols 
+# '@' denotes 'use this synth for below lines'
+# '#' denotes comment line
+# '<...>' as first text denotes meta-data (see separate note)
+# '>>>1 2 fish' defines which groups should be included (others behave as if commented)
+# 'backslash' COMBINES LINES natively in python
+
+### Meta-data
+# Outlined as <group;arg_override> or simply <group>
+# Group interacts with group filter, while arg_override is an arg string that is applied to all notes after parsing
+#   e.g. "sus+2,amp1.0"
+
+### Note symbols 
+# '§' denotes loop start time for keyboard
+# 'x' denotes an empty message; silence
+# '.' is ignored by the parser
+# '$' denotes droning; the note will be set to on with no automated off call 
+# '@' denotes modding an existing note with the suffix as id
 
 """
 
@@ -53,23 +76,16 @@ There are more issues, but the above should give a good headstart
 # Router should be mentioned last unless bypassing any bus0 effects is the intention
 # Something something inverse is true for some effects
 # Haven't quite figured this out yet ...
-# TODO: Use a keyboard-like configure instead, since order is so important 
+# If router follows any strict rules,  it might be possible to abstract-away 
 effect_billboard = """
 
-@reverb
-#barrb:inBus32,outBus0,mix0.65,room0.8,mul2
+@clamp masterclamp:bus0,under800,over40,mul0.3
 
-@clamp
-masterclamp:bus0,under800,over40,mul0.3
+@delay masterdel:bus0,echo0.125,echt8
 
-@delay
-masterdel:bus0,echo0.125,echt8
+@router rhodesr:in6,out0
 
-@router
-rhodesr:in6,out0
-
-@distortion
-masterdist:bus0,drive0.8
+@distortion masterdist:bus0,drive0.8
 
 """
 
@@ -89,23 +105,6 @@ keyboard_config = """
 
 billboard = """
 
-### Billboard quirks
-# Tracks are named based on their line index and should not be moved around after being defined
-
-### Billboard symbols 
-# '@' denotes 'use this synth for below lines'
-# '#' denotes comment line
-# '<myGroup>' as first text adds the track to group 'myGroup'
-# '>>>1 2 fish' defines which groups should be included (others behave as if commented)
-# 'backslash' COMBINES LINES natively in python
-
-### Note symbols 
-# '§' denotes loop start time for keyboard
-# 'x' denotes an empty message; silence
-# '.' is ignored by the parser
-# '$' denotes droning; the note will be set to on with no automated off call 
-# '@' denotes modding an existing note with the suffix as id
-
 #>>> end
 
 @FMRhodes
@@ -118,16 +117,17 @@ billboard = """
 @eBass
 
 @blip
-#(g6 a6 c6 d6):4,susT5,rate22
+#(g7 a7 c7 d7):4,susT5,rate442
 
 @karp
-(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.4,susT2
+#(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.2,susT2
 
 @arpy
-#(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.4,susT2
+(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7\
+    ):1,amp0.4,susT2
 
 @prophet
-(g6 a6 c6 d6):4,susT2,rate2,lforate440,amp0.4
+#(g6 a6 c6 d6):4,susT2,rate2,lforate440,amp0.4
 
 
 @SP_Roland808
@@ -139,7 +139,7 @@ parser = Parser()
 parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("0.5")}
 
 tracks = billboarding.parse_track_billboard(billboard, parser)
-konfig = billboarding.parse_keyboard_config(keyboard_config, parser)
+konfig = billboarding.parse_oneline_configs(keyboard_config, parser)
 effects = billboarding.parse_drone_billboard(effect_billboard, parser)
 
 def configure():
@@ -179,14 +179,14 @@ def run():
 
         - BUG: First parts of alternations don't inherit their args properly 
             - Shuttle notation issue, example: (a (b / c)):amp4 <-- b does not get amp4
+            - Update: Added a test in which at least suffix reading seems ok, see "g2 = section_parsing" 
+                (a (1 / 0) b)c would give "c" to 1's history, at least 
 
         - Synths
-            - gate streamlining for existing
             - generally just expanding the library with better stuff
 
         - Full billboarding support
             - Bonus: "replace this track with this if running other group" 
-            - Bonus: "\" as line breaker
 
         - Keyboard 
             - Separate key backend parts of keys and use it to revive input_lab
@@ -221,7 +221,8 @@ def run():
 
 
                     - .break(name, parse, peers) can be a way of saying "play this once, creating a track for it at this time, with peers playing along"
-    
+            - Would the meta-sequencer be able to perhaps record or simplify this? To avoid reinventing the wheel? 
+
         - Documentation and other Boring Stuff
             - shuttle notation (once we're happy with the syntax)
             - sequencer lib (no blocker)

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from shuttle_notation import Parser, ResolvedElement
+from shuttle_notation.parsing.information_parsing import parse_args
+from shuttle_notation.parsing.information_parsing import DynamicArg
 
 @dataclass
 class BillboardEffect:
@@ -13,6 +15,26 @@ class BillboardTrack:
     group_name: str
     elements: list[ResolvedElement]
 
+# Applies args after the fact, mutating the elements
+# Supports args with operators
+def arg_override(elements: list[ResolvedElement], override: dict[str,DynamicArg]):
+    for arg_key in override:
+        override_arg = override[arg_key]
+        for element in elements:
+            new_value = override_arg.value
+            if arg_key in element.args:
+                if override_arg.operator == "*":
+                    element.args[arg_key] *= new_value
+                elif override_arg.operator == "+":
+                    element.args[arg_key] += new_value
+                elif override_arg.operator == "-":
+                    element.args[arg_key] -= new_value
+                else:
+                    element.args[arg_key] = new_value
+            else:
+                element.args[arg_key] = new_value
+
+
 # Split by newline, treating backslash as line continuation
 def line_split(source: str) -> list[str]:
     return [line.strip().replace("\t", " ").replace("    ", " ") for line in source.split("\n")]
@@ -24,7 +46,7 @@ def line_split(source: str) -> list[str]:
 @sampler Roland808:arg2
 @pads 1:8 2:3 4:6 ... 
 """
-def parse_keyboard_config(source: str, parser: Parser) -> dict[str,list[ResolvedElement]]:
+def parse_oneline_configs(source: str, parser: Parser) -> dict[str,list[ResolvedElement]]:
     configs = {}
     for line in line_split(source):
         raw = line.split("#")[0] if "#" in line else line
@@ -37,27 +59,14 @@ def parse_keyboard_config(source: str, parser: Parser) -> dict[str,list[Resolved
 
 # Drones are just single-element shuttle strings, e.g. "reverb:in4,out0"
 def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardEffect]:
-    effects = {}
-    current_instrument = ""
 
-    for line in line_split(billboard):
-        # Remove commented and whitespace
-        raw = line.split("#")[0] if "#" in line else line
-        data = raw.strip()
+    unprocessed = parse_oneline_configs(billboard, parser)
+    result = {}
+    for synth_name in unprocessed:
+        element = unprocessed[synth_name][0]
+        result[element.suffix] = BillboardEffect(synth_name, element.args)
 
-        if data != "":
-            if data[0] == "@":
-                # Define current instrument with @ 
-                instrument_name = "".join(data[1:])
-                current_instrument = instrument_name
-            elif current_instrument != "":
-
-                element = parser.parse(data)[0]
-                effect_id = element.suffix
-
-                effects[effect_id] = BillboardEffect(current_instrument, element.args)
-
-    return effects 
+    return result
 
 def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardTrack]:
     
@@ -108,13 +117,17 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 track_data = data
                 meta_data = "" 
                 group_name = ""
+                default_args = {}
                 if data[0] == "<" and ">" in data:
                     track_data = "".join(data.split(">")[1:])
                     # Between <...>
                     meta_data = "".join(data.split(">")[0][1:])
 
-                    # TODO: No further meta_data atm
-                    group_name = meta_data.split(",")[0]
+                    # Handle meta_data as <group_name;args>
+                    meta_split = meta_data.split(";")
+                    group_name = meta_split[0]
+                    default_args = parse_args(meta_split[1]) if len(meta_split) > 1 else default_args
+
 
                 filter_ok = group_filter == "" or group_name == "" \
                     or (group_name in group_filter.split(" "))
@@ -122,6 +135,8 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 if filter_ok:
 
                     elements = parser.parse(track_data)
+
+                    arg_override(elements, default_args)                   
 
                     track_id = current_instrument + "_" + str(instrument_count)
 
@@ -262,11 +277,8 @@ if __name__ == "__main__":
     parser.arg_defaults = {"time": 0.0, "sus": 0.0} # Because of to_timed_osc expectation + timed_play expectation
 
     effects = parse_drone_billboard("""
-    @reverb
-    effect_one:in4,out0
-
-    @synth
-    drone:amp0
+    @reverb effect_one:in4,out0
+    @synth drone:amp0
     
     """, parser)
 
@@ -293,7 +305,18 @@ if __name__ == "__main__":
     assert tracks["synth_1"].is_sampler == False 
     assert len(tracks) == 2
 
-    keyboard_conf = parse_keyboard_config("""
+    meta_test = parse_track_billboard("""
+    
+    @noise
+    <mup;bus14,cheese0,sus+1> g4:sus14 g4 g4 g4
+    
+    """, parser)
+
+    assert meta_test["noise_1"].elements[0].args["bus"] == 14.0, meta_test["noise_1"].elements[0].args["bus"]
+    assert meta_test["noise_1"].elements[0].args["cheese"] == 0.0, meta_test["noise_1"].elements[0].args["cheese"]
+    assert meta_test["noise_1"].elements[0].args["sus"] == 15.0, meta_test["noise_1"].elements[0].args["sus"]
+
+    keyboard_conf = parse_oneline_configs("""
     
     @synth 1:2 3:4
     @pads fish:arg1,arg2
