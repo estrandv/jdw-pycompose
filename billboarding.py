@@ -13,6 +13,9 @@ class BillboardTrack:
     group_name: str
     elements: list[ResolvedElement]
 
+# Split by newline, treating backslash as line continuation
+def line_split(source: str) -> list[str]:
+    return [line.strip().replace("\t", " ").replace("    ", " ") for line in source.split("\n")]
 
 # Dig out configs for "sampler", "keys" and "pads" 
 # Example
@@ -23,7 +26,7 @@ class BillboardTrack:
 """
 def parse_keyboard_config(source: str, parser: Parser) -> dict[str,list[ResolvedElement]]:
     configs = {}
-    for line in source.split("\n"):
+    for line in line_split(source):
         raw = line.split("#")[0] if "#" in line else line
         data = raw.strip()
         if data != "" and data[0] == "@":
@@ -37,7 +40,7 @@ def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardE
     effects = {}
     current_instrument = ""
 
-    for line in billboard.split("\n"):
+    for line in line_split(billboard):
         # Remove commented and whitespace
         raw = line.split("#")[0] if "#" in line else line
         data = raw.strip()
@@ -71,7 +74,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
     # - set line-\ as "lastLine" and continue
     # - else, if lastLine is populated, consume it to form start of line
 
-    for line in billboard.split("\n"):
+    for line in line_split(billboard):
 
         # Remove commented and whitespace
         raw = line.split("#")[0] if "#" in line else line
@@ -80,7 +83,6 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
         # Establish group filter
         if ">>>" in data:
             group_filter = "".join(data.split(">>>")[1:])
-            print("GROUP FILTER", group_filter)
             continue 
 
         # Up count for actual tracks, even if commented
@@ -284,11 +286,11 @@ if __name__ == "__main__":
     
     """, parser)
 
-    assert tracks["synth_0"].elements[2].prefix == "a"
-    assert tracks["cake_0"].elements[0].prefix == "g"
-    assert tracks["synth_0"].group_name == "fish"
-    assert tracks["cake_0"].is_sampler
-    assert tracks["synth_0"].is_sampler == False 
+    assert tracks["synth_1"].elements[2].prefix == "a"
+    assert tracks["cake_1"].elements[0].prefix == "g"
+    assert tracks["synth_1"].group_name == "fish"
+    assert tracks["cake_1"].is_sampler
+    assert tracks["synth_1"].is_sampler == False 
     assert len(tracks) == 2
 
     keyboard_conf = parse_keyboard_config("""
@@ -308,3 +310,15 @@ if __name__ == "__main__":
     create_keyboard_config_packets(keyboard_conf)
     create_effect_mod_packets(effects)
     create_effect_recreate_packets(effects)
+
+
+    linetest = line_split("""
+    this is a regular line
+    this is a line that should continue \
+    and there is nothing you can do about it
+    this is again a regular line
+    
+    """)
+
+    lineresult = [line for line in linetest if line != ""]
+    assert 3 == len(lineresult), lineresult

@@ -13,50 +13,61 @@ import configure_keyboard
 
 import billboarding
 
+"""
+BILLBOARD REVIEW, SO FAR
+- Update doesn't always hit. Could be that the sleep timing is wrong,
+    could be some missing order part. 
+- Slightly annoying that new effects need complete reset while 
+    existing ones can just be tweaked live. 
+    * One way around it is existing effects, but that's hard to prep. 
+- Keeping track of bus chains is a chore
+    * ReplaceOut would at least limit us to one bus per track
+        - Order becomes important, but I think that's ok 
+        - Chaining still possible, but we will need separate definitions for 
+            many different tracks
+- Need plenty more synths and effects
+    - and streamlining ... 
+- bus-as-arg can be a bit of a pain to track
+    * default or override args should be provided in meta-data 
+        - Default is enough for bus and a good start
+        - Override is harder and hackier but would ultimately be good for transpose
+            - ... but since octave is not really an arg I think we're fine
+            - ... octave is just iter().upIndex().collect() before osc conversion 
+
+There are more issues, but the above should give a good headstart 
+
+
+
+
+
+
+
+"""
+
+
+
+
 # NOTE EFFECT CHAIN QUIRK! Out bus must refer to an inbus already mentioned.
 # Something something creation order of synths 
 effect_billboard = """
-@reverb
-revone:inBus4,outBus12,mix0.15,room0.8,mul6,damp0.8,add0.02
-
-orevtwooooo:inBus5,outBus0,mix0.35,room0.6,mul0.8,damp0.8,add0.02
-@brute
-#drone:amp0.2,freq440,bus4
-
-@lowpass
-masterlpf:in22,out0,freq1200,mul2
-reedpassl:in76,out0,freq520,mul2
-basspassl:in80,out0,freq260,mul2
-brutepassl:in94,out4,freq2900
-
-@highpass
-masterhpf:in12,out22,freq40,mul1
-brutepassh:in43,out94,freq900,mul1
-reedpassh:in77,out76,freq270,mul2
-padpassh:in111,out0,freq2500
 
 @reverb
-revthree:inBus15,outBus43,mix0.5,room0.2,mul5,damp0.8,add0.02
-distverb:inBus25,outBus0,mix0.05,room0.9,mul0.18
-
-@clamp
-clampenstein:in23,out25,over270,under4400
+barrb:inBus32,outBus0,mix0.65,room0.8,mul2
 
 @distortion
-dister:in20,out23,drive0.65
 
 """
 
 keyboard_config = """
 
-#@synth pluck:amp0.8,susT1.5,relT0.4,bus4
+@synth pluck:amp0.8,susT0.1,relT0.4,bus4
 #@synth distortedGuitar:amp0.1,rel5,out4,gain233
 #@synth strings:amp0.5,rel2
 #@synth organReed:amp1
-#@synth brute:amp0.8,susT1.5,relT0.4,bus44
-@synth organReed:amp0.8,susT1.5,relT0.4,out20,pan0.1
-#@synth pycompose:amp1,cutoff200,susT0.1,relT0.4
-#@synth gentle:amp1,susT0.1,relT0.4
+#@synth brute:amp0.1,susT1.5,relT0.4,bus30
+#@synth organReed:amp0.8,susT1.5,relT0.4,out20,pan0.1
+#@synth pycompose:amp1,cutoff200,susT0.1,relT0.1
+#@synth FMRhodes:amp0.4,susT0.1,relT0.4,out30
 #@synth feedbackPad:amp0.2,out111
 
 """
@@ -71,6 +82,7 @@ billboard = """
 # '#' denotes comment line
 # '<myGroup>' as first text adds the track to group 'myGroup'
 # '>>>1 2 fish' defines which groups should be included (others behave as if commented)
+# 'backslash' COMBINES LINES natively in python
 
 ### Note symbols 
 # '§' denotes loop start time for keyboard
@@ -79,45 +91,19 @@ billboard = """
 # '$' denotes droning; the note will be set to on with no automated off call 
 # '@' denotes modding an existing note with the suffix as id
 
-
->>> drum
->>> drum break bass
->>> drum break bass reed
->>> drum break bass riff s clap
->>> drum break bass reed chug
->>> drum break solo
->>> drum break bass reed chug clap
->>> bass break riff s
->>> drum break bass reed clap
->>> end~
+#>>> end
 
 @FMRhodes
-<riff> (c8:0.5,sus0.25 f7:0.5,sus0.5 ab7:1,sus0.5 g7:0.5,sus0.25 ab7:0.5,sus0.5 g7:1,sus0.25 ab7:1,sus0.5 ab7:0.5,sus0.5 g7:0.5,sus0.25 ab7:0.5,sus0.25 f7:0.5,sus0.25 ab7:1,sus0.5 (g7 / eb7):0,sus0.5 x:8):sus0.2,susT1.5,relT0.4,out43,time0.5,amp0.8,len8,tot8.00,pan0.2
-<solo> (c4:0,sus8 c7:1,sus1 bb6:0.5,sus0.75 g6:0.75,sus1 bb6:0.5,sus0.75 g6:0.5,sus0.75 c7:1,sus1 c6:0.5,sus0.75 c7:0.5,sus2 c6:0.75,sus1.75 bb6:0.5,sus0 bb6:0.25,sus0.5 g6:0.5,sus1 bb6:0.5,sus0.75 eb6:1,sus1.25 g6:0.5,sus0.75 eb6:1,sus1 f6:0.5,sus1.25 eb6:0.5,sus0 eb6:1.25,sus1.25 f6:1,sus1.25 eb6:0.5,sus0.5 f6:1,sus1 bb6:1,sus1 c7:0,sus1 f6:1,sus1 bb6:0.5,sus0.75 f6:1,sus1.25 g6:0.75,sus1 c7:1,sus1.25 ab6:0.5,sus0.5 g6:0.5,sus0.75 ab6:0.75,sus0.75 f6:2,sus2 c7:0,sus1.25 c6:1,sus7.5 bb6:0.5,sus0.75 g6:0.5,sus0.5 bb6:0.5,sus0.5 g6:0.5,sus0.75 f6:1,sus1 g6:3.75,sus4 c7:1,sus1 bb6:0.5,sus0.75 g6:1,sus1.25 f6:0.75,sus0.75 g6:0.75,sus1 f6:0.75,sus1 eb6:3.25,sus3.25 c6:0,sus1.25 g6:1,sus1 bb6:0.5,sus0.75 g6:0.5,sus0.75 c7:0.5,sus0.5 g6:0.5,sus0.75 c6:0,sus1.25 bb6:1,sus1 g6:1,sus1 bb6:0.5,sus0.5 f6:0.75,sus1 eb6:0.5,sus0.75 f6:0.5,sus0.5 eb6:0.5,sus0.5 c7:0,sus1.25 c6:1,sus1.25 bb6:0.5,sus0.5 g6:1,sus1 f6:1,sus1 g6:1.25,sus1.25 c6:0,sus1.75 f6:0,sus2 c7:1,sus1.25 g6:0.5,sus1 bb6:0.5,sus0.25 bb6:0.75,sus1 g6:0.75,sus1 eb6:1,sus1.25 g6:0.5,sus0.75 f6:1,sus1 g6:0.5,sus0.75 f6:1,sus1.25 c7:0.5,sus0.5 g6:1,sus1 bb6:0.5,sus0.5 g6:1,sus13.25 c6:0,sus12.25 x:1.25):relT0.4,sus0.2,pan0.1,time0.5,susT1.5,amp0.8,out20,len64,tot62.75,rel0.8
 @pluck
-<chug> (g6:0.25,sus0.5 g6:0.5 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 eb6:0.5,sus0.25 eb6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 g6:0.25,sus0.25 g6:0.5,sus0.25 ab6:0.5,sus0.25 ab6:0,sus0.25 x:0.5):time0.5,sus0.2,relT0.4,susT1.5,amp0.8,bus15,len8,tot7.50
-
 @brute
-
 @strings
-<s> (c6:4.25,sus1.25 f6:2,sus1.25 eb6:2,sus1 c6:0,sus2 x:7.75 x:16):amp0.05,rel2,time0.5,len16,tot8.25
-
 @organReed
-<reed> (g6:4 c6:4 g6:2 c6:2 (eb6:2 f6:0) x:2 g6:4 c6:4 g6:2 c6:2 (f6:2 eb6:0) x:2):time0.5,sus1.5,amp0.7,len16,tot14.00,rel2,out77
-<reed> (c5:4 eb5:4):time0.5,sus3,amp1,len4.0,tot4.00,out77
-<solo> (c6:32):sus12,amp1,len4.0,tot4.00,out77,rel8
-
 @pycompose
-#
-<bass> (c4:0.75,sus0.25 g4:0.75,sus0.25 eb4:1,sus0.25 c4:0.5,sus0.25 eb4:0.5,sus0.25 c4:0.5,sus0.25 ab3:0.75,sus0.25 ab3:0.75,sus0.25 ab3:0,sus0.25 x:2.5 c4:0.75,sus0.25 g4:0.75,sus0.25 eb4:1,sus0.25 c4:0.5,sus0.25 eb4:0.5,sus0.5 c4:0.5,sus0.25 g4:0.75,sus0.25 g4:0.75,sus0.25 ab4:0.5,sus0.25 g4:1,sus0.25 eb4:0,sus0.25 x:1):time0.5,cutoff200,susT0.05,relT0.4,amp1.24,len8,tot5.50,bus80
 @SP_Roland808
- #<m> (27:1 27:1 27:1 54:1):1,ofs0,amp0.5
 @feedbackPad1
 @gentle
 @SP_EMU_EDrum
-<drum> (33:0.75 33:0.25 26:0.5 33:0.5 33:0.5 x:0.5 26:0 (x:1 / x:0.25 26:0.25 27:0.5)):amp1,cutoff200,susT1.5,time0.5,sus0.2,relT0.4,len4.0,tot3.00,ofs0,bus5
-<clap> (x:1 (30):3):time0.5,sus0.2,amp0.7,susT1.5,relT0.4,bus4,len4.0,tot0.00
-<break> x:31 (25:0.25 25:0.25 25:0.5):time0.5,amp2,sus0.2,len4.0,tot0.50,bus4
+<drum> (34:0.5 34:0.5 33:0.5 34:0.25 33:0.75 35:0.5 33:0 x:1):sus0.2,amp0.8,time0.5,susT0.1,relT0.4,bus4,len4.0,tot3.00,bus4,ofs0
 """
 
 parser = Parser()
