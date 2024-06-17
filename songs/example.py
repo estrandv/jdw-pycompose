@@ -33,28 +33,43 @@ BILLBOARD REVIEW, SO FAR
         - Override is harder and hackier but would ultimately be good for transpose
             - ... but since octave is not really an arg I think we're fine
             - ... octave is just iter().upIndex().collect() before osc conversion 
+* dot-on-start for keyboard would really help with quickly determining e.g. where to cut off
+    an overlong solo 
+
 
 There are more issues, but the above should give a good headstart 
 
-
-
-
-
+- REMINDER, FOR NEWLY IMPORTED FOXDOT SYNTHS
+    - Done.freeSelf needs to be added 
 
 
 """
 
 
 
-
-# NOTE EFFECT CHAIN QUIRK! Out bus must refer to an inbus already mentioned.
-# Something something creation order of synths 
+# All effects are replaceOut in order of mention
+# Tracks can have individual effects by specifying a separate out
+#   which is then routed to the master bus (0) via the "router" effect
+# Router should be mentioned last unless bypassing any bus0 effects is the intention
+# Something something inverse is true for some effects
+# Haven't quite figured this out yet ...
+# TODO: Use a keyboard-like configure instead, since order is so important 
 effect_billboard = """
 
 @reverb
-barrb:inBus32,outBus0,mix0.65,room0.8,mul2
+#barrb:inBus32,outBus0,mix0.65,room0.8,mul2
+
+@clamp
+masterclamp:bus0,under800,over40,mul0.3
+
+@delay
+masterdel:bus0,echo0.125,echt8
+
+@router
+rhodesr:in6,out0
 
 @distortion
+masterdist:bus0,drive0.8
 
 """
 
@@ -94,16 +109,30 @@ billboard = """
 #>>> end
 
 @FMRhodes
+
+
 @pluck
-@brute
-@strings
+
 @organReed
-@pycompose
+
+@eBass
+
+@blip
+#(g6 a6 c6 d6):4,susT5,rate22
+
+@karp
+(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.4,susT2
+
+@arpy
+#(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.4,susT2
+
+@prophet
+(g6 a6 c6 d6):4,susT2,rate2,lforate440,amp0.4
+
+
 @SP_Roland808
-@feedbackPad1
-@gentle
+
 @SP_EMU_EDrum
-<drum> (34:0.5 34:0.5 33:0.5 34:0.25 33:0.75 35:0.5 33:0 x:1):sus0.2,amp0.8,time0.5,susT0.1,relT0.4,bus4,len4.0,tot3.00,bus4,ofs0
 """
 
 parser = Parser()
