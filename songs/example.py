@@ -3,7 +3,6 @@ import time
 from decimal import Decimal
 
 import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
-from jdw_tracking_utils import Tracker, create_notes
 from shuttle_notation import Parser, ResolvedElement
 import sample_reading
 import default_synthdefs
@@ -12,32 +11,6 @@ import client as my_client
 import configure_keyboard
 
 import billboarding
-
-"""
-BILLBOARD REVIEW, SO FAR
-- Update doesn't always hit. Could be that the sleep timing is wrong,
-    could be some missing order part. 
-- Slightly annoying that new effects need complete reset while 
-    existing ones can just be tweaked live. 
-    * One way around it is existing effects, but that's hard to prep. 
-- Need plenty more synths and effects
-    - and streamlining ... 
-- bus-as-arg can be a bit of a pain to track
-    * default or override args should be provided in meta-data 
-        - Default is enough for bus and a good start
-        - Override is harder and hackier but would ultimately be good for transpose
-            - ... but since octave is not really an arg I think we're fine
-            - ... octave is just iter().upIndex().collect() before osc conversion 
-* dot-on-start for keyboard would really help with quickly determining e.g. where to cut off
-    an overlong solo 
-
-There are more issues, but the above should give a good headstart 
-
-- REMINDER, FOR NEWLY IMPORTED FOXDOT SYNTHS
-    - Done.freeSelf needs to be added 
-
-
-"""
 
 
 """
@@ -69,29 +42,50 @@ There are more issues, but the above should give a good headstart
 """
 
 
-
-# All effects are replaceOut in order of mention
-# Tracks can have individual effects by specifying a separate out
-#   which is then routed to the master bus (0) via the "router" effect
-# Router should be mentioned last unless bypassing any bus0 effects is the intention
-# Something something inverse is true for some effects
-# Haven't quite figured this out yet ...
-# If router follows any strict rules,  it might be possible to abstract-away 
 effect_billboard = """
 
-@clamp masterclamp:bus0,under800,over40,mul0.3
+# EFFECT ORDERING: 
+# Assuming default s_new strategy (0): "add to head of group" 
+# 1. Routers should be specified first (so as to be processed last)
+# 2. Effects second
+# Generally: In.ar(other) must be processed after (other)
+# And with "add to head" that means "TYPE READERS BEFORE THEIR WRITERS"
 
-@delay masterdel:bus0,echo0.125,echt8
+###############
+# E F F E C T S ><
+###############
 
-@router rhodesr:in6,out0
+# Routers created first, so as to appear last
+@router drumrouter:in20,out0
+@router flatout:in30,out0
+@router other:in32,out0
 
-@distortion masterdist:bus0,drive0.8
+# 30 
+@delay masterdel:bus30,echo0.125,echt8
+@clamp masterclamp:bus30,under800,over40,mul0.3
+@distortion masterdist:bus30,drive0.8
+
+# 32
+@distortion masterdistt:bus32,drive0.3
+@clamp clampstamp:bus32,under1800,over400,mul0.5
+@delay plclam:bus32,echo0.25,echt2
+
+# 6 drum
+@reverb drumverb:bus20,mix0.75,room0.8,mul4
+
 
 """
 
 keyboard_config = """
 
-@synth pluck:amp0.8,susT0.1,relT0.4,bus4
+#################
+# K E Y B O A R D [¤]
+#################
+
+# Standin until pad args are configured separately
+@synth blip:ofs0,amp1,bus20
+
+#@synth pluck:amp0.8,susT0.1,relT0.4,bus4
 #@synth distortedGuitar:amp0.1,rel5,out4,gain233
 #@synth strings:amp0.5,rel2
 #@synth organReed:amp1
@@ -104,6 +98,10 @@ keyboard_config = """
 """
 
 billboard = """
+
+#############
+# T R A C K S ¶
+#############
 
 #>>> end
 
@@ -120,19 +118,29 @@ billboard = """
 #(g7 a7 c7 d7):4,susT5,rate442
 
 @karp
-#(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.2,susT2
+<;out30> (g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.2,susT2
 
 @arpy
-(g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7\
+<;out32> (g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7\
     ):1,amp0.4,susT2
 
 @prophet
-#(g6 a6 c6 d6):4,susT2,rate2,lforate440,amp0.4
+<;out30> (g6 a6 c6 d6):4,susT2,rate2,lforate440,amp0.4
 
 
 @SP_Roland808
 
 @SP_EMU_EDrum
+<;bus20> (33:0.75 33:0.75 33:1 33:0.5 33:0 x:1):amp0.2,sus0.2,ofs0,time0.5,len4.0,tot3.00
+
+
+
+
+
+
+###########################################################################################
+
+
 """
 
 parser = Parser()
@@ -191,6 +199,7 @@ def run():
         - Keyboard 
             - Separate key backend parts of keys and use it to revive input_lab
             - Implement all different config messages  
+            - TODO: Dot-in-string-on-loop-start
 
         - Delay Unification
             - Since Supercollider has an internal delay, it is impossible for jackdaw apps to know <exactly> when

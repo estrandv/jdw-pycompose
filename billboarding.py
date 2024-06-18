@@ -52,7 +52,9 @@ def parse_oneline_configs(source: str, parser: Parser) -> dict[str,list[Resolved
         raw = line.split("#")[0] if "#" in line else line
         data = raw.strip()
         if data != "" and data[0] == "@":
+            # Tag is the text immediately after @
             tag = "".join(data[1:]).split(" ")[0]
+            # The rest is parsed as a shuttle string
             rest = data.replace("@" + tag + " ", "")
             configs[tag] = parser.parse(rest)
     return configs
@@ -60,11 +62,18 @@ def parse_oneline_configs(source: str, parser: Parser) -> dict[str,list[Resolved
 # Drones are just single-element shuttle strings, e.g. "reverb:in4,out0"
 def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardEffect]:
 
-    unprocessed = parse_oneline_configs(billboard, parser)
     result = {}
-    for synth_name in unprocessed:
-        element = unprocessed[synth_name][0]
-        result[element.suffix] = BillboardEffect(synth_name, element.args)
+    for line in line_split(billboard):
+        raw = line.split("#")[0] if "#" in line else line
+        data = raw.strip()
+        if data != "" and data[0] == "@":
+            # Tag is the text immediately after @
+            synth_name = "".join(data[1:]).split(" ")[0]
+            # The rest is parsed as a shuttle string
+            rest = data.replace("@" + synth_name + " ", "")
+            element = parser.parse(rest)[0]
+            result[element.suffix] = BillboardEffect(synth_name, element.args)
+            print("Adding drone with key", element.suffix, "and synth name", synth_name)
 
     return result
 
@@ -252,6 +261,8 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[O
 
         external_id = common_prefix + effect_name
 
+        print("Creating a note_on for effect with type", effect.effect_type, "and id", external_id, osc_args)
+
         packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
 
     return packets
@@ -268,6 +279,8 @@ def create_effect_mod_packets(effects: dict[str,BillboardEffect]) -> list[OscPac
                 osc_args.append(float(effect.args[arg]))
 
         external_id = common_prefix + effect_name
+
+        print("Creating a note_mod for effect id", external_id, osc_args)
 
         packets.append(jdw_osc_utils.create_msg("/note_modify", [external_id, 0] + osc_args))
     return packets

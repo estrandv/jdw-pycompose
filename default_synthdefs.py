@@ -184,6 +184,7 @@ SynthDef("router",
 
 +++
 
+
 SynthDef("clamp",
     {|bus=0, over=0, under=9000, mul=1.0, add=0.0|
     var snd;
@@ -202,12 +203,20 @@ ReplaceOut.ar(bus, osc)})
 
 +++
 
-SynthDef.new("distortion",
-{|bus=0, drive=0.5|
-var osc;
-osc = In.ar(bus, 2);
-osc = (osc * (drive * 50)).clip(0,0.2).fold2(2);
-Out.ar(bus, osc)})
+SynthDef.new("distortion", {|bus=0, drive=0.5|
+    var osc;
+    osc = In.ar(bus, 2);
+    osc = (osc * (drive * 50)).clip(0,0.2).fold2(2);
+    Out.ar(bus, osc)})
+
++++
+
+SynthDef("reverb",
+    {|amp=1, bus=0, room=0.7, mix=0.33, damp=0.5,mul=1.0,add=0.0|
+    var snd;
+    snd = In.ar(bus,2);
+    snd = FreeVerb.ar(snd, mix: mix, room: room, damp: damp, mul: mul, add: add);
+    Out.ar(bus,snd)})
 
 
 
