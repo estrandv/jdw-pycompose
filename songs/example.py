@@ -56,23 +56,47 @@ effect_billboard = """
 ###############
 
 # Routers created first, so as to appear last
-@router drumrouter:in20,out0
-@router flatout:in30,out0
-@router other:in32,out0
+@router tone:in10,out0
+@router ttwo:in20,out0
+@router tthr:in30,out0
+@router tfou:in40,out0
+@router tfiv:in50,out0
+@router tsix:in60,out0
+@router tsev:in70,out0
+@router teig:in80,out0
+@router tnin:in90,out0
 
 # 30 
 @delay masterdel:bus30,echo0.125,echt8
-@clamp masterclamp:bus30,under800,over40,mul0.3
-@distortion masterdist:bus30,drive0.8
+@clamp camper:bus30,over400,under8000,mul0.45
 
-# 32
-@distortion masterdistt:bus32,drive0.3
-@clamp clampstamp:bus32,under1800,over400,mul0.5
-@delay plclam:bus32,echo0.25,echt2
+# 40 - dist
+@reverb vahaa:bus40,mix0.65,room0.6,mul2
+@clamp clampstamp:bus40,under6700,over500,mul0.11
+@distortion masterdistt:bus40,drive0.3
 
-# 6 drum
-@reverb drumverb:bus20,mix0.75,room0.8,mul4
+# 20
+@reverb drumverb:bus20,mix0.35,room0.5,mul1.2
+@clamp ohclamp:bus20,under620,over480,mul1.1
 
+# 50 - bass
+@clamp clampp:bus50,under250,over80,mul0.8
+
+# 60
+@reverb asda:bus60,mix0.75,room0.8,mul1
+@clamp toneitdown:bus60,under1800,over380,mul0.4
+@delay WIZ:bus60,echo0.100007,echt8.5
+
+# 70 - blip
+@clamp clasblippampp:bus70,under7150,over280,mul0.5
+
+# 80
+@reverb reedify:bus80,mix0.75,room0.8,mul2
+@clamp reeed:bus80,under1150,over180,mul0.5
+
+# 90 - soundclips
+@reverb youtube:bus90,mix0.55,room0.9,mul4
+@clamp tclamp:bus90,under7350,over180,mul0.55
 
 """
 
@@ -83,16 +107,22 @@ keyboard_config = """
 #################
 
 # Standin until pad args are configured separately
-@synth blip:ofs0,amp1,bus20
+@synth blip:ofs0,amp0.2,bus20,sus10,susT10
+
+#@synth eBass:amp1,cutoff200,susT0.1,relT0.1
+#@synth prophet:amp0.2,susT0.5
+
+
+#@synth blip:amp1,rate2
 
 #@synth pluck:amp0.8,susT0.1,relT0.4,bus4
+#@synth karp:amp0.8,susT0.5,relT0.5
 #@synth distortedGuitar:amp0.1,rel5,out4,gain233
 #@synth strings:amp0.5,rel2
-#@synth organReed:amp1
+#@synth K:amp1
 #@synth brute:amp0.1,susT1.5,relT0.4,bus30
-#@synth organReed:amp0.8,susT1.5,relT0.4,out20,pan0.1
-#@synth pycompose:amp1,cutoff200,susT0.1,relT0.1
-#@synth FMRhodes:amp0.4,susT0.1,relT0.4,out30
+#@synth K:amp0.8,susT1.5,relT0.4,pan0.1
+#@synth FMRhodes:amp0.4,susT0.1,relT0.4
 #@synth feedbackPad:amp0.2,out111
 
 """
@@ -103,37 +133,77 @@ billboard = """
 # T R A C K S ¶
 #############
 
+# REMINDERS:
+# - Pick a lead and make it LOUD. It's easy to get stuck in amp0.02. 
+# - Good drums can carry the whole thing. Too many instruments is hard to mix.
+# - Use effects to mix, avoid tweaking amp in the tracks too much. 
+# - Split snares from bassdrums for mixing, they use different freq ranges. 
+
+>>> bass
+>>> bass between
+>>> bdrum hdrum bass between
+>>> bdrum hdrum bass dist
+>>> bdrum hdrum bass bus_short reed
+>>> bdrum hdrum bass between dist
+>>> bdrum hdrum bass dist cele rdrum
+>>> bdrum hdrum bass reed sitar tubes
+>>> bdrum hdrum bass reed between cdrum
+>>> dist rdrum cele reed tubes
+>>> dist cele cdrum bus sitar
+>>> bass bdrum hdrum rdrum between reed
+>>> bdrum hdrum bass reed ramp dist
+>>> end
+
+#>>> bdrum hdrum bass reed
+
+
 #>>> end
 
-@FMRhodes
+@prophet
 
+@blip
+<ramp;out70> (eb6:0.5,sus0.25 c6:0.5,sus0.25 g6:1,sus0.25 eb6:1,sus0.25 ab6:1,sus0.25 g6:0.5,sus0.25 eb6:1,sus0.25 c6:2.5,sus0.25 eb6:0.5,sus0.25 c6:0.5,sus0.25 eb6:1,sus0.25 g6:1,sus0.25 bb6:0.5,sus0.25 ab6:1,sus0.25 g6:1,sus0.25 f6:0.5,sus0.25 eb6:2,sus0.25 c6:0.5,sus0.25 eb6:1,sus0.25 f6:0.5,sus0.25 g6:1,sus0.25 f6:0.5,sus0.25 eb6:1,sus0.25 c6:1,sus0.25 c6:1,sus0.25 eb6:1.5,sus0.25 c6:0.5,sus0.25 eb6:1,sus0.25 f6:0.5,sus0.25 g6:2,sus0.25 bb6:0.5,sus0.25 g6:1,sus0.25 f6:1,sus0.25 g6:0.5,sus0.25 ab6:1,sus0.25 eb6:0,sus0.25 x:0):rate2,time0.5,sus0.2,amp0.5,len32,tot32.00,pan-0.1
+<between;out70> (g6:0.5,sus0.25 g6:1,sus0.25 g6:0.5,sus0.25 g6:1,sus0.25 eb6:0.5,sus0.25 eb6:4.5,sus0.25 g6:0.5,sus0.25 g6:1,sus0.25 g6:0.5,sus0.25 g6:1,sus0.25 ab6:0.5,sus0.25 ab6:1,sus0.25 g6:0,sus0.25 x:3.5):time0.5,amp0.8,sus0.2,rate2,len16,tot12.50,pan-0.1
+<between;out70> (x:4.5,sus0.25 c7:0.5,sus0.25 c7:0.5,sus0.25 eb7:0.5,sus0.25 c7:1,sus0.25 bb6:0,sus0.25 x:9):amp0.4,sus0.2,rate2,time0.5,len8,tot7.00,pan0.15
+
+@eBass
+<bass;out50> ((c4*4:0.75 c4*2:0.5) (ab3*4:0.75 ab3*2:0.5) (g3*4:0.75 g3*2:0.5) (ab3*4:0.75 ab3*2:0.5)):cutoff200,sus0.2,susT0.1,relT0.2,time0.5,amp1,len4.0,tot3.50,pan-0.25
+
+@FMRhodes
+<dist;out40> ((c6 / eb6 / f6 / ab6):0.5,sus0.25 bb5:0.25,sus0.25 bb6:0.5,sus0.25 eb6:0.25,sus0.25 bb6:0.5,sus0.25 c7:0.5,sus0.25 bb6:0.5,sus0.25 eb6:0.5,sus0.25 bb6:0,sus0.25 x:0.5):sus0.2,relT0.4,susT0.1,amp0.4,time0.5,len4.0,tot3.50,pan0.5
 
 @pluck
 
+@karp
+<sitar;out60,pan0.6>(eb6:3,sus0.25 f6:1,sus0.25 g6:1.5,sus0.25 eb6:2.5,sus0.25 g6:3,sus0.25 ab6:1,sus0.25 g6:1.5,sus0.25 f6:0,sus0.25 x:2.5):susT0.5,relT0.5,time0.5,sus0.2,amp0.8,len16,tot13.50
+
 @organReed
+<reed;out80> (c5:8,sus4.5 eb5:4,sus2 g4:4,sus2 c5:8,sus4.5 eb5:4,sus2 d5:4,sus2):sus0.2,amp0.8,time0.5,susT1.5,relT1,pan0.1,len32,tot28.00,pan-0.15
 
 @eBass
 
 @blip
-#(g7 a7 c7 d7):4,susT5,rate442
 
 @karp
-<;out30> (g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7):1,amp0.2,susT2
 
 @arpy
-<;out32> (g7 g7 a7 f7 . a7 a7 a7 x . g7 d7 a7 x . f7 f7 a7 d7\
-    ):1,amp0.4,susT2
+#<;out30> (c6 eb6 f6 (eb5 / g5):0 c6):2,susT2,relT4
+<cele;out30> (eb8:8 eb8:4 bb7:4):2,susT2,relT4,amp0.25,pan0.5
 
 @prophet
-<;out30> (g6 a6 c6 d6):4,susT2,rate2,lforate440,amp0.4
 
+@SP_youtube
+<tubes;bus90> 1:32,amp0.015,sus10,rate0.9,ofs0,start2000.24
+<bus;bus90> 0:16,amp0.1,sus8.5,rate0.8,ofs0,start20000
+<bus_short;bus90> 0:32,amp0.05,sus3,rate0.8,ofs0.1,start20000
 
 @SP_Roland808
 
 @SP_EMU_EDrum
-<;bus20> (33:0.75 33:0.75 33:1 33:0.5 33:0 x:1):amp0.2,sus0.2,ofs0,time0.5,len4.0,tot3.00
-
-
+<hdrum;bus20> ((x:0.75 11:0.75 x:1 33:0.5 11:0 x:1)*3 (11:0.25 50:0.5 50:0.5 11:0 x:1.75 53:1,amp*0.5)):amp0.2,sus10,ofs0,time0.5,len4.0,tot3.00
+<bdrum;bus20> (5:1.5 5:0.5 5:0 x:2):bus10,sus0.2,amp0.3,ofs0.0,time0.5,len4.0,tot2.00,rate1
+<rdrum;bus20> (57:0.25 57:0.25 57:0 x:3.5 x:12):ofs0,bus20,amp0.05,time0.5,sus10,susT10,len4.0,tot0.25,pan0.3
+<cdrum;bus20> (x:15 53*2:0.5):susT10,time0.5,sus10,ofs0,amp0.05,bus20,len4.0,tot0.00,pan0.4
 
 
 
@@ -177,9 +247,6 @@ def configure():
 def run():
     client = my_client.get_default()
 
-
-    # Low cutoff pycompose is good bass! 
-    #configure_keyboard.as_synth(2, "pycompose", args=["amp", 1.5, "att", 0.2, "relT", 0.1, "fxa", 22.4, "cutoff", 200.0])
 
     """
     

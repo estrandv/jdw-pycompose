@@ -33,21 +33,23 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
     for pack in os.listdir(samples_root):
         pack_path = samples_root + pack + "/"
         if os.path.isdir(pack_path):
-            for file in natsorted(os.listdir(pack_path)):
+            raw_files = os.listdir(pack_path)
 
-                correct_ext = False 
-                for a in allowed_extensions:
-                    if a in file.lower():
-                        correct_ext = True 
+            filtered_files = []
+            for file in raw_files:
+                if any([ext in file for ext in allowed_extensions]):
+                    filtered_files.append(file)
 
-                if correct_ext:
-                    samples.append(Sample(
-                        pack_path + file,
-                        pack,
-                        buffer_index,
-                        "" # TODO: Resolve somehow 
-                    ))
-                    buffer_index += 1
-                    #print(samples[-1])    
+            files = natsorted(filtered_files)
+            
+            for file in files:
+                samples.append(Sample(
+                    pack_path + file,
+                    pack,
+                    buffer_index,
+                    "" # TODO: Resolve somehow 
+                ))
+                buffer_index += 1
+                print(pack, samples[-1])    
 
     return samples 

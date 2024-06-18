@@ -261,8 +261,6 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[O
 
         external_id = common_prefix + effect_name
 
-        print("Creating a note_on for effect with type", effect.effect_type, "and id", external_id, osc_args)
-
         packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
 
     return packets
@@ -279,8 +277,6 @@ def create_effect_mod_packets(effects: dict[str,BillboardEffect]) -> list[OscPac
                 osc_args.append(float(effect.args[arg]))
 
         external_id = common_prefix + effect_name
-
-        print("Creating a note_mod for effect id", external_id, osc_args)
 
         packets.append(jdw_osc_utils.create_msg("/note_modify", [external_id, 0] + osc_args))
     return packets
