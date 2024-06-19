@@ -75,11 +75,13 @@ keyboard_config = """
 # K E Y B O A R D [¤]
 #################
 
-# Standin until pad args are configured separately
-@synth blip:ofs0,bus20,sus10,susT10
+#@synth eBass:amp4,cutoff200,susT0.1,relT0.1
+@synth prophet:amp1,susT0.5
 
-@synth eBass:amp4,cutoff200,susT0.1,relT0.1
-#@synth prophet:amp0.2,susT0.5
+@sampler EMU_Proteus:ofs0,sus10,amp1
+@sampler EMU_EDrum:ofs0,sus10,amp1
+#@sampler Roland808:ofs0,sus10,amp1
+@pads 1:0 2:4 3:8 4:12 5:16 6:20 7:24 8:28
 
 """
 

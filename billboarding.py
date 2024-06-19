@@ -54,8 +54,10 @@ def parse_oneline_configs(source: str, parser: Parser) -> dict[str,list[Resolved
         if data != "" and data[0] == "@":
             # Tag is the text immediately after @
             tag = "".join(data[1:]).split(" ")[0]
+
             # The rest is parsed as a shuttle string
             rest = data.replace("@" + tag + " ", "")
+            print("PUT THE TAG AS ", tag, "AND THE REST AS", rest)
             configs[tag] = parser.parse(rest)
     return configs
 
@@ -73,7 +75,6 @@ def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardE
             rest = data.replace("@" + synth_name + " ", "")
             element = parser.parse(rest)[0]
             result[element.suffix] = BillboardEffect(synth_name, element.args)
-            print("Adding drone with key", element.suffix, "and synth name", synth_name)
 
     return result
 
@@ -228,19 +229,25 @@ def create_keyboard_config_packets(configs: dict[str,list[ResolvedElement]]) -> 
             packets.append(jdw_osc_utils.create_msg("/keyboard_instrument_name", [subtype]))
             packets.append(jdw_osc_utils.create_msg("/keyboard_args", args))
         elif config_key == "pads":
+            args = []
             for e in config:
+
                 # e.g. 22:5
                 pad_id = e.index
                 sample_index = int(e.args["time"])
+                args += [pad_id, sample_index]
 
-                # TODO: Currently not a real message 
-                packets.append(jdw_osc_utils.create_msg("/keyboard_pad_sample", [pad_id, sample_index]))
+            packets.append(jdw_osc_utils.create_msg("/keyboard_pad_samples", args))
+
         elif config_key == "sampler":
             args = content[0].args_as_osc()
-            subtype = content[0].instrument_name
-            # TODO: Currently not real messages
-            packets.append(jdw_osc_utils.create_msg("/keyboard_sample_pack", [subtype]))
-            packets.append(jdw_osc_utils.create_msg("/keyboard_sample_args", args))
+
+            # Some hacking, since it's nice to sometimes have numbers in sample pack names
+            possible_numname = content[0].element.index
+            subtype = (config[0].prefix + str(config[0].index)) if possible_numname > 0 else config[0].suffix 
+            #print("subtype", subtype, config[0])
+            packets.append(jdw_osc_utils.create_msg("/keyboard_pad_pack", [subtype]))
+            packets.append(jdw_osc_utils.create_msg("/keyboard_pad_args", args))
 
     packets.append(jdw_osc_utils.create_msg("/keyboard_quantization", ["0.25"])) # TODO: Not yet in billboard 
 

@@ -50,6 +50,5 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
                     "" # TODO: Resolve somehow 
                 ))
                 buffer_index += 1
-                print(pack, samples[-1])    
 
     return samples 
