@@ -102,7 +102,7 @@ SynthDef.new("pluck", {|amp=1,freq=440,gate=1,out=0,pan=0,
     var osc, env;
     susT = susT * blur;
     freq = [freq, freq+fmod];
-    amp=(amp + 1e-05);
+    amp=(amp + 1e-05) * 0.8;
     freq=(freq + [0, LFNoise2.ar(50).range(-2, 2)]);
     osc=((SinOsc.ar((freq * 1.002), phase: VarSaw.ar(freq, width: Line.ar(1, 0.2, 2))) * 0.3) + (SinOsc.ar(freq, phase: VarSaw.ar(freq, width: Line.ar(1, 0.2, 2))) * 0.3));
     osc=((osc * XLine.kr(amp, (amp / 10000), (susT * 4), doneAction: Done.freeSelf)) * 0.3);
@@ -116,7 +116,7 @@ SynthDef.new("blip",{|amp=1,freq=440,gate=1,out=0,pan=0,
     var osc, env;
     susT = susT * blur;
     freq = [freq, freq+fmod];
-    amp=(amp + 1e-05);
+    amp=(amp + 1e-05) * 0.8;
     freq=(freq + [0, LFNoise2.ar(50).range(-2, 2)]);
     freq=(freq * 2);
     osc=((LFCub.ar((freq * 1.002), iphase: 1.5) + (LFTri.ar(freq, iphase: Line.ar(2, 0, 0, 2)) * 0.3)) * Blip.ar((freq / 2), rate));
@@ -130,7 +130,7 @@ SynthDef.new("karp",{|amp=1,freq=440,gate=1,out=0,pan=0,
     var osc, env;
     susT = susT * blur;
     freq = [freq, freq+fmod];
-    amp=(amp * 0.75);
+    amp=(amp * 0.4);
     osc=LFNoise0.ar((400 + (400 * rate)), amp);
     osc=(osc * XLine.ar(1, 1e-06, (susT * 0.1)));
     freq=((265 / (freq * 0.666)) * 0.005);
@@ -174,6 +174,115 @@ SynthDef("prophet",{|amp=1,freq=440,gate=1,out=0,pan=0,
     env = EnvGen.ar(Env([0,1,0.8,0.8,0], [0.01, 0, susT, susT]), doneAction:Done.freeSelf);
 
     Out.ar(out, Pan2.ar(Mix(filter) * env * amp * 0.5, pan))})
++++
+
+SynthDef("ksBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
+	relT = 1.5,
+    // Parameters for the impulse shape
+	attT = 0.5, susT = 1, impulseDec = 0.5, impulseHold = 1,
+	// Filter and compressor parameters, thresh goes from 0 to 1.
+	filtermin = 250, filtermax = 5000, rq = 0.35, thresh = 0.4, ratio = 2.5|
+
+	var total, exciter, snd;
+
+	// Rescale impulse values for the frequency of the note
+	total = (attT + susT + impulseDec + impulseHold) * freq;
+
+	// Initial impulse
+	exciter = Env.new(
+		levels: [0, 1, 1, 0, 0],
+		times: [attT, susT, impulseDec, impulseHold]/total).ar;
+
+	// Delay line
+	snd = CombN.ar(
+		in: exciter,
+		maxdelaytime: 0.06,
+		delaytime: 1/freq,
+		decaytime: relT);
+
+	// LPF
+	snd = RLPF.ar(
+		in: snd,
+		freq: LinExp.ar(Amplitude.ar(in: snd), 0, 1, filtermin, filtermax),
+		rq: rq);
+	
+	// Compressor for fun
+	snd = CompanderD.ar(
+		in: snd, 
+		thresh: thresh, 
+		slopeBelow: 1, 
+		slopeAbove: 1/ratio);
+
+	// Output stuff
+	snd = Mix.ar(snd) * amp;
+	snd = Limiter.ar(snd);
+
+	DetectSilence.ar(in: snd, doneAction: Done.freeSelf);
+
+    Out.ar(out, Pan2.ar(snd, pan))})
+
+
++++
+
+SynthDef.new("dBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
+	susT=1, vib=0, fmod=0, rate=0|
+		var osc, env;
+		freq = [freq, freq+fmod] * Line.ar(Rand(0.5,1.5),1,0.02);
+		amp=(amp * 0.1);
+		osc=( VarSaw.ar(freq, width: LFTri.ar((0.5 * rate)/susT, iphase:0.9, add:0.8, mul: 0.2), mul: amp));
+		env=EnvGen.ar(Env([0,1,0.8,0.8,0], [0.02, 0.01, susT/2, susT/2]), doneAction: Done.freeSelf);
+		osc=(osc * env);
+		osc = Mix(osc) * 0.5;
+		osc = Pan2.ar(osc, pan);
+		Out.ar(out, osc)})
+
++++
+
+SynthDef("moogBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
+    attT=0.001,decL=0.3,susT=0.9,relT=0.2
+	cutoff=1000, gain=2.0, prt=0.01, chorus=0.7|
+
+	var osc, filter, env, filterenv, snd, chorusfx;
+
+	osc = Mix(VarSaw.ar(
+		freq: freq.lag(prt) * [1.0, 1.001, 2.0],
+		iphase: Rand(0.0,1.0) ! 3,
+		width: Rand(0.5,0.75) ! 3,
+		mul: 0.5));
+
+	filterenv = EnvGen.ar(
+		envelope: Env.asr(0.2, 1, 0.2),
+		gate: gate);
+
+	filter =  MoogFF.ar(
+		in: osc,
+		freq: cutoff * (1.0 + (0.5 * filterenv)),
+		gain: gain);
+
+	env = EnvGen.ar(
+		envelope: Env.adsr(attT, decL, susT, relT, amp),
+		gate: gate,
+		doneAction: Done.freeSelf);
+
+	snd = (0.7 * filter + (0.3 * filter.distort)) * env;
+
+	chorusfx = Mix.fill(7, {
+
+		var maxdelaytime = rrand(0.005, 0.02);
+		DelayC.ar(
+			in: snd,
+			maxdelaytime: maxdelaytime,
+			delaytime: LFNoise1.kr(
+				freq: Rand(4.5, 10.5),
+				mul: 0.25 * maxdelaytime,
+				add: 0.75 * maxdelaytime)
+		)
+	});
+
+	snd = snd + (chorusfx * chorus);
+
+	Out.ar(out, Pan2.ar(snd, pan))})
+
 +++
 
 // Effects below

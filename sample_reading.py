@@ -37,7 +37,7 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
 
             filtered_files = []
             for file in raw_files:
-                if any([ext in file for ext in allowed_extensions]):
+                if any([ext.lower() in file.lower() for ext in allowed_extensions]):
                     filtered_files.append(file)
 
             files = natsorted(filtered_files)
