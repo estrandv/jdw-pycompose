@@ -225,7 +225,7 @@ SynthDef("ksBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 +++
 
 SynthDef.new("dBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
-	susT=1, vib=0, fmod=0, rate=0|
+	susT=1, fmod=0, rate=0|
 		var osc, env;
 		freq = [freq, freq+fmod] * Line.ar(Rand(0.5,1.5),1,0.02);
 		amp=(amp * 0.1);

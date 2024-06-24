@@ -66,6 +66,37 @@ effect_billboard = """
 @router teig:in80,out0
 @router tnin:in90,out0
 
+# drum
+#@reverb dverb:bus80,room0.7,mix0.2,mul0.2
+@clamp drumc:bus80,under8500,over40
+
+# 90
+@reverb coverb:bus90,room0.2,mix0.7,mul0.8
+@clamp corumc:bus90,under1500,over480
+
+# 30
+@clamp reeeds:bus30,under1900,over80
+
+# 20
+@reverb corarb:bus20,room0.2,mix0.7,mul0.8
+@clamp RAHARB:bus20,under2500,over1080
+
+# call
+#@delay calld:bus70,echo0.125,echt4
+
+# d bass 
+@clamp mooogz:bus60,under800,over80
+
+# 10 weird drums
+@clamp AGARAR:bus10,under1200,over780
+
+# 50 prop
+@delay ROAADA:bus50,echo0.25,echt4
+@reverb ROP:bus50,room0.9,mix0.9,mul0.8
+@clamp ROPS:bus50,under6200,over1780
+
+
+
 """
 
 # TODO: Extend keyboard configuration options for convenience
@@ -75,14 +106,24 @@ keyboard_config = """
 # K E Y B O A R D [¤]
 #################
 
-#@synth eBass:amp4,cutoff200,susT0.1,relT0.1
-@synth prophet:amp1,susT0.5
+@synth eBass:amp4,cutoff200,susT0.1,relT0.1
+@synth moogBass:amp0.02,susT1.1,out90,chorus1.4
+#@synth FMRhodes:amp1,susT1.1,chorus0.4
+#@synth dBass:amp1,susT1.1,chorus0.4,rate0.125
+#@synth prophet:amp1,susT0.5
+@synth organReed:amp1,susT0.5
+#@synth arpy:amp1,susT5
+#@synth blip:amp1,susT2
 
-@sampler EMU_Proteus:ofs0,sus10,amp1
-@sampler EMU_EDrum:ofs0,sus10,amp1
-#@sampler Roland808:ofs0,sus10,amp1
+
+#@sampler EMU_Proteus:ofs0,sus10,amp1
+#@sampler EMU_EDrum:ofs0,sus10,amp1
+@sampler EMU_SP12:ofs0,sus10,amp1,bus10
 @pads 1:0 2:4 3:8 4:12 5:16 6:20 7:24 8:28
 
+
+#@sampler Roland808:ofs0,sus10,amp1
+#@pads 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 """
 
 billboard = """
@@ -98,7 +139,7 @@ billboard = """
 # - Split snares from bassdrums for mixing, they use different freq ranges. 
 
 
->>> end
+#>>> end
 
 # TODO: Would be really neat if you could just slap some defaults and a marker in here and have it become the keyboard synth
 # instead of having to scroll
@@ -109,58 +150,70 @@ billboard = """
 # 2. Make sus-appending in keyboard toggleable 
 # 3. Streamline SAMPLER to conform to new standard
 
+
+
+# BASS DRUM COURT RIDE
+>>> drum keys bass cele cymbal
+#>>> drum keys bass rails cymbal
+#>>> drum bass
+
 @prophet
 
 @blip
-(a6:0.5,sus0.25 f6:0.5,sus0.25 f6:0.5,sus0.25 g6:0.5,sus0.25 f6:0.5,sus0.25 f6:0.5,sus0.25 eb6:0.5,sus0.5 f6:0.5,sus0.5 eb6:0.5,sus0.5 f6:0.5,sus0.25 g6:0,sus0.25 x:3):ofs0,susT10,bus20,sus10,amp0.2,time0.5,len8,tot5.00
 
 @ksBass
 
 @dBass
 
 @moogBass
+<prophet;out50> (x:1 c6:1 e6:1 f6:1 e6:0,susT2 x:12):time0.5,susT0.5,sus0.01,amp1,len8,tot8.00,lfoS2,cutoff4000
 
 @eBass
 
 @FMRhodes
+#(c4:4):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
+<keys> (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
+<cele> (c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:1):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,out20
 
 @pluck
 
 @organReed
-
+#<reed;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5):sus1,susT0.5,amp1,time0.5,len32,tot28.50
+<reed;out30> (c5:1 e5:2 c5:1 f5:1 e5:1 c5:2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1):time0.5,susT0.5,amp1,sus1,len16,tot15.00
 
 @eBass
+<bass> (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200
 
 @blip
+<rails> (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 f6:1 c6:2 c7:1 bb6:1 g6:1 f6:1 g6:1 c6:3 f6:1 g6:3 a6:1 g6:1 f6:0 x:2):time0.5,susT2,amp1,sus0.2,len32,tot30.00
 
 @karp
+
 @arpy
 
 @prophet
 
 @SP_youtube
-1:32,amp0.1,sus20,rate0.5
 
 @SP_Roland808
+<drum;bus80> (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1):ofs0,amp1,sus10
+<drum;bus80> (98:2 98:1 98:0.5 98:1.5 98:0 x:3):ofs0,amp1,sus10
+<drum;bus80> (26:1 26:2 26:1 26:0 x:0):ofs0,amp1,sus10
+<cymbal> (x:31 34:1):ofs0,amp1,sus10,rate0.5,bus10
 
 @SP_EMU_EDrum
-29:4,ofs0,sus4
-(x:2 23:0.5 23:0.5 23:0.5 23:0 x:4.5):time0.5,amp0.2,bus20,susT10,sus10,ofs0,len4.0,tot1.50
 
 @SP_EMU_SP12
-((31 32)*3 (31 32*2:0.25 33:0.5)):1,ofs0
+(x:31 28:1):ofs0,sus10,amp1,bus10,rate0.2
+(x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):ofs0,sus10,amp1,bus10,rate2
 
 @SP_Clavia
-#(30 1 2 3 4 5 6 7):ofs0,amp0.2,sus10
 
 @SP_EMU_Proteus
-#(0 1 2 13 4 5 6 7):ofs0,amp0.2,sus10
 
 @SP_Acetone
-(0 1 2 13 4 5 6 7):ofs0,amp0.2,sus10
 
 @SP_Yamaha_Grand
-(24 24:rate0.22):4,ofs0,amp0.2,rate0.2,sus10
 
 @SP_GBA
 
