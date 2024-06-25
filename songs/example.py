@@ -78,8 +78,8 @@ effect_billboard = """
 @clamp reeeds:bus30,under1900,over80
 
 # 20
-@reverb corarb:bus20,room0.2,mix0.7,mul0.8
-@clamp RAHARB:bus20,under2500,over1080
+@reverb corarb:bus20,room0.8,mix0.7,mul0.8
+@clamp RAHARB:bus20,under1500,over880
 
 # call
 #@delay calld:bus70,echo0.125,echt4
@@ -155,11 +155,20 @@ billboard = """
 
 
 # BASS DRUM COURT RIDE
-#>>> drum keys bass cymbal cele
-#>>> drum keys cymbal reed
+
+>>> drum
+>>> drum keys
+>>> drum keys bass cele cymbal
+>>> drum keys bass 
+>>> drum keys bass prophet cymbal
 >>> drum keys bass rails cymbal
->>> drum bass keys prophet cymbal reed
-#>>> cele
+>>> drum keys cele cymbal
+>>> drum bass keys reed
+>>> drum bass keys prophet reed cymbal
+#>>> drum keys
+#>>> drum keys bass rails cymbal
+#>>> drum keys cele
+#>>> keys reed prophet insanity
 
 @prophet
 
@@ -177,12 +186,14 @@ billboard = """
 @FMRhodes
 #(c4:4):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
 <keys> (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
-<cele> (c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:1):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,out20
+<cele;out20> (c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:1):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,out20
 
 @pluck
-#(c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
-#(e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
-#(x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5):time0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
+<insanity;out20> (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
+<insanity;out20> (e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
+<insanity;out20> (x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5):time0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
+<insanity;out20> c8:0.25,amp0.2
+<insanity;out20> c5:0.25,amp0.4
 
 @organReed
 
