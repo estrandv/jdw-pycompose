@@ -112,8 +112,10 @@ keyboard_config = """
 #@synth dBass:amp1,susT1.1,chorus0.4,rate0.125
 #@synth prophet:amp1,susT0.5
 @synth organReed:amp1,susT0.5
-#@synth arpy:amp1,susT5
+#@synth pluck:amp1,susT0.4,out20
 #@synth blip:amp1,susT2
+
+#@synth aPad:amp1
 
 
 #@sampler EMU_Proteus:ofs0,sus10,amp1
@@ -153,9 +155,11 @@ billboard = """
 
 
 # BASS DRUM COURT RIDE
->>> drum keys bass cele cymbal
-#>>> drum keys bass rails cymbal
-#>>> drum bass
+#>>> drum keys bass cymbal cele
+#>>> drum keys cymbal reed
+>>> drum keys bass rails cymbal
+>>> drum bass keys prophet cymbal reed
+#>>> cele
 
 @prophet
 
@@ -176,10 +180,16 @@ billboard = """
 <cele> (c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:1):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,out20
 
 @pluck
+#(c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
+#(e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
+#(x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5):time0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
 
 @organReed
-#<reed;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5):sus1,susT0.5,amp1,time0.5,len32,tot28.50
-<reed;out30> (c5:1 e5:2 c5:1 f5:1 e5:1 c5:2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1):time0.5,susT0.5,amp1,sus1,len16,tot15.00
+
+@aPad
+<reed;out30> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1):time0.5,susT0.25,amp1,sus0.25,len16,tot15.00
+<reed;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5):sus1,susT0.5,amp1,time0.5,len32,tot28.50
+
 
 @eBass
 <bass> (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200

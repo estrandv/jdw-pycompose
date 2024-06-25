@@ -238,6 +238,85 @@ SynthDef.new("dBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 +++
 
+SynthDef("feedbackPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
+	// Envelope Controls
+	attT = 3, decT = 1, susL = 1, relT = 5, 
+    crv = 0,
+	// Other Controls (interval is in semitones)
+	sampleRate = 2, notes = 3, interval = 14|
+
+	var env, fbIn, snd;
+
+	// Set up the Envelopes
+	env = Env.adsr(
+		attackTime: attT,
+		decayTime: decT,
+		sustainLevel: susL,
+		releaseTime: relT,
+		curve: crv).ar(gate: gate);
+
+	// Receive and Sample the feedback
+	fbIn = Latch.ar(
+		in: (LocalIn.ar + 1)/2,
+		trig: Impulse.ar(
+			freq: sampleRate));
+	fbIn = (fbIn * notes.abs * env).round(1);
+	fbIn = (fbIn * interval).midiratio;
+
+	// Make The Sound
+	snd = LFTri.ar(
+		freq: freq * fbIn,
+		mul: env);
+
+	// Feedback the Sound
+	LocalOut.ar(snd);
+
+	//Filter the Sound
+	snd = RHPF.ar(
+		in: snd,
+		freq: freq,
+		rq: 0.5);
+	snd = LPF.ar(
+		in: snd,
+		freq: [62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000],
+		mul: 1/9);
+
+	// Output Stuff
+	snd = Mix.ar(snd) * amp;
+	snd = Limiter.ar(snd);
+
+	DetectSilence.ar(in: snd, doneAction: Done.freeSelf);
+
+	Out.ar(out, Pan2.ar(snd, pan))})
+
++++
+
+
+SynthDef("aPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
+	//Standard Values:
+	attT = 0.4, decT = 0.5, susL = 0.8, relT = 1.0,
+	//Other Controls:
+	vibratoRate = 4, vibratoDepth = 0.015, tremoloRate = 5,
+	//These controls go from 0 to 1:
+	tremoloDepth = 0.5|
+
+	var env, snd, vibrato, tremolo, mod2, mod3;
+
+    amp = amp * 0.1;
+
+	env = Env.adsr(attT, decT, susL, relT).kr(gate: gate);
+	vibrato = SinOsc.kr(vibratoRate).range(freq * (1 - vibratoDepth), freq * (1 + vibratoDepth));
+	tremolo = LFNoise2.kr(1).range(0.2, 1) * SinOsc.kr(tremoloRate).range((1 - tremoloDepth), 1);
+
+	snd = SinOsc.ar(freq: [freq, vibrato], mul:(env * tremolo * amp)).distort;
+	snd = Mix.ar([snd]);
+
+	DetectSilence.ar(snd, 0.0001, 0.2, doneAction: Done.freeSelf);
+	Out.ar(out, Pan2.ar(snd, pan))})
+
+
++++
+
 SynthDef("moogBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
     attT=0.001,decL=0.3,susT=0.9,relT=0.2
 	cutoff=1000, gain=2.0, prt=0.01, chorus=0.7|
