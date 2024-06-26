@@ -153,22 +153,22 @@ billboard = """
 # 3. Streamline SAMPLER to conform to new standard
 
 
-
 # BASS DRUM COURT RIDE
 
 >>> drum
 >>> drum keys
 >>> drum keys bass cele cymbal
->>> drum keys bass 
->>> drum keys bass prophet cymbal
->>> drum keys bass rails cymbal
+>>> drum keys bass reed cymbal
+>>> drum keys bass prophet cymbal boom
+>>> drum keys bass rails cymbal boom
 >>> drum keys cele cymbal
->>> drum bass keys reed
+>>> drum bass keys reed cymbal
 >>> drum bass keys prophet reed cymbal
-#>>> drum keys
-#>>> drum keys bass rails cymbal
-#>>> drum keys cele
-#>>> keys reed prophet insanity
+>>> drum keys boom
+>>> drum keys bass rails cymbal
+>>> drum keys cele boom
+>>> keys reed prophet insanity cymbal
+>>> drum keys reed prophet insanity boom
 
 @prophet
 
@@ -179,34 +179,33 @@ billboard = """
 @dBass
 
 @moogBass
-<prophet;out50> (x:1 c6:1 e6:1 f6:1 e6:0,susT2 x:12):time0.5,susT0.5,sus0.01,amp1,len8,tot8.00,lfoS2,cutoff4000
+<prophet;out50> (x:1 c6:1 e6:1 f6:1 e6:0,susT2 x:12):time0.5,susT0.5,sus0.01,amp1,len8,tot8.00,lfoS2,cutoff4000,pan-0.1
 
 @eBass
 
 @FMRhodes
 #(c4:4):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
-<keys> (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
-<cele;out20> (c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:1):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,out20
+<keys> (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,pan-0.2
+<cele;out20> ((c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:0.5 x:0.5)*3 (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,pan0.3
 
 @pluck
 <insanity;out20> (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
 <insanity;out20> (e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
 <insanity;out20> (x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5):time0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
-<insanity;out20> c8:0.25,amp0.2
-<insanity;out20> c5:0.25,amp0.4
+<insanity;out20> c8:0.25,amp0.2,pan-0.2
+<insanity;out20> c5:0.25,amp0.4,pan-0.3
 
 @organReed
 
 @aPad
-<reed;out30> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1):time0.5,susT0.25,amp1,sus0.25,len16,tot15.00
-<reed;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5):sus1,susT0.5,amp1,time0.5,len32,tot28.50
+<reed;out30> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1):time0.5,susT0.25,amp1,sus0.25,len16,tot15.00,pan0.1
+<reed;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5):sus1,susT0.5,amp1,time0.5,len32,tot28.50,pan0.15
 
-
-@eBass
-<bass> (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200
+@eBass 
+<bass> (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200,pan0.2
 
 @blip
-<rails> (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 f6:1 c6:2 c7:1 bb6:1 g6:1 f6:1 g6:1 c6:3 f6:1 g6:3 a6:1 g6:1 f6:0 x:2):time0.5,susT2,amp1,sus0.2,len32,tot30.00
+<rails> (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 f6:1 c6:2 c7:1 bb6:1 g6:1 f6:1 g6:1 c6:3 f6:1 g6:3 a6:1 g6:1 f6:0 x:2):time0.5,susT2,amp1,sus0.2,len32,tot30.00,pan0.05
 
 @karp
 
@@ -218,15 +217,15 @@ billboard = """
 
 @SP_Roland808
 <drum;bus80> (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1):ofs0,amp1,sus10
-<drum;bus80> (98:2 98:1 98:0.5 98:1.5 98:0 x:3):ofs0,amp1,sus10
+<drum;bus80> (x:1 x:2 x:0.5 98:1.5 98:0 x:3):ofs0,amp1,sus10
 <drum;bus80> (26:1 26:2 26:1 26:0 x:0):ofs0,amp1,sus10
-<cymbal> (x:31 34:1):ofs0,amp1,sus10,rate0.5,bus10
+<cymbal> (x:31 34:1):ofs0,amp1.2,sus10,rate0.5,bus10
 
 @SP_EMU_EDrum
 
 @SP_EMU_SP12
-(x:31 28:1):ofs0,sus10,amp1,bus10,rate0.2
-(x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):ofs0,sus10,amp1,bus10,rate2
+<boom> (x:31 28:1):ofs0,sus10,amp1,bus10,rate0.2
+<drum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):ofs0,sus10,amp1,bus10,rate2
 
 @SP_Clavia
 
@@ -237,7 +236,6 @@ billboard = """
 @SP_Yamaha_Grand
 
 @SP_GBA
-
 
 
 ###########################################################################################
