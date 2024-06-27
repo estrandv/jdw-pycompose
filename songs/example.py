@@ -21,11 +21,14 @@ import billboarding
 # Tracks are named based on their line index and should not be moved around after being defined
 
 ### Billboard symbols 
-# '@' denotes 'use this synth for below lines'
+# '@' denotes 'use this synth for below lines' - a string of default args can be provided after
+#   - ':' after the synth name provides a GROUP to be used by all below lines (unless provided as <...>)
+# '*@' denotes 'configure keyboard to use this synth and these args', a pad configuration string can be set after the args
 # '#' denotes comment line
 # '<...>' as first text denotes meta-data (see separate note)
 # '>>>1 2 fish' defines which groups should be included (others behave as if commented)
 # 'backslash' COMBINES LINES natively in python
+# '€' denotes effects, e.g. '€reverb room0.2,mix0.4' creates a note_on for a synth named 'reverb'. Default args apply. 
 
 ### Meta-data
 # Outlined as <group;arg_override> or simply <group>
@@ -99,7 +102,7 @@ effect_billboard = """
 
 """
 
-# TODO: Extend keyboard configuration options for convenience
+# TODO: DEPRECATED
 keyboard_config = """
 
 #################
@@ -127,6 +130,47 @@ keyboard_config = """
 #@sampler Roland808:ofs0,sus10,amp1
 #@pads 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 """
+
+
+dreamboard = """
+
+
+# Some kind of prompt would probably make the config bit more intuitive
+# BUT anything that can be taken out of the way can also just be python
+# ... unless we want our  own syntax highlighting and all that 
+
+/note_on router 0 arg 0.0
+
+
+# This allows default args and group id in shared row
+# Star-sign is an easy way to force keyboard arg tie-in 
+*@pads:CELESTIAL amp0.2,sus0.2,out4,bus4
+    # This allows us to use the same default args for an effect
+    # Routers are best defined elsewhere so that they don't clog things up 
+    €reverb room0.7,mix0.2,mul0.2
+
+    <sus0.3> g4 g4 g4
+
+# The "_SP" prefix can also dictate that there are pads configurations available
+*@SP_EMU_Proteus:DRUM ofs0,sus10,amp1 . 2:22 3:34
+
+    0 0 0 1
+    
+#### 
+
+- Group and default args can be set to mutable vars as-discovered and then applied as-is on new tracks
+- €-tracks will need some extra tinkering, but they can at least receive easy external ids based on order and group-id
+- With default args available separately, keyboard can reduce its bloat in provided strings
+    -> This does come with default args support changes, however
+    -> A hacky, but piss-easy way, is of course to ():-wrap the whole thing and skip additional parsing altogether 
+
+### STATUS: 
+- Still haven't implemented the effects-into-mod-or-create logic from the billboard data
+    -> Also having some issues with the current tracks implementation
+
+"""
+
+
 
 billboard = """
 
@@ -156,56 +200,67 @@ billboard = """
 # BASS DRUM COURT RIDE
 
 >>> drum
->>> drum keys
->>> drum keys bass cele cymbal
->>> drum keys bass reed cymbal
->>> drum keys bass prophet cymbal boom
->>> drum keys bass rails cymbal boom
->>> drum keys cele cymbal
->>> drum bass keys reed cymbal
->>> drum bass keys prophet reed cymbal
->>> drum keys boom
->>> drum keys bass rails cymbal
->>> drum keys cele boom
->>> keys reed prophet insanity cymbal
+#>>> drum keys
+#>>> drum keys bass cele cymbal
+#>>> drum keys bass reed cymbal
+#>>> drum keys bass prophet cymbal boom
+#>>> drum keys bass rails cymbal boom
+#>>> drum keys cele cymbal
+#>>> drum bass keys reed cymbal
+#>>> drum bass keys prophet reed cymbal
+#>>> drum keys boom
+#>>> drum keys bass rails cymbal
+#>>> drum keys cele boom
+#>>> keys reed prophet insanity cymbal
 >>> drum keys reed prophet insanity boom
 
 @prophet
-
 @blip
-
 @ksBass
-
 @dBass
-
-@moogBass
-<prophet;out50> (x:1 c6:1 e6:1 f6:1 e6:0,susT2 x:12):time0.5,susT0.5,sus0.01,amp1,len8,tot8.00,lfoS2,cutoff4000,pan-0.1
-
 @eBass
 
-@FMRhodes
-#(c4:4):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00
-<keys> (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,pan-0.2
-<cele;out20> ((c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:0.5 x:0.5)*3 (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,pan0.3
+@moogBass:prophet susT0.5,sus0.01,amp1,lfoS2,cutoff4000,pan-0.1,out50
+    
+    (x:1,fish0 c6:1 e6:1 f6:1 e6:0,susT2 x:12):0.5
 
-@pluck
-<insanity;out20> (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
-<insanity;out20> (e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
-<insanity;out20> (x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5):time0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
-<insanity;out20> c8:0.25,amp0.2,pan-0.2
-<insanity;out20> c5:0.25,amp0.4,pan-0.3
+# TODO: Separate
+@FMRhodes:keys
+    
+    (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,pan-0.2
 
-@organReed
+    <cele;out20> ((c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:0.5 x:0.5)*3 \
+        (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,pan0.3
 
-@aPad
-<reed;out30> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1):time0.5,susT0.25,amp1,sus0.25,len16,tot15.00,pan0.1
-<reed;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5):sus1,susT0.5,amp1,time0.5,len32,tot28.50,pan0.15
+@pluck:insanity out20
 
-@eBass 
-<bass> (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200,pan0.2
+    (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
 
-@blip
-<rails> (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 f6:1 c6:2 c7:1 bb6:1 g6:1 f6:1 g6:1 c6:3 f6:1 g6:3 a6:1 g6:1 f6:0 x:2):time0.5,susT2,amp1,sus0.2,len32,tot30.00,pan0.05
+    (e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
+
+    (x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5 \
+    ):0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
+
+    c8:0.25,amp0.2,pan-0.2
+
+    c5:0.25,amp0.4,pan-0.3
+
+#@organReed
+
+@aPad:reed
+    <;out30> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
+        ):0.5,susT0.25,amp1,sus0.25,len16,tot15.00,pan0.1
+
+    <;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5 \
+        ):sus1,susT0.5,amp1,time0.5,len32,tot28.50,pan0.15
+
+@eBass:bass
+    (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200,pan0.2
+
+@blip:rails
+    (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 \
+        f6:1 c6:2 c7:1 bb6:1 g6:1 f6:1 g6:1 c6:3 f6:1 g6:3 a6:1 g6:1 f6:0 x:2 \
+        ):0.5,susT2,amp1,sus0.2,len32,tot30.00,pan0.05
 
 @karp
 
@@ -214,18 +269,21 @@ billboard = """
 @prophet
 
 @SP_youtube
+    # Example of reversing - tricky with start but it seems to accept a very high number
+    #1:8,rate-0.5,start9999999999999,out20,amp0.2
 
-@SP_Roland808
-<drum;bus80> (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1):ofs0,amp1,sus10
-<drum;bus80> (x:1 x:2 x:0.5 98:1.5 98:0 x:3):ofs0,amp1,sus10
-<drum;bus80> (26:1 26:2 26:1 26:0 x:0):ofs0,amp1,sus10
-<cymbal> (x:31 34:1):ofs0,amp1.2,sus10,rate0.5,bus10
+
+@SP_Roland808:drum ofs0,sus10,amp1,bus80
+    (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1)
+    (x:1 x:2 x:0.5 98:1.5 98:0 x:3)
+    (26:1 26:2 26:1 26:0 x:0)
+    (x:31 34:1):amp1.2,rate0.5,bus10
 
 @SP_EMU_EDrum
 
-@SP_EMU_SP12
-<boom> (x:31 28:1):ofs0,sus10,amp1,bus10,rate0.2
-<drum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):ofs0,sus10,amp1,bus10,rate2
+@SP_EMU_SP12 ofs0,sus10,amp1,bus10
+    <boom> (x:31 28:1):rate0.2
+    <drum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):rate2
 
 @SP_Clavia
 
@@ -246,8 +304,14 @@ billboard = """
 parser = Parser()
 parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("1.0")}
 
-tracks = billboarding.parse_track_billboard(billboard, parser)
-konfig = billboarding.parse_oneline_configs(keyboard_config, parser)
+billboard = billboarding.parse_track_billboard(billboard, parser)
+tracks = billboard.tracks
+#effects = billboard.effects 
+keys_config_packets = billboarding.create_keys_config_packets(billboard)
+
+#konfig = billboarding.parse_oneline_configs(keyboard_config, parser)
+
+# TODO: Replace with billboard effects once you've ported them all in 
 effects = billboarding.parse_drone_billboard(effect_billboard, parser)
 
 def configure():
@@ -269,7 +333,7 @@ def configure():
     time.sleep(0.5)
 
     one_shot_messages += billboarding.create_effect_recreate_packets(effects)
-    one_shot_messages += billboarding.create_keyboard_config_packets(konfig)
+    one_shot_messages += keys_config_packets
 
     for oneshot in one_shot_messages:
         client.send(oneshot)
@@ -337,7 +401,7 @@ def run():
     
     """
 
-    for packet in billboarding.create_effect_mod_packets(effects) + billboarding.create_keyboard_config_packets(konfig):
+    for packet in billboarding.create_effect_mod_packets(effects) + keys_config_packets:
         client.send(packet)
 
     queue_bundle = billboarding.create_sequencer_queue_bundle(tracks, True)

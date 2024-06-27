@@ -364,6 +364,22 @@ SynthDef("moogBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 +++
 
+SynthDef("samplerALT", { |out = 0, start = 0, susT = 15, amp = 1, rate = 1, buf = 0, pan = 0, ofs=0.0,
+        relT=0.05, lfoS=440, lfoD=0.0|
+    var osc, env;
+
+    // TODO: LFO on rate that isn't terror
+
+    osc = PlayBuf.ar(1, buf, BufRateScale.kr(buf) * rate, startPos: start);
+    amp = amp * 2.0; // I have found that sample amp usually lands way lower than any synth amp
+    osc = osc * EnvGen.ar(Env([0,1 * amp,1 * amp,0],[ofs, susT-0.05, relT]), doneAction: Done.freeSelf);
+    osc = Mix(osc);
+    osc = Pan2.ar(osc, pan);
+
+	Out.ar(out, osc)})
+
++++
+
 // Effects below
 
 SynthDef("router",
