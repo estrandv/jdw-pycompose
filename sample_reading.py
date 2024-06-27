@@ -3,6 +3,11 @@ from pathlib import Path
 from dataclasses import dataclass
 from natsort import natsorted # Proper sorting of strings that might contain numbers
 
+
+# read all wav files in subfolders of the given path and call for them to be registered in jdw-sc
+# uses natural name sorting to ensure that samples always end up in the same order/buffers
+
+
 @dataclass
 class Sample:
     path: str

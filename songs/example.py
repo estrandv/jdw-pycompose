@@ -8,7 +8,6 @@ import sample_reading
 import default_synthdefs
 
 import client as my_client
-import configure_keyboard
 
 import billboarding
 
@@ -54,10 +53,6 @@ effect_billboard = """
 # Generally: In.ar(other) must be processed after (other)
 # And with "add to head" that means "TYPE READERS BEFORE THEIR WRITERS"
 
-###############
-# E F F E C T S ><
-###############
-
 # Routers created first, so as to appear last
 @router tone:in10,out0
 @router ttwo:in20,out0
@@ -66,39 +61,11 @@ effect_billboard = """
 @router tfiv:in50,out0
 @router tsix:in60,out0
 @router tsev:in70,out0
-@router teig:in80,out0
+
+# TRYING TO FIND ARGS THAT CHANGE THE MISSING BITS 
+@router routerrails:ofs0,sus10,amp1,bus80,in80,out0
+
 @router tnin:in90,out0
-
-# drum
-#@reverb dverb:bus80,room0.7,mix0.2,mul0.2
-@clamp drumc:bus80,under8500,over40
-
-# 90
-@reverb coverb:bus90,room0.2,mix0.7,mul0.8
-@clamp corumc:bus90,under1500,over480
-
-# 30
-@clamp reeeds:bus30,under1900,over80
-
-# 20
-@reverb corarb:bus20,room0.8,mix0.7,mul0.8
-@clamp RAHARB:bus20,under1500,over880
-
-# call
-#@delay calld:bus70,echo0.125,echt4
-
-# d bass 
-@clamp mooogz:bus60,under800,over80
-
-# 10 weird drums
-@clamp AGARAR:bus10,under1200,over780
-
-# 50 prop
-@delay ROAADA:bus50,echo0.25,echt4
-@reverb ROP:bus50,room0.9,mix0.9,mul0.8
-@clamp ROPS:bus50,under6200,over1780
-
-
 
 """
 
@@ -132,46 +99,6 @@ keyboard_config = """
 """
 
 
-dreamboard = """
-
-
-# Some kind of prompt would probably make the config bit more intuitive
-# BUT anything that can be taken out of the way can also just be python
-# ... unless we want our  own syntax highlighting and all that 
-
-/note_on router 0 arg 0.0
-
-
-# This allows default args and group id in shared row
-# Star-sign is an easy way to force keyboard arg tie-in 
-*@pads:CELESTIAL amp0.2,sus0.2,out4,bus4
-    # This allows us to use the same default args for an effect
-    # Routers are best defined elsewhere so that they don't clog things up 
-    €reverb room0.7,mix0.2,mul0.2
-
-    <sus0.3> g4 g4 g4
-
-# The "_SP" prefix can also dictate that there are pads configurations available
-*@SP_EMU_Proteus:DRUM ofs0,sus10,amp1 . 2:22 3:34
-
-    0 0 0 1
-    
-#### 
-
-- Group and default args can be set to mutable vars as-discovered and then applied as-is on new tracks
-- €-tracks will need some extra tinkering, but they can at least receive easy external ids based on order and group-id
-- With default args available separately, keyboard can reduce its bloat in provided strings
-    -> This does come with default args support changes, however
-    -> A hacky, but piss-easy way, is of course to ():-wrap the whole thing and skip additional parsing altogether 
-
-### STATUS: 
-- Still haven't implemented the effects-into-mod-or-create logic from the billboard data
-    -> Also having some issues with the current tracks implementation
-
-"""
-
-
-
 billboard = """
 
 #############
@@ -184,27 +111,14 @@ billboard = """
 # - Use effects to mix, avoid tweaking amp in the tracks too much. 
 # - Split snares from bassdrums for mixing, they use different freq ranges. 
 
-
-#>>> end
-
-# TODO: Would be really neat if you could just slap some defaults and a marker in here and have it become the keyboard synth
-# instead of having to scroll
-# but of course that could be messsy, especially with the defaults 
-
-# BEFORE NEXT SONG
-# 1. Make sample pack configurable in keyboard via OSC 
-# 2. Make sus-appending in keyboard toggleable 
-# 3. Streamline SAMPLER to conform to new standard
-
-
 # BASS DRUM COURT RIDE
 
 >>> drum
 #>>> drum keys
-#>>> drum keys bass cele cymbal
-#>>> drum keys bass reed cymbal
-#>>> drum keys bass prophet cymbal boom
-#>>> drum keys bass rails cymbal boom
+>>> drum keys bass cele cymbal
+>>> drum keys bass reed cymbal
+>>> drum keys bass prophet cymbal boom
+>>> drum keys bass rails cymbal boom
 #>>> drum keys cele cymbal
 #>>> drum bass keys reed cymbal
 #>>> drum bass keys prophet reed cymbal
@@ -212,7 +126,8 @@ billboard = """
 #>>> drum keys bass rails cymbal
 #>>> drum keys cele boom
 #>>> keys reed prophet insanity cymbal
->>> drum keys reed prophet insanity boom
+#>>> drum keys reed prophet insanity boom
+
 
 @prophet
 @blip
@@ -221,8 +136,16 @@ billboard = """
 @eBass
 
 @moogBass:prophet susT0.5,sus0.01,amp1,lfoS2,cutoff4000,pan-0.1,out50
-    
+
+
     (x:1,fish0 c6:1 e6:1 f6:1 e6:0,susT2 x:12):0.5
+
+    # TODO: Separate unique id ordering for fx/tracks    
+    €delay bus50,echo0.25,echt4
+    €reverb bus50,room0.9,mix0.9,mul0.8
+    €clamp bus50,under6200,over1780
+
+
 
 # TODO: Separate
 @FMRhodes:keys
@@ -233,6 +156,9 @@ billboard = """
         (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.25,chorus0.5,relT0.8,amp0.4,cutoff1000,len8,tot7.00,pan0.3
 
 @pluck:insanity out20
+
+    €reverb bus20,room0.8,mix0.7,mul0.8
+    €clamp bus20,under1500,over880
 
     (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
 
@@ -247,14 +173,19 @@ billboard = """
 
 #@organReed
 
-@aPad:reed
-    <;out30> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
+@aPad:reed out30
+
+    €clamp bus30,under1900,over80
+
+    (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
         ):0.5,susT0.25,amp1,sus0.25,len16,tot15.00,pan0.1
 
-    <;out30> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5 \
+    (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5 \
         ):sus1,susT0.5,amp1,time0.5,len32,tot28.50,pan0.15
 
-@eBass:bass
+@eBass:bass out60
+    €clamp bus60,under800,over80
+
     (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200,pan0.2
 
 @blip:rails
@@ -274,6 +205,11 @@ billboard = """
 
 
 @SP_Roland808:drum ofs0,sus10,amp1,bus80
+
+    #€reverb bus80,room0.7,mix0.2,mul0.2
+    €clamp bus80,under8500,over40
+    €moogBass freq440,amp0,susT4,out80
+
     (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1)
     (x:1 x:2 x:0.5 98:1.5 98:0 x:3)
     (26:1 26:2 26:1 26:0 x:0)
@@ -281,7 +217,10 @@ billboard = """
 
 @SP_EMU_EDrum
 
-@SP_EMU_SP12 ofs0,sus10,amp1,bus10
+@SP_EMU_SP12 ofs0,sus10,amp1,bus10,out10
+
+    €clamp bus10,under1200,over780
+
     <boom> (x:31 28:1):rate0.2
     <drum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):rate2
 
@@ -306,13 +245,14 @@ parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Dec
 
 billboard = billboarding.parse_track_billboard(billboard, parser)
 tracks = billboard.tracks
-#effects = billboard.effects 
 keys_config_packets = billboarding.create_keys_config_packets(billboard)
 
-#konfig = billboarding.parse_oneline_configs(keyboard_config, parser)
-
-# TODO: Replace with billboard effects once you've ported them all in 
-effects = billboarding.parse_drone_billboard(effect_billboard, parser)
+# legacy has the added function of being sent first (routers must be sent before other effects)
+legacy_effects = billboarding.parse_drone_billboard(effect_billboard, parser)
+print(legacy_effects)
+effects = billboard.effects 
+print("\n\n")
+print(effects)
 
 def configure():
 
@@ -332,11 +272,15 @@ def configure():
 
     time.sleep(0.5)
 
-    one_shot_messages += billboarding.create_effect_recreate_packets(effects)
-    one_shot_messages += keys_config_packets
-
-    for oneshot in one_shot_messages:
+    for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, "fx_old_"):
         client.send(oneshot)
+
+    for oneshot in billboarding.create_effect_recreate_packets(effects):
+        client.send(oneshot)
+
+    for oneshot in keys_config_packets:
+        client.send(oneshot)
+
 
 def run():
     client = my_client.get_default()
@@ -401,6 +345,9 @@ def run():
     
     """
 
+    for packet in billboarding.create_effect_mod_packets(legacy_effects, "fx_old_"):
+        client.send(packet)
+    
     for packet in billboarding.create_effect_mod_packets(effects) + keys_config_packets:
         client.send(packet)
 

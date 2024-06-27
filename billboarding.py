@@ -47,27 +47,6 @@ def arg_override(elements: list[ResolvedElement], override: dict[str,DynamicArg]
 def line_split(source: str) -> list[str]:
     return [line.strip().replace("\t", " ").replace("    ", " ") for line in source.split("\n")]
 
-# Dig out configs for "sampler", "keys" and "pads" 
-# Example
-"""
-@synth brute:arg1
-@sampler Roland808:arg2
-@pads 1:8 2:3 4:6 ... 
-"""
-def parse_oneline_configs(source: str, parser: Parser) -> dict[str,list[ResolvedElement]]:
-    configs = {}
-    for line in line_split(source):
-        raw = line.split("#")[0] if "#" in line else line
-        data = raw.strip()
-        if data != "" and data[0] == "@":
-            # Tag is the text immediately after @
-            tag = "".join(data[1:]).split(" ")[0]
-
-            # The rest is parsed as a shuttle string
-            rest = data.replace("@" + tag + " ", "")
-            configs[tag] = parser.parse(rest)
-    return configs
-
 # Drones are just single-element shuttle strings, e.g. "reverb:in4,out0"
 def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardEffect]:
 
@@ -162,10 +141,13 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     if len(space_split) > 1 else current_default_args_string
 
                 effect_args = parse_args(arg_string)
+                abs_args = {}
+                for key in effect_args:
+                    abs_args[key] = effect_args[key].value
 
-                external_id = effect_type + "_" + final_group + "_" + str(instrument_line_count)
+                external_id = effect_type + "_" + current_group_name + "_" + str(instrument_line_count)
 
-                effects[external_id] = BillboardEffect(effect_type, effect_args)
+                effects[external_id] = BillboardEffect(effect_type, abs_args)
 
             # Process individual tracks/shuttle strings
             elif current_instrument != "":
@@ -205,8 +187,6 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     spacer = "_" + final_group + "_" if final_group != "" else "_"
 
                     track_id = current_instrument + spacer + str(instrument_line_count)
-
-                    print("TRACK: ", track_id, current_is_sampler)
 
                     tracks[track_id] = BillboardTrack(
                         current_instrument,
@@ -331,47 +311,9 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
     return packets 
 
 
-def create_keyboard_config_packets(configs: dict[str,list[ResolvedElement]]) -> list[OscPacket]:
-    packets = []
-    
-    for config_key in configs:
-        config = configs[config_key]
-        subtype = config[0].suffix
-        # TODO: Some overhead here, with the wrapper args 
-        content = [ElementWrapper(e, subtype, MessageType.NOTE_ON_TIMED) for e in config]
-        if config_key == "synth":
-            args = content[0].args_as_osc()
-            packets.append(jdw_osc_utils.create_msg("/keyboard_instrument_name", [subtype]))
-            packets.append(jdw_osc_utils.create_msg("/keyboard_args", args))
-        elif config_key == "pads":
-            args = []
-            for e in config:
-
-                # e.g. 22:5
-                pad_id = e.index
-                sample_index = int(e.args["time"])
-                args += [pad_id, sample_index]
-
-            packets.append(jdw_osc_utils.create_msg("/keyboard_pad_samples", args))
-
-        elif config_key == "sampler":
-            args = content[0].args_as_osc()
-
-            # Some hacking, since it's nice to sometimes have numbers in sample pack names
-            possible_numname = content[0].element.index
-            subtype = (config[0].prefix + str(config[0].index)) if possible_numname > 0 else config[0].suffix 
-            #print("subtype", subtype, config[0])
-            packets.append(jdw_osc_utils.create_msg("/keyboard_pad_pack", [subtype]))
-            packets.append(jdw_osc_utils.create_msg("/keyboard_pad_args", args))
-
-    packets.append(jdw_osc_utils.create_msg("/keyboard_quantization", ["0.25"])) # TODO: Not yet in billboard 
-
-    return packets 
-
-def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[OscPacket]:
+def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_prefix = "effect_" ) -> list[OscPacket]:
 
     packets = []
-    common_prefix = "effect_"
     packets.append(jdw_osc_utils.create_msg("/free_notes", ["^" + common_prefix + "(.*)"]))
     for effect_name in effects:
         effect = effects[effect_name]
@@ -387,9 +329,8 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect]) -> list[O
 
     return packets
 
-def create_effect_mod_packets(effects: dict[str,BillboardEffect]) -> list[OscPacket]:
+def create_effect_mod_packets(effects: dict[str,BillboardEffect], common_prefix = "effect_") -> list[OscPacket]:
     packets = []
-    common_prefix = "effect_"
     for effect_name in effects:
         effect = effects[effect_name]
         osc_args = []
@@ -454,21 +395,8 @@ if __name__ == "__main__":
     assert meta_test.tracks["noise_mup_1"].elements[0].args["cheese"] == 0.0, meta_test["noise_mup_1"].elements[0].args["cheese"]
     assert meta_test.tracks["noise_mup_1"].elements[0].args["sus"] == 15.0, meta_test["noise_mup_1"].elements[0].args["sus"]
 
-    keyboard_conf = parse_oneline_configs("""
-    
-    @synth 1:2 3:4
-    @pads fish:arg1,arg2
-    # @miss 1:0
-    
-    """, parser)
-
-    assert keyboard_conf["synth"][1].index == 3
-    assert keyboard_conf["pads"][0].suffix == "fish"
-    assert "miss" not in keyboard_conf
-
     create_sequencer_queue_bundle(tracks.tracks)
     create_nrt_record_bundles(tracks.tracks, bpm=111)
-    create_keyboard_config_packets(keyboard_conf)
     create_effect_mod_packets(effects)
     create_effect_recreate_packets(effects)
 
