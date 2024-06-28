@@ -94,8 +94,8 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
             group_filter = "".join(data.split(">>>")[1:])
             continue 
 
-        # Up count for actual tracks, even if commented
-        if "#" in line or (data != "" and data[0] != "@"):
+        # Up count for actual sequence data, even if commented
+        if "#" in line or (data != "" and data[0] not in "*@€"):
             instrument_line_count += 1
 
         if data != "":
@@ -135,7 +135,13 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
             elif data[0] == "€":
                 space_split = data.split(" ")
                 # Cut off the "€"
-                effect_type = "".join(space_split[0][1:])
+                core_part = "".join(space_split[0][1:])
+
+                assert ":" in core_part, "Must provide a unique id for effect, e.g. " + core_part + ":myId"
+
+                effect_type = core_part.split(":")[0]
+                unique_suffix = core_part.split(":")[1]
+
                 # Note that placing args first is an easy way to make them default
                 arg_string = current_default_args_string + "," + space_split[1] \
                     if len(space_split) > 1 else current_default_args_string
@@ -145,7 +151,9 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 for key in effect_args:
                     abs_args[key] = effect_args[key].value
 
-                external_id = effect_type + "_" + current_group_name + "_" + str(instrument_line_count)
+                # e.g. reverb_mygroup_3
+                # or reverb_mygroup_a if effect was listed as reverb:a 
+                external_id = effect_type + "_" + current_group_name + "_" + unique_suffix
 
                 effects[external_id] = BillboardEffect(effect_type, abs_args)
 

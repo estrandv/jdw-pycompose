@@ -1,0 +1,36 @@
+>>> woble drum drumz 
+
+# Naming effects manually would be very helpful 
+# E.g. for creating and modifying drones 
+# Problem is (1) Clearing everything on recreate without a common prefix and (2) not wanting to make unique ids for everything 
+# (1) is perhaps more pressing 
+# If this file contained the prefix, it would be easier to allow a bit of risky agency 
+
+# In regards to auto-naming:
+# - Effects don't get commented often and can be counted as group_type_n
+# - ... but ideally they should also have a unique id of their own
+# - e.g. €delay:a => effect_drumz_delay_a
+# - since note-mod SHOULD be wildcard, this could also work without forgoing any prefixes 
+
+@organReed:woble out10,bus10,attT0
+    €reverb:a mul2,room0.8,mix0.9
+
+    €clamp:a over80,under2000
+
+    (g5 g5 eb5 c6)*3 (g6:2,sus1.4,amp*0.4) 
+
+@SP_Clavia:drumz out30,bus30,ofs0,amp0.2,susT10
+    
+    €delay:a echo0.25,echt4
+    
+    14:16,rate0.4
+
+@SP_Acetone:drum out20,bus20,ofs0,amp0.2,susT10
+
+    22 24 22*2:*0.5 24
+    44:2 47:2
+    
+@blip:piano out40,bus40,amp0.2
+    €delay:a echo0.125,echt0.4
+
+    g7*3 a7 . c8 d7*2 a7 . eb7 a7 g7*2 . x x f7 f7
