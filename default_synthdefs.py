@@ -5,6 +5,41 @@
 # - "+++" divides
 split_stack = """
 
+SynthDef.new("experimental",
+{|amp=1,freq=440,gate=1,out=0,pan=0,
+    susT=1, fmod=0, rate=0, attT=0, decT=0, susL=1,relT=0.5,wid=0.5,fxo=0.1,prt=0.2|
+    var osc, env, lfo;
+
+    freq = freq.lag(prt);
+    freq = [freq, freq+fmod];
+    freq=(freq * [1, 1.005]);
+
+    //amp = amp * lfo; 
+
+    //freq = freq * LFPulse.kr(2.00028, 0, width:0.25, mul: 0.5);
+    //amp = amp * LFPulse.kr(440.28, 0, width:0.25, mul: 1);
+
+    lfo = SinOsc.ar(1.222, mul: 1.0);
+
+    osc=VarSaw.ar(freq, mul: (amp / 4) * lfo, width: 1) + Saw.ar(freq * 2.0002, mul: amp * fxo, width: wid);
+    
+
+	env = Env.adsr(
+		attackTime: attT,
+		decayTime: decT,
+		sustainLevel: susL,
+		releaseTime: relT);
+
+    env=EnvGen.ar(envelope: env, gate: gate, doneAction: Done.freeSelf);
+    
+    osc=(osc * env);
+    osc = Mix(osc) * 0.5;
+    osc = Pan2.ar(osc, pan);
+    Out.ar(out, osc)})
+
+
++++
+
 SynthDef("eBass",
 {|amp=1,freq=440,gate=1,out=0,pan=0,
     susT=0.2,relT=0.04,

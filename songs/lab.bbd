@@ -1,36 +1,71 @@
->>> woble drum drumz 
 
-# Naming effects manually would be very helpful 
-# E.g. for creating and modifying drones 
-# Problem is (1) Clearing everything on recreate without a common prefix and (2) not wanting to make unique ids for everything 
-# (1) is perhaps more pressing 
-# If this file contained the prefix, it would be easier to allow a bit of risky agency 
 
-# In regards to auto-naming:
-# - Effects don't get commented often and can be counted as group_type_n
-# - ... but ideally they should also have a unique id of their own
-# - e.g. €delay:a => effect_drumz_delay_a
-# - since note-mod SHOULD be wildcard, this could also work without forgoing any prefixes 
 
-@organReed:woble out10,bus10,attT0
-    €reverb:a mul2,room0.8,mix0.9
+#>>> bip 
+#>>> bip what 
+#>>> sss bip rhod 
+#>>> sss rhod ele whiz
+#>>> sss rhod ele bip 
+#>>> rhod bip what arg
+#>>> rhod ele bip 
+#>>> sss ele rhod bip whiz 
+#>>> arg 
 
-    €clamp:a over80,under2000
 
-    (g5 g5 eb5 c6)*3 (g6:2,sus1.4,amp*0.4) 
+>>> drum 
 
-@SP_Clavia:drumz out30,bus30,ofs0,amp0.2,susT10
-    
-    €delay:a echo0.25,echt4
-    
-    14:16,rate0.4
 
-@SP_Acetone:drum out20,bus20,ofs0,amp0.2,susT10
+# Drones need special handling, since effects have extra id appending to make them easier to declare 
+# Drones, on the other hand, require precision in their naming so that they can be easily referred to in tracks
+# A prefix is required to ensure that non-mentioned drones are destroyed on update 
+/drone_prefix d_
 
-    22 24 22*2:*0.5 24
-    44:2 47:2
-    
-@blip:piano out40,bus40,amp0.2
-    €delay:a echo0.125,echt0.4
 
-    g7*3 a7 . c8 d7*2 a7 . eb7 a7 g7*2 . x x f7 f7
+# TODO: Drones are a work in progress and aren't mentioned in any instructions or syntax highlights 
+# TODO: Kill drones on ctrl+k, don't update drones on ctrl+j
+# TODO: Something about effects is freaking out on ctrl+j with drones active 
+#¤experimental:a amp0.5,freq440.0 
+
+
+#(g7@d_a:8 d6@d_a:8 a6@d_a:8 b6@d_a:8 ):prt0.5,amp0.2,out0
+
+
+@SP_Roland808:drum ofs0,sus10,amp0.7,bus80,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
+
+    #14 94 14*2:*0.5 94
+
+    14*3:1 94:1
+    81:0.75 82:0.25
+    #0:bus0
+
+
+
+    €reverb:a mix0.8,mul1.2,room0.7
+
+@eBass:ex sus0.3,time0.25,relT0.2
+
+    g5 g6 g7 d6 d7 c7 g5 c7
+    g4 g4 g4 d4 d4 c4 g4 c4
+
+    g6*16 a6*16
+
+    €reverb:a mix0.2,mul2.2,room0.4
+
+@pluck:rhodes out90,bus90,sus0.35,amp0.4,time1
+
+    (g6 / g7) a6 x d6:*0.5 a6 a6 x b6 a6:*0.5 a6
+    (c6 d6 g6 d6):sus2
+
+@aPad:pad sus2,susT2,time4,relT4,out20,bus20
+
+    g6 a6 b6 d7 
+
+    #€delay:a echo0.2,echt0.5
+
+########################################
+
+
+
+
+
+

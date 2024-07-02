@@ -95,6 +95,7 @@ def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
 
         case MessageType.NOTE_MOD:
             osc_args = element.args_as_osc(["freq", freq])
+            print("DEBUG: Note modify created: \"" + external_id + "\"", osc_args)
             msg = create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
 
         case MessageType.EMPTY:

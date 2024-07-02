@@ -9,6 +9,11 @@ class BillboardEffect:
     args: dict
 
 @dataclass
+class BillBoardPrompt:
+    address: str
+    args: list[str] # e.g. /address arg arg arg arg 
+
+@dataclass
 class BillboardTrack:
     synth_name: str
     is_sampler: bool
@@ -22,6 +27,8 @@ class BillboardTrack:
 class BillBoard:
     tracks: dict[str, BillboardTrack]
     effects: dict[str, BillboardEffect]
+    drones: dict[str, BillboardEffect]
+    prompts: list[BillBoardPrompt]
 
 # Applies args after the fact, mutating the elements
 # Supports args with operators
@@ -68,6 +75,8 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
     
     tracks = {}
     effects = {}
+    drones = {}
+    prompts = []
 
     group_filter = ""
     current_instrument = ""
@@ -75,8 +84,17 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
     current_is_selected = False
     current_group_name = ""
     current_pads_config_string = ""
+    current_default_args_string = ""
     # Used to give tracks unique ids per-instrument
     instrument_line_count = 0
+
+    # Make a default arg string that can be added to the start of other arg strings for 
+    #   easy defaulting 
+    # TODO: I've completely dropped the ball on aliases - it's time to retire the parser
+    base_args = []
+    for key in parser.arg_defaults:
+        base_args.append(key + str(parser.arg_defaults[key]))
+    base_arg_string = ",".join(base_args)
 
     # TODO: Can do line breaks as:
     # - if last non-white char is "\"
@@ -95,7 +113,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
             continue 
 
         # Up count for actual sequence data, even if commented
-        if "#" in line or (data != "" and data[0] not in "*@€"):
+        if "#" in line or (data != "" and data[0] not in "*@€/¤"):
             instrument_line_count += 1
 
         if data != "":
@@ -131,10 +149,10 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 current_instrument = instrument_name
                 instrument_line_count = 0
 
-            # Process effect messages 
-            elif data[0] == "€":
+            # Process effect/drone messages 
+            elif data[0] in "€¤":
                 space_split = data.split(" ")
-                # Cut off the "€"
+                # Cut off the "€ or ¤"
                 core_part = "".join(space_split[0][1:])
 
                 assert ":" in core_part, "Must provide a unique id for effect, e.g. " + core_part + ":myId"
@@ -151,11 +169,22 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 for key in effect_args:
                     abs_args[key] = effect_args[key].value
 
-                # e.g. reverb_mygroup_3
-                # or reverb_mygroup_a if effect was listed as reverb:a 
-                external_id = effect_type + "_" + current_group_name + "_" + unique_suffix
+                
+                if data[0] == "€":
 
-                effects[external_id] = BillboardEffect(effect_type, abs_args)
+                    # e.g. reverb_mygroup_3
+                    # or reverb_mygroup_a if effect was listed as reverb:a 
+                    external_id = effect_type + "_" + current_group_name + "_" + unique_suffix
+                    effects[external_id] = BillboardEffect(effect_type, abs_args)
+                else:
+                    # Drones get plain ids and are treated differently 
+                    drones[unique_suffix] = BillboardEffect(effect_type, abs_args)
+
+            # Process prompts 
+            elif data[0] == "/":
+                space_split = data.split(" ")
+                prompt_args = space_split[1:] if len(space_split) > 1 else []
+                prompts.append(BillBoardPrompt(space_split[0], prompt_args))
 
             # Process individual tracks/shuttle strings
             elif current_instrument != "":
@@ -196,6 +225,11 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
 
                     track_id = current_instrument + spacer + str(instrument_line_count)
 
+                    final_arg_strings = [string for string in [base_arg_string, current_default_args_string] if string != ""]
+                    final_arg_string = ",".join(final_arg_strings) if final_arg_strings else ""
+
+                    print(final_arg_string)
+
                     tracks[track_id] = BillboardTrack(
                         current_instrument,
                         current_is_sampler,
@@ -206,8 +240,11 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                         current_default_args_string
                     )
 
+                    # A bit of a hack, but once we have noted at least one track as selected for the instrument 
+                    # we have what we need and can reset 
+                    current_is_selected = False
 
-    return BillBoard(tracks, effects)    
+    return BillBoard(tracks, effects, drones, prompts)    
     
 ### TODO: OSC stuff below, might move to its own lib 
 
@@ -304,6 +341,7 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
     if len(synths) > 0:
         selected_synth = billboard.tracks[synths[-1]]
         
+
         # Arg bit is a little hacky, since it is already applied to the elements and 
         #   only kept as a string for this specific purpose
         raw_args = parse_args(selected_synth.default_arg_string)
@@ -333,6 +371,7 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_pr
 
         external_id = common_prefix + effect_name
 
+        print("DEBUG: effect created with id", external_id)
         packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
 
     return packets

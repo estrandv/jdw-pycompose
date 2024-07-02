@@ -149,10 +149,16 @@ def configure(bdd_name: str):
 
         time.sleep(0.5)
 
+        drone_prefix = "drone_effect_"
+        for prompt in billboard.prompts:
+            if prompt.address == "/drone_prefix":
+                drone_prefix = prompt.args[0]
+                print("Set drone_prefix to", drone_prefix)
+
         for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, "fx_old_"):
             client.send(oneshot)
 
-        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects):
+        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects) + billboarding.create_effect_recreate_packets(billboard.drones, drone_prefix):
             client.send(oneshot)
 
         for oneshot in keys_config_packets:
@@ -169,13 +175,23 @@ def run(bdd_name: str):
 
         billboard = read_bdd(bdd_name)
         keys_config_packets = billboarding.create_keys_config_packets(billboard)
+
+        # TODO: Include in billboard somehow 
+        keys_config_packets.append(jdw_osc_utils.create_msg("/keyboard_quantization", ["0.25"]))
+
         # legacy has the added function of being sent first (routers must be sent before other effects)
         legacy_effects = billboarding.parse_drone_billboard(effect_billboard, Parser())
+
+        drone_prefix = "drone_effect_"
+        for prompt in billboard.prompts:
+            if prompt.address == "/drone_prefix":
+                drone_prefix = prompt.args[0]
+                print("Set drone_prefix to", drone_prefix)
 
         for packet in billboarding.create_effect_mod_packets(legacy_effects, "fx_old_"):
             client.send(packet)
 
-        for packet in billboarding.create_effect_mod_packets(billboard.effects) + keys_config_packets:
+        for packet in billboarding.create_effect_mod_packets(billboard.effects) + keys_config_packets + billboarding.create_effect_mod_packets(billboard.drones, drone_prefix):
             client.send(packet)
 
         queue_bundle = billboarding.create_sequencer_queue_bundle(billboard.tracks, True)

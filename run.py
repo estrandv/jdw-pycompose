@@ -4,7 +4,8 @@ import client
 
 import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
 
-BDD_FILE = "courtRide.bbd"
+#BDD_FILE = "courtRide.bbd"
+BDD_FILE = "lab.bbd"
 
 if "--update" in sys.argv:
     song.configure(BDD_FILE) 
