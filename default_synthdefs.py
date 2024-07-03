@@ -337,6 +337,8 @@ SynthDef("aPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 	var env, snd, vibrato, tremolo, mod2, mod3;
 
+    freq = freq.lag(0.05);
+
     amp = amp * 0.1;
 
 	env = Env.adsr(attT, decT, susL, relT).kr(gate: gate);
@@ -446,7 +448,29 @@ SynthDef.new("distortion", {|bus=0, drive=0.5|
     var osc;
     osc = In.ar(bus, 2);
     osc = (osc * (drive * 50)).clip(0,0.2).fold2(2);
-    Out.ar(bus, osc)})
+    ReplaceOut.ar(bus, osc)})
+
++++
+
+SynthDef.new("analogTape", {|bus=0|
+    var snd; 
+    snd = In.ar(bus,2);
+
+    //snd = VarSaw.ar(440.0, width: 0.5);
+    snd = AnalogTape.ar(snd, bias: 0.2, saturation: 0.5, drive: 0.8, oversample: 4, mode: 0);
+
+    ReplaceOut.ar(bus, snd)})
+
++++
+
+SynthDef.new("analogChew", {|bus=0|
+    var snd; 
+    snd = In.ar(bus,2);
+
+    //snd = snd + VarSaw.ar(440.0, width: 0.5);
+    snd = AnalogChew.ar(snd);
+
+    ReplaceOut.ar(bus, snd)})
 
 +++
 
@@ -455,9 +479,7 @@ SynthDef("reverb",
     var snd;
     snd = In.ar(bus,2);
     snd = FreeVerb.ar(snd, mix: mix, room: room, damp: damp, mul: mul, add: add);
-    Out.ar(bus,snd)})
-
-
+    ReplaceOut.ar(bus,snd)})
 
 
 """

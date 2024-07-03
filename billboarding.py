@@ -17,6 +17,7 @@ class BillBoardPrompt:
 class BillboardTrack:
     synth_name: str
     is_sampler: bool
+    is_drone: bool 
     group_name: str
     elements: list[ResolvedElement]
     is_selected: bool 
@@ -81,6 +82,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
     group_filter = ""
     current_instrument = ""
     current_is_sampler = False 
+    current_is_drone = False 
     current_is_selected = False
     current_group_name = ""
     current_pads_config_string = ""
@@ -144,7 +146,26 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                         current_pads_config_string = space_split[2]
 
                 else: 
-                    current_is_sampler = False 
+                    current_is_sampler = False
+
+                # TODO: a little bit clumsy, but should work 
+                if "".join(instrument_name[0:3]) == "DR_":
+                    instrument_name = "".join(instrument_name[3:])
+                    current_is_drone = True 
+
+                    assert current_group_name != "", "Must provide a :group when declaring a DR_ synth"
+
+                    # Automatically include a drone effect when DR is declared
+                    effect_args = parse_args(current_default_args_string)
+                    abs_args = {}
+                    for key in effect_args:
+                        abs_args[key] = effect_args[key].value
+
+                    effects[current_group_name] = BillboardEffect(instrument_name, abs_args)
+                    drones[current_group_name] = BillboardEffect(instrument_name, abs_args)
+
+                else: 
+                    current_is_drone = False 
 
                 current_instrument = instrument_name
                 instrument_line_count = 0
@@ -169,7 +190,6 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 for key in effect_args:
                     abs_args[key] = effect_args[key].value
 
-                
                 if data[0] == "€":
 
                     # e.g. reverb_mygroup_3
@@ -183,7 +203,8 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
             # Process prompts 
             elif data[0] == "/":
                 space_split = data.split(" ")
-                prompt_args = space_split[1:] if len(space_split) > 1 else []
+                prompt_args = space_split[1:] if len(space_split
+                ) > 1 else []
                 prompts.append(BillBoardPrompt(space_split[0], prompt_args))
 
             # Process individual tracks/shuttle strings
@@ -233,6 +254,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     tracks[track_id] = BillboardTrack(
                         current_instrument,
                         current_is_sampler,
+                        current_is_drone,
                         final_group,
                         elements,
                         current_is_selected,
@@ -267,12 +289,32 @@ def create_notes_b(elements: list[ResolvedElement], synth_name, is_sample = Fals
 
     return sequence
 
-def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack]) -> list[OscBundle]:
+# TODO: Complete mess atm due to experimental drone parsing
+# I suspect we might have to break the billboard parse into several parse methods, each focusing on something specialized 
+def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack], drone_prefix = "effect_") -> list[OscBundle]:
     bundles = []
     for track_name in tracks:
         track = tracks[track_name]
 
-        sequence = create_notes_b(track.elements, track.synth_name, track.is_sampler)
+        # Unique handling for drones that hack-skips normal shuttle-based type resolution 
+        # Lots of duplicate code here, fix later 
+        sequence = []
+        if track.is_drone:
+            sequence = []
+            for element in track.elements:
+                # TODO: This does nothing - I just want default args support without littering 
+                wrp = ElementWrapper(element, "N/A", MessageType.DRONE)
+                freq = wrp.resolve_freq()
+                element.args["freq"] = freq
+                print(element.args) 
+                osc_args = wrp.args_as_osc([])
+                ext_id = drone_prefix + track.group_name
+                msg = jdw_osc_utils.create_msg("/note_modify", [ext_id, jdw_osc_utils.SC_DELAY_MS] + osc_args)
+                if msg != None: 
+                    print("Implicitly created a drone modify note for id: ", ext_id)
+                    sequence.append(jdw_osc_utils.to_timed_osc(str(element.args["time"]), msg))
+        else:
+            sequence = create_notes_b(track.elements, track.synth_name, track.is_sampler)
 
         bundles.append(jdw_osc_utils.create_queue_update_bundle(track_name, sequence))
 
@@ -356,7 +398,7 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
 
     return packets 
 
-
+# TODO: See other todos on prefix; this is not moddable for drones atm and will reuslt in weird behaviour if changed 
 def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_prefix = "effect_" ) -> list[OscPacket]:
 
     packets = []

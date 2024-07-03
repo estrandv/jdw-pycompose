@@ -13,6 +13,7 @@ import default_synthdefs
 import client as my_client
 
 import billboarding
+import traceback
 
 import os
 
@@ -149,22 +150,16 @@ def configure(bdd_name: str):
 
         time.sleep(0.5)
 
-        drone_prefix = "drone_effect_"
-        for prompt in billboard.prompts:
-            if prompt.address == "/drone_prefix":
-                drone_prefix = prompt.args[0]
-                print("Set drone_prefix to", drone_prefix)
-
         for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, "fx_old_"):
             client.send(oneshot)
 
-        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects) + billboarding.create_effect_recreate_packets(billboard.drones, drone_prefix):
+        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects):
             client.send(oneshot)
 
         for oneshot in keys_config_packets:
             client.send(oneshot)
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         error_beep() 
 
 def run(bdd_name: str):
@@ -182,23 +177,17 @@ def run(bdd_name: str):
         # legacy has the added function of being sent first (routers must be sent before other effects)
         legacy_effects = billboarding.parse_drone_billboard(effect_billboard, Parser())
 
-        drone_prefix = "drone_effect_"
-        for prompt in billboard.prompts:
-            if prompt.address == "/drone_prefix":
-                drone_prefix = prompt.args[0]
-                print("Set drone_prefix to", drone_prefix)
-
         for packet in billboarding.create_effect_mod_packets(legacy_effects, "fx_old_"):
             client.send(packet)
 
-        for packet in billboarding.create_effect_mod_packets(billboard.effects) + keys_config_packets + billboarding.create_effect_mod_packets(billboard.drones, drone_prefix):
+        for packet in billboarding.create_effect_mod_packets(billboard.effects) + keys_config_packets:
             client.send(packet)
 
         queue_bundle = billboarding.create_sequencer_queue_bundle(billboard.tracks, True)
 
         client.send(queue_bundle)
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         error_beep() 
 
     # Useful in the past, not as important now with batch sending
