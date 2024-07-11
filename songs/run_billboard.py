@@ -150,11 +150,21 @@ def configure(bdd_name: str):
 
         time.sleep(0.5)
 
-        for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, "fx_old_"):
+
+        # Perform cleanup outside of other packet creation 
+        common_prefix = "effect_"
+        client.send(jdw_osc_utils.create_msg("/free_notes", ["^" + common_prefix + "(.*)"]))
+
+        # Order is very important, but I get a headache trying to explain it 
+        for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, common_prefix):
             client.send(oneshot)
 
-        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects):
+        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects, common_prefix):
             client.send(oneshot)
+
+        for oneshot in billboarding.create_effect_recreate_packets(billboard.drones, common_prefix):
+            client.send(oneshot)
+
 
         for oneshot in keys_config_packets:
             client.send(oneshot)

@@ -427,59 +427,67 @@ SynthDef("router",
 
 
 SynthDef("clamp",
-    {|bus=0, over=0, under=9000, mul=1.0, add=0.0|
-    var snd;
-    snd = In.ar(bus,2);
+    {|out=0, over=0, under=9000, mul=1.0, add=0.0, modBus=100|
+    var snd, mod;
+    mod = In.kr(modBus, 1);
+    snd = In.ar(out,2);
     snd = HPF.ar(in: snd, freq: over, mul: mul, add: add);
-    snd = LPF.ar(in: snd, freq: under, mul: mul, add: add);
-    ReplaceOut.ar(bus,snd)})
+    snd = LPF.ar(in: snd, freq: under + mod, mul: mul, add: add);
+    ReplaceOut.ar(out,snd)})
 
 +++
 
-SynthDef.new("delay", {|bus=0, echo=0.25, beat_dur=1, echt=1.0|
+SynthDef.new("delay", {|out=0, echo=0.25, beat_dur=1, echt=1.0|
 var osc;
-osc = In.ar(bus, 2);
+osc = In.ar(out, 2);
 osc = osc + CombL.ar(osc, delaytime: echo * beat_dur, maxdelaytime: 2 * beat_dur, decaytime: echt * beat_dur);
-ReplaceOut.ar(bus, osc)})
+ReplaceOut.ar(out, osc)})
 
 +++
 
-SynthDef.new("distortion", {|bus=0, drive=0.5|
+SynthDef.new("controlMod", {|value=0, out=0, prt=0|
+
+    value = value.lag(prt);
+    Out.kr(out, value)})
+
++++
+
+SynthDef.new("distortion", {|out=0, drive=0.5|
     var osc;
-    osc = In.ar(bus, 2);
+    osc = In.ar(out, 2);
     osc = (osc * (drive * 50)).clip(0,0.2).fold2(2);
-    ReplaceOut.ar(bus, osc)})
+    ReplaceOut.ar(out, osc)})
 
 +++
 
-SynthDef.new("analogTape", {|bus=0|
+SynthDef.new("analogTape", {|out=0|
     var snd; 
-    snd = In.ar(bus,2);
+    snd = In.ar(out,2);
 
     //snd = VarSaw.ar(440.0, width: 0.5);
     snd = AnalogTape.ar(snd, bias: 0.2, saturation: 0.5, drive: 0.8, oversample: 4, mode: 0);
 
-    ReplaceOut.ar(bus, snd)})
+    ReplaceOut.ar(out, snd)})
 
 +++
 
-SynthDef.new("analogChew", {|bus=0|
+SynthDef.new("analogChew", {|out=0|
     var snd; 
-    snd = In.ar(bus,2);
+    snd = In.ar(out,2);
 
     //snd = snd + VarSaw.ar(440.0, width: 0.5);
     snd = AnalogChew.ar(snd);
 
-    ReplaceOut.ar(bus, snd)})
+    ReplaceOut.ar(out, snd)})
 
 +++
 
 SynthDef("reverb",
-    {|amp=1, bus=0, room=0.7, mix=0.33, damp=0.5,mul=1.0,add=0.0|
+    {|amp=1, out=0, room=0.7, mix=0.33, damp=0.5,mul=1.0,add=0.0|
     var snd;
-    snd = In.ar(bus,2);
+    snd = In.ar(out,2);
     snd = FreeVerb.ar(snd, mix: mix, room: room, damp: damp, mul: mul, add: add);
-    ReplaceOut.ar(bus,snd)})
+    ReplaceOut.ar(out,snd)})
 
 
 """

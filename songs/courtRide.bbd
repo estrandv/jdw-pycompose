@@ -34,13 +34,13 @@
 # - Use effects to mix, avoid tweaking amp in the tracks too much. 
 # - Define effects AFTER tracks to avoid shifting the line number of the track at hand 
 
->>> end 
+#>>> end 
 #>>> drum
 #>>> drum keys
 #>>> drum keys bass cele cymbal
 #>>> drum keys bass reed cymbal
 #>>> drum keys bass prophet cymbal boom
->>> drum keys bass rails cymbal boom
+#>>> drum keys bass rails cymbal boom
 #>>> drum keys cele cymbal
 #>>> drum bass keys reed cymbal
 #>>> drum bass keys prophet reed cymbal
@@ -50,7 +50,7 @@
 #>>> keys reed prophet insanity cymbal
 #>>> drum keys reed prophet insanity boom
 
-#>>> insanity
+#>>> experiment
 
 @prophet
 @blip
@@ -58,14 +58,22 @@
 @dBass
 @eBass
 
+@DR_aPad:experiment amp0.0,out30
+
+    #(a4 a4 g4 g5):amp0.2 
+    (g5 g6 g7 d6 d7 c7 g5 c7 x:0,amp0):amp0.7,gate1
+
+    €reverb:a room0.9,mix0.2,mul2
+    #€delay:a 
+
 @moogBass:prophet susT0.5,sus0.01,amp1,lfoS2,cutoff4000,pan-0.1,out50
 
     (x:1,fish0 c6:1 e6:1 f6:1 e6:0,susT2 x:12):0.5
 
     # TODO: Separate unique id ordering for fx/tracks    
-    €delay:a bus50,echo0.25,echt4
-    €reverb:a bus50,room0.9,mix0.4,mul0.8
-    €clamp:a bus50,under6200,over1780
+    €delay:a echo0.25,echt4
+    €reverb:a room0.9,mix0.4,mul0.9
+    €clamp:a under6200,over1780
 
 
 
@@ -92,9 +100,8 @@
     c5:0.25,amp0.4,pan-0.3
 
 
-
-    €reverb:a bus20,room0.8,mix0.15,mul0.8
-    €clamp:a bus20,under1500,over880
+    €reverb:a room0.8,mix0.15,mul0.9
+    €clamp:a under1500,over880
 
 #@organReed
 
@@ -107,14 +114,14 @@
         ):sus1,susT0.5,amp1,time0.5,len32,tot28.50,pan0.15
 
 
-    €clamp:a bus30,under1900,over80
+    €clamp:a under1900,over80
 
 
 @eBass:bass out60
 
     (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200,pan0.2
 
-    €clamp:a bus60,under800,over80
+    €clamp:a under800,over80
 
 @blip:rails
     (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 \
@@ -132,25 +139,25 @@
     #1:8,rate-0.5,start9999999999999,out20,amp0.2
 
 
-@SP_Roland808:drum ofs0,sus10,amp1,bus80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
+@SP_Roland808:drum ofs0,sus10,amp1,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 
     (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1)
     (x:1 x:2 x:0.5 98:1.5 98:0 x:3)
     (26:1 26:2 26:1 26:0 x:0)
-    (x:31 34:1):amp1.2,rate0.5,bus10
+    (x:31 34:1):amp1.2,rate0.5,out10
 
-    €clamp:a bus80,under8500,over40
-    #€analogTape:a bus80,out80 
+    €clamp:a under8500,over40
+    #€analogTape:a out80,out80 
 
 
 @SP_EMU_EDrum
 
-@SP_EMU_SP12 ofs0,sus10,amp1,bus10,out10
+@SP_EMU_SP12 ofs0,sus10,amp1,out10
 
     <boom> (x:31 28:1):rate0.2
     <drum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):rate2
 
-    €clamp:a bus10,under1200,over780
+    €clamp:a under1200,over780
 
     #€analogTape:a bus0
 

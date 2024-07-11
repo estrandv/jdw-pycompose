@@ -115,7 +115,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
             continue 
 
         # Up count for actual sequence data, even if commented
-        if "#" in line or (data != "" and data[0] not in "*@€/¤"):
+        if "#" in line or (data != "" and data[0] not in "*@€/"):
             instrument_line_count += 1
 
         if data != "":
@@ -161,7 +161,6 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     for key in effect_args:
                         abs_args[key] = effect_args[key].value
 
-                    effects[current_group_name] = BillboardEffect(instrument_name, abs_args)
                     drones[current_group_name] = BillboardEffect(instrument_name, abs_args)
 
                 else: 
@@ -171,7 +170,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 instrument_line_count = 0
 
             # Process effect/drone messages 
-            elif data[0] in "€¤":
+            elif data[0] in "€":
                 space_split = data.split(" ")
                 # Cut off the "€ or ¤"
                 core_part = "".join(space_split[0][1:])
@@ -190,15 +189,10 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                 for key in effect_args:
                     abs_args[key] = effect_args[key].value
 
-                if data[0] == "€":
-
-                    # e.g. reverb_mygroup_3
-                    # or reverb_mygroup_a if effect was listed as reverb:a 
-                    external_id = effect_type + "_" + current_group_name + "_" + unique_suffix
-                    effects[external_id] = BillboardEffect(effect_type, abs_args)
-                else:
-                    # Drones get plain ids and are treated differently 
-                    drones[unique_suffix] = BillboardEffect(effect_type, abs_args)
+                # e.g. reverb_mygroup_3
+                # or reverb_mygroup_a if effect was listed as reverb:a 
+                external_id = effect_type + "_" + current_group_name + "_" + unique_suffix
+                effects[external_id] = BillboardEffect(effect_type, abs_args)
 
             # Process prompts 
             elif data[0] == "/":
@@ -297,7 +291,7 @@ def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack], drone_prefi
         track = tracks[track_name]
 
         # Unique handling for drones that hack-skips normal shuttle-based type resolution 
-        # Lots of duplicate code here, fix later 
+        # Lots of duplicate code here, TODO: fix later 
         sequence = []
         if track.is_drone:
             sequence = []
@@ -326,6 +320,7 @@ def create_sequencer_queue_bundle(tracks: dict[str,BillboardTrack], stop_missing
     bundles = create_sequencer_queue_bundles(tracks)
     return jdw_osc_utils.create_batch_queue_bundle(bundles, stop_missing)
 
+# TODO: Extremely out of date, does not account for drones, probably not effects either 
 def create_nrt_record_bundles(tracks: dict[str,BillboardTrack], zero_time_messages: list[OscPacket] = [], bpm = 120) -> list[OscBundle]:
 
     bundles = []
@@ -402,7 +397,6 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
 def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_prefix = "effect_" ) -> list[OscPacket]:
 
     packets = []
-    packets.append(jdw_osc_utils.create_msg("/free_notes", ["^" + common_prefix + "(.*)"]))
     for effect_name in effects:
         effect = effects[effect_name]
         osc_args = []

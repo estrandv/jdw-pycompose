@@ -14,39 +14,57 @@
 
 >>> droner 
 >>> drum droner ex pad 
-#>>> drum droner ex rhodes pad  
->>> drum ex rhodes pad droner 
->>> experiment somedrone pad drum 
+>>> drum droner ex rhodes pad  
+#>>> drum ex rhodes pad droner 
+#>>> experiment somedrone rhodes pad 
+>>> experiment somedrone 
 
+>>> nicedrone controller experiment
+ 
 # Drones need special handling, since effects have extra id appending to make them easier to declare 
 # Drones, on the other hand, require precision in their naming so that they can be easily referred to in tracks
 # A prefix is required to ensure that non-mentioned drones are destroyed on update 
 #/drone_prefix d_
+# UPDATE: Is not needed or working at all atm, see other notes 
+
+# TODO: Note drone features 
+# - implicit mod and drone on @DR_ 
 
 
-# TODO: Drones are a work in progress and aren't mentioned in any instructions or syntax highlights 
-# TODO: Kill drones on ctrl+k, don't update drones on ctrl+j
-# TODO: Something about effects is freaking out on ctrl+j with drones active 
-# TODO: PLaying drones using suffix is a bit annoying and could be done differently 
-#¤experimental:a amp0.9,freq440.0,out30 
+# Primitive example of a filter sweep 
+@DR_controlMod:controller out140
 
-# TODO: Possible drone syntax: 
-# @DR_experimental:a 
-# - Parsing understands to create a drone with default args 
-# - All track messages are implicitly note_mod for prefix+a
+    (0:4,value0 0:4,value8800):prt0.4,amp1 
+
+@DR_aPad:nicedrone amp0.0
+
+    (g6:4 d6:3 bb6:3 f6:2):amp1,prt0.5,fxo0.7
+
+    €reverb:a mix0.2,room0.8,mul2.2
 
 # TODO: Note that you can't specify freq here, as doing so manually will ignore all resolution of note-as-freq
-@DR_aPad:experiment amp0.0,bus30,out30
+# Also note that drones MUST be gate-driven synths - otherwise they will detonate when susT ends 
+# AAAAAND TODO: Drones get recreated with their default args every ctrl+j, which is not the intended behaviour
+#   -> Might have to separate drones from effects again to change this properly 
+@DR_aPad:experiment amp0.0,out30
 
     #(a4 a4 g4 g5):amp0.2 
     (g5 g6 g7 d6 d7 c7 g5 c7):amp1,gate1
 
     # TODO: A drones effect must be created before it - this must be resolved in billboarding 
-    €reverb:a mix0.95,mul4.2,room0.7,bus30
+    #€reverb:a mix0.95,mul4.2,room0.7,bus30
+    €clamp:a under200,over40,modBus140
 
-@DR_experimental:somedrone amp0.0
+@DR_experimental:somedrone amp0.0,out40
 
-    (a7 a5 a6 a4):amp0.3
+    (a7 a5:*0.5 a6 a4 a5:*0.5):1,amp0.2
+
+    €reverb:a mix0.4,mul1.2,room0.9
+
+
+@SP_EMU_EDrum ofs0,sus10,amp0.2,time2
+
+    4 42
 
 @SP_Roland808:drum ofs0,sus10,amp0.7,bus80,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 
@@ -72,7 +90,7 @@
     (g6 / g7) a6 x d6:*0.5 a6 a6 x b6 a6:*0.5 a6
     (c6 d6 g6 d6):sus2
 
-@aPad:pad sus2,susT2,time4,relT4,out20,bus20,amp2
+@aPad:pad sus2,susT2,time4,relT4,out20,bus20,amp1
 
     g6 a6 b6 d7 
 
