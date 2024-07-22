@@ -122,6 +122,7 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
 
             # Note selection marker on headers and remove it
             if data[0] == "*" and "@" in data:
+                print("SELECTING")
                 current_is_selected = True
                 data = "".join(data[1:])
 
@@ -243,7 +244,9 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
                     final_arg_strings = [string for string in [base_arg_string, current_default_args_string] if string != ""]
                     final_arg_string = ",".join(final_arg_strings) if final_arg_strings else ""
 
-                    print(final_arg_string)
+
+                    if current_is_selected:
+                        print("DEBUG: selected", current_instrument)
 
                     tracks[track_id] = BillboardTrack(
                         current_instrument,
@@ -376,7 +379,9 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
 
 
     if len(synths) > 0:
+
         selected_synth = billboard.tracks[synths[-1]]
+        print("DEBUG: Synth selected", selected_synth)
         
 
         # Arg bit is a little hacky, since it is already applied to the elements and 
@@ -407,7 +412,6 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_pr
 
         external_id = common_prefix + effect_name
 
-        print("DEBUG: effect created with id", external_id)
         packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
 
     return packets

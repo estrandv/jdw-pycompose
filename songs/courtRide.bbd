@@ -35,20 +35,18 @@
 # - Define effects AFTER tracks to avoid shifting the line number of the track at hand 
 
 #>>> end 
-#>>> drum
-#>>> drum keys
-#>>> drum keys bass cele cymbal
-#>>> drum keys bass reed cymbal
-#>>> drum keys bass prophet cymbal boom
-#>>> drum keys bass rails cymbal boom
-#>>> drum keys cele cymbal
-#>>> drum bass keys reed cymbal
-#>>> drum bass keys prophet reed cymbal
-#>>> drum keys boom
-#>>> drum keys bass rails cymbal
-#>>> drum keys cele boom
-#>>> keys reed prophet insanity cymbal
-#>>> drum keys reed prophet insanity boom
+>>> drum hdrum
+>>> drum hdrum keys
+>>> drum hdrum keys bass cele cymbal
+>>> drum hdrum keys bass reed cymbal
+>>> drum hdrum bass prophet cymbal boom reed hreed  
+#>>> drum hdrum keys bass rails cymbal boom  
+#>>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> drum hdrum keys bass cymbal cele cymbal 
+#>>> drum hdrum bass cymbal reed hreed boom cymbal    
+#>>> drum hdrum keys bass rails cymbal boom reed  
+#>>> drum keys reed hreed prophet insanity cymbal
+#>>> drum hdrum bass keys hreed prophet insanity boom experiment
 
 #>>> experiment
 
@@ -58,12 +56,15 @@
 @dBass
 @eBass
 
-@DR_aPad:experiment amp0.0,out30
+# NOTE: detectsilence can mess up drones that go out of arrangement - never quiet such a drone to amp 0 after starting. 
+# Sadly, this means ctrl+k can mess things up. 
+@DR_aPad:experiment amp0.0,out90
 
     #(a4 a4 g4 g5):amp0.2 
-    (g5 g6 g7 d6 d7 c7 g5 c7 x:0,amp0):amp0.7,gate1
+    (g5 g6 g7 d6 d7 c7 g5 c7 c7:0,amp0.01):amp0.7,gate1
 
-    €reverb:a room0.9,mix0.2,mul2
+    €distortion:a drive0.5 
+    €reverb:a room0.9,mix0.35,mul0.07
     #€delay:a 
 
 @moogBass:prophet susT0.5,sus0.01,amp1,lfoS2,cutoff4000,pan-0.1,out50
@@ -100,21 +101,21 @@
     c5:0.25,amp0.4,pan-0.3
 
 
-    €reverb:a room0.8,mix0.15,mul0.9
+    €reverb:a room0.8,mix0.15,mul0.8
     €clamp:a under1500,over880
 
 #@organReed
 
 @aPad:reed out30
 
-    (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
+    <reed> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
         ):0.5,susT0.25,amp1,sus0.25,len16,tot15.00,pan0.1
 
-    (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5 \
-        ):sus1,susT0.5,amp1,time0.5,len32,tot28.50,pan0.15
+    <hreed> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5 \
+        ):sus1,susT0.5,amp*0.6,time0.5,len32,tot28.50,pan0.15
 
 
-    €clamp:a under1900,over80
+    €clamp:a under1900,over140
 
 
 @eBass:bass out60
@@ -126,7 +127,7 @@
 @blip:rails
     (c6:1 c7:1 bb6:1 g6:1 a6:1 c6:3 f6:1 bb6:1 f6:1 g6:0.5 a6:0.5 g6:1 \
         f6:1 c6:2 c7:1 bb6:1 g6:1 f6:1 g6:1 c6:3 f6:1 g6:3 a6:1 g6:1 f6:0 x:2 \
-        ):0.5,susT2,amp1,sus0.2,len32,tot30.00,pan0.05
+        ):0.5,susT2,amp0.8,sus0.2,len32,tot30.00,pan0.05
 
 @karp
 
@@ -139,23 +140,28 @@
     #1:8,rate-0.5,start9999999999999,out20,amp0.2
 
 
-@SP_Roland808:drum ofs0,sus10,amp1,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
+@SP_Roland808:drum ofs0,sus10,amp0.7,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 
-    (14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:2 14:1.5 14:0.5 95:1 14:1 14:1.5 14:0.5 95:0.5 14:0.5 95:0 x:1)
-    (x:1 x:2 x:0.5 98:1.5 98:0 x:3)
-    (26:1 26:2 26:1 26:0 x:0)
-    (x:31 34:1):amp1.2,rate0.5,out10
+    (14:1.5 14:0.5 x:1 14:1 14:1.5 14:0.5 x:2 14:1.5 14:0.5 x:1 14:1 14:1.5 14:0.5 x:0.5 14:0.5 x:1)
 
-    €clamp:a under8500,over40
+    €clamp:a under8500,over50
     #€analogTape:a out80,out80 
 
+@SP_Roland808:hdrum ofs0,sus10,amp0.5,out40 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
+
+    (x:2 95:1 x:3 95:2 x:2 95:1 x:3 95:0.5 x:0.5 95:1)
+    (x:3.5 98:1.5 98:3)
+    (26:1 26:2 26:1 26:0 x:0)
+    <cymbal> (x:31 34:1):amp*1.4,rate0.5,out10
+
+    €clamp:a under5500,over20
 
 @SP_EMU_EDrum
 
 @SP_EMU_SP12 ofs0,sus10,amp1,out10
 
-    <boom> (x:31 28:1):rate0.2
-    <drum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):rate2
+    <boom> (x:31 28:1):rate0.2,amp*0.7
+    <hdrum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):rate2
 
     €clamp:a under1200,over780
 

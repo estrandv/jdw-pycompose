@@ -12,14 +12,14 @@
 #>>> arg 
 
 
->>> droner 
->>> drum droner ex pad 
->>> drum droner ex rhodes pad  
+#>>> droner 
+#>>> drum droner ex pad 
+#>>> drum droner ex rhodes pad  
 #>>> drum ex rhodes pad droner 
 #>>> experiment somedrone rhodes pad 
->>> experiment somedrone 
+#>>> experiment somedrone 
 
->>> nicedrone controller experiment
+#>>> nicedrone controller experiment
  
 # Drones need special handling, since effects have extra id appending to make them easier to declare 
 # Drones, on the other hand, require precision in their naming so that they can be easily referred to in tracks
@@ -89,6 +89,15 @@
 
     (g6 / g7) a6 x d6:*0.5 a6 a6 x b6 a6:*0.5 a6
     (c6 d6 g6 d6):sus2
+
+*@FMRhodes:padconfigure sus1,susT1,time1,relT0.5,out20,amp1
+
+# TODO: Selection marking needs its very own data type - right now its baked into tracks
+# but that just makes it impossible to account for filtering (and redundant as hell)
+
+    c4:amp0
+(e7:0.75 e7:0.75 e7:0 x:6.5):relT0.5,sus1,amp1,susT1,time1,out20,len4.0,tot1.50
+    €delay:a echo0.125,echt5.5,mul2
 
 @aPad:pad sus2,susT2,time4,relT4,out20,bus20,amp1
 
