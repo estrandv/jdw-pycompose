@@ -106,6 +106,10 @@ effect_billboard = """
 @router tfiv:in50,out0
 @router tsix:in60,out0
 @router tsev:in70,out0
+@router tsev:in80,out0
+@router tsev:in90,out0
+@router tsev:in92,out0
+@router tsev:in54,out0
 
 @router routerrails:ofs0,sus10,amp1,bus80,in80,out0
 
