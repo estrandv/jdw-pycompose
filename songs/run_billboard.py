@@ -9,6 +9,7 @@ import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
 from shuttle_notation import Parser, ResolvedElement
 import sample_reading
 import default_synthdefs
+from nrt_scoring import Score
 
 import client as my_client
 
@@ -172,6 +173,72 @@ def configure(bdd_name: str):
 
         for oneshot in keys_config_packets:
             client.send(oneshot)
+    except Exception as e:
+        print(traceback.format_exc())
+        error_beep() 
+
+def nrt_record(bdd_name: str):
+    try:
+
+        billboard = read_bdd(bdd_name)        
+        
+        legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
+
+        one_shot_messages = []
+
+        zero_time = []
+
+        client = my_client.get_default()
+
+        # TODO: Bpm 
+
+        # TODO: specific path read function would make things leaner and more direct 
+        for sample in sample_reading.read_sample_packs("~/sample_packs"):
+            client.send(jdw_osc_utils.create_msg("/load_sample", sample.as_args()))
+
+        for synthdef in default_synthdefs.get():
+            # TODO: Double check that the NRT synthdef array is not duplcicated iwth repeat calls 
+            zero_time.append(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
+
+        common_prefix = "effect_"
+
+        # TODO below: is a time required for zero time nrt messages? 
+
+        # Order is very important, but I get a headache trying to explain it 
+        for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, common_prefix):
+            zero_time.append(oneshot)
+
+        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects, common_prefix):
+            zero_time.append(oneshot)
+
+        for oneshot in billboarding.create_effect_recreate_packets(billboard.drones, common_prefix):
+            zero_time.append(oneshot)
+
+        # TODO: Below should to some degree be part of billboarding.py, but I'll make it all here first 
+
+        # Create the zero time packets, save them for later ... 
+        zero = [jdw_osc_utils.to_timed_osc("0.0", packet) for packet in zero_time]
+
+        # Make a score, to make timedElements, to make packets (that we can then combine with zero)
+        score = Score()
+        for track_name in billboard.tracks:
+            track = billboard.tracks[track_name]
+            score.add(track_name, track)
+
+        # TODO: Next step requires that the billboard contains a chronological filter list 
+
+        # for filter_step in billboard.group_filters 
+        # score.extend_groups(filter_step)
+
+        for track_name in score.tracks:
+            billboard_track = billboard.tracks[track_name]
+            notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
+
+            score_notes = zero + notes 
+            
+            # TODO: And then make nrt record messages for each track 
+
+
     except Exception as e:
         print(traceback.format_exc())
         error_beep() 

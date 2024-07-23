@@ -279,10 +279,33 @@ def create_notes_b(elements: list[ResolvedElement], synth_name, is_sample = Fals
 
         wrapper = ElementWrapper(element, synth_name, MessageType.PLAY_SAMPLE if is_sample else MessageType.NOTE_ON_TIMED)
         
-        msg = jdw_osc_utils.create_jdw_note(wrapper)
+        msg = jdw_osc_utils.create_sequencer_note(wrapper)
 
         if msg != None:
             sequence.append(msg)
+
+    return sequence
+
+def _track_to_sequence(track: BillboardTrack) -> list[OscBundle]:
+    # Unique handling for drones that hack-skips normal shuttle-based type resolution 
+    # Lots of duplicate code here, TODO: fix later 
+    sequence = []
+    if track.is_drone:
+        sequence = []
+        for element in track.elements:
+            # TODO: This does nothing - I just want default args support without littering 
+            wrp = ElementWrapper(element, "N/A", MessageType.DRONE)
+            freq = wrp.resolve_freq()
+            element.args["freq"] = freq
+            print(element.args) 
+            osc_args = wrp.args_as_osc([])
+            ext_id = drone_prefix + track.group_name
+            msg = jdw_osc_utils.create_msg("/note_modify", [ext_id, jdw_osc_utils.SC_DELAY_MS] + osc_args)
+            if msg != None: 
+                print("Implicitly created a drone modify note for id: ", ext_id)
+                sequence.append(jdw_osc_utils.to_timed_osc(str(element.args["time"]), msg))
+    else:
+        sequence = create_notes_b(track.elements, track.synth_name, track.is_sampler)
 
     return sequence
 
@@ -293,25 +316,7 @@ def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack], drone_prefi
     for track_name in tracks:
         track = tracks[track_name]
 
-        # Unique handling for drones that hack-skips normal shuttle-based type resolution 
-        # Lots of duplicate code here, TODO: fix later 
-        sequence = []
-        if track.is_drone:
-            sequence = []
-            for element in track.elements:
-                # TODO: This does nothing - I just want default args support without littering 
-                wrp = ElementWrapper(element, "N/A", MessageType.DRONE)
-                freq = wrp.resolve_freq()
-                element.args["freq"] = freq
-                print(element.args) 
-                osc_args = wrp.args_as_osc([])
-                ext_id = drone_prefix + track.group_name
-                msg = jdw_osc_utils.create_msg("/note_modify", [ext_id, jdw_osc_utils.SC_DELAY_MS] + osc_args)
-                if msg != None: 
-                    print("Implicitly created a drone modify note for id: ", ext_id)
-                    sequence.append(jdw_osc_utils.to_timed_osc(str(element.args["time"]), msg))
-        else:
-            sequence = create_notes_b(track.elements, track.synth_name, track.is_sampler)
+        sequence = _track_to_sequence(track)
 
         bundles.append(jdw_osc_utils.create_queue_update_bundle(track_name, sequence))
 

@@ -73,7 +73,7 @@ def to_timed_osc(time: str, osc_packet) -> OscBundle:
     bundle.add_content(osc_packet)
     return bundle.build()
 
-def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
+def resolve_jdw_msg(element: ElementWrapper) -> OscPacket | None:
     external_id = element.resolve_external_id()
     freq = element.resolve_freq()
     msg_type = element.resolve_message_type()
@@ -105,5 +105,12 @@ def create_jdw_note(element: ElementWrapper) -> OscBundle | None:
             msg = create_msg("/loop_started", [])
         case _:
             pass
+
+    return msg 
+
+# Resolves the appropriate type of message for the element and returns it, wrapped inside its "time" argument 
+def create_sequencer_note(element: ElementWrapper) -> OscBundle | None:
+
+    msg = resolve_jdw_msg(element)
 
     return to_timed_osc(str(element.element.args["time"]), msg) if msg != None else None 

@@ -4,6 +4,28 @@ from billboarding import BillboardTrack
 from dataclasses import dataclass
 from shuttle_notation import Parser, ResolvedElement
 
+# Stolen from billboarding's create notes function
+
+# TODO: YOU ARE HERE, SORTA. JUST FINISHED THIS FOR USE WITH RESOLVED TIMELINES IN RUN_BILLBOARDING. 
+# I THINK WE HAVE ALL PIECES, BUT THEY HAVE TO COME TOGETHER. INCLUDING MAKING ALL ZERO TIME MESSAGES TimelineElement with time 0.0 
+def create_notes_nrt(elements: list[TimelineElement], synth_name, is_sample = False) -> list[OscBundle]:
+    sequence = []
+    for timeline_element in elements:
+
+        element = timeline_element.element
+
+        wrapper = ElementWrapper(element, synth_name, MessageType.PLAY_SAMPLE if is_sample else MessageType.NOTE_ON_TIMED)
+        
+        msg = jdw_osc_utils.resolve_jdw_msg(wrapper)
+
+        if msg != None:
+
+            timed = jdw_osc_utils.to_timed_osc(str(timeline_element.start_time), msg)
+
+            sequence.append(timed)
+
+    return sequence
+
 def element_beats(element: ResolvedElement) -> float:
     value = float(element.args["time"].value) if "time" in element.args else 0.0
     return value 
