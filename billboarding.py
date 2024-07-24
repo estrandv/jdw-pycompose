@@ -93,6 +93,8 @@ def parse_track_billboard(billboard: str, parser: Parser) -> BillBoard:
 
     return billboard
 
+# TODO: Should parse each sub-element separately to be less messy (effects, drones, tracks, etc.)
+# TODO: Make selection its own separate kind of data 
 def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoard:
     
     tracks = {}
@@ -120,11 +122,6 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
         base_args.append(key + str(parser.arg_defaults[key]))
     base_arg_string = ",".join(base_args)
 
-    # TODO: Can do line breaks as:
-    # - if last non-white char is "\"
-    # - set line-\ as "lastLine" and continue
-    # - else, if lastLine is populated, consume it to form start of line
-
     for line in line_split(billboard):
 
         # Remove commented and whitespace
@@ -136,6 +133,7 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
             group_filter = "".join(data.split(">>>")[1:])
             split_filter = group_filter.split(" ")
             group_filters.append(split_filter)
+            print("ADDING FILTER", split_filter)
             continue 
 
         # Up count for actual sequence data, even if commented
@@ -262,10 +260,6 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
 
                 final_arg_strings = [string for string in [base_arg_string, current_default_args_string] if string != ""]
                 final_arg_string = ",".join(final_arg_strings) if final_arg_strings else ""
-
-
-                if current_is_selected:
-                    print("DEBUG: selected", current_instrument)
 
                 tracks[track_id] = BillboardTrack(
                     current_instrument,

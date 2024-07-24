@@ -10,11 +10,14 @@ from shuttle_notation import Parser, ResolvedElement
 import sample_reading
 import default_synthdefs
 from nrt_scoring import Score
+import nrt_scoring
+
 
 import client as my_client
 
 import billboarding
 import traceback
+
 
 import os
 
@@ -126,6 +129,15 @@ def read_bdd(bdd_name: str) -> billboarding.BillBoard:
     content = open(path + "/" + bdd_name, 'r').read().replace("\\\n", "")
     return billboarding.parse_track_billboard(content, parser)
 
+# TODO: COPY PASTE BAD CODE - only difference is the unfiltered call at end 
+def read_bdd_nrt(bdd_name: str) -> billboarding.BillBoard:
+    parser = Parser()
+    parser.arg_defaults = {"time": Decimal("0.5"), "sus": Decimal("0.2"), "amp": Decimal("1.0")}
+
+    path = os.path.dirname(os.path.realpath(__file__))
+    content = open(path + "/" + bdd_name, 'r').read().replace("\\\n", "")
+    return billboarding.parse_track_billboard_unfiltered(content, parser)
+
 def error_beep():
     for i in [190.0, 300.0]:
         beep = jdw_osc_utils.create_msg("/note_on_timed", ["default", "error_beep", "0.1", 0, "freq", i, "amp", 1.0])
@@ -177,10 +189,11 @@ def configure(bdd_name: str):
         print(traceback.format_exc())
         error_beep() 
 
+# Create nrt record messages for each track, using order as dictated by ">>>" sequential group filters to construct the full composition of the song. 
 def nrt_record(bdd_name: str):
     try:
 
-        billboard = read_bdd(bdd_name)        
+        billboard = read_bdd_nrt(bdd_name)        
         
         legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
 
@@ -190,15 +203,19 @@ def nrt_record(bdd_name: str):
 
         client = my_client.get_default()
 
-        # TODO: Bpm 
+        # Send first, to populate the nrt synth predefineds
+        # Can prob be done as messages within instead  ... .
+        for synthdef in default_synthdefs.get():
+            # TODO: Double check that the NRT synthdef array is not duplcicated iwth repeat calls 
+            client.send(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
+
+        time.sleep(0.5)
 
         # TODO: specific path read function would make things leaner and more direct 
         for sample in sample_reading.read_sample_packs("~/sample_packs"):
             client.send(jdw_osc_utils.create_msg("/load_sample", sample.as_args()))
 
-        for synthdef in default_synthdefs.get():
-            # TODO: Double check that the NRT synthdef array is not duplcicated iwth repeat calls 
-            zero_time.append(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
+        time.sleep(0.5)
 
         common_prefix = "effect_"
 
@@ -220,28 +237,41 @@ def nrt_record(bdd_name: str):
         zero = [jdw_osc_utils.to_timed_osc("0.0", packet) for packet in zero_time]
 
         # Make a score, to make timedElements, to make packets (that we can then combine with zero)
-        score = Score()
+        score = Score({}, {})
         for track_name in billboard.tracks:
             track = billboard.tracks[track_name]
             score.add(track_name, track)
 
-        # TODO: Next step requires that the billboard contains a chronological filter list 
+        # Walk through each section of group filters in order to create a chronological score 
+        for group_filter in billboard.group_filters:
+            
+            groupless_tracks = [track_name for track_name in billboard.tracks if billboard.tracks[track_name].group_name == ""]
+            score.extend_groups(group_filter, groupless_tracks)
 
-        # for filter_step in billboard.group_filters 
-        # score.extend_groups(filter_step)
+        end_time = score.get_end_time() + 8.0 # A little extra 
+        bpm = 116.0; # TODO: Hardcoded
 
         for track_name in score.tracks:
             billboard_track = billboard.tracks[track_name]
             notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
 
-            score_notes = zero + notes 
+            if len(notes) > 0 and not nrt_scoring.all_quiet(score.tracks[track_name]):
+
+                score_notes = zero + notes
+
+                file_name = "/home/estrandv/jdw_output/track_" + track_name + ".wav"
+
+                bundle = jdw_osc_utils.create_nrt_record_bundle(notes, file_name, end_time, bpm)
+
+                client.send(bundle)
+            else:
+                print("WARN: Empty track will not be sent to NRT", track_name, score.tracks[track_name])
+
             
-            # TODO: And then make nrt record messages for each track 
-
-
     except Exception as e:
         print(traceback.format_exc())
         error_beep() 
+
 
 def run(bdd_name: str):
 

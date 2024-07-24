@@ -1,0 +1,11 @@
+>>> bass 
+>>> bass drumironi
+
+
+@eBass:bass sus0.3,time0.25,relT0.2
+
+    g5 g6 g7 d6 d7 c7 g5 c7
+
+@SP_Roland808:drumironi ofs0,sus10,amp0.7,out0
+
+    81:0.75 82:0.25

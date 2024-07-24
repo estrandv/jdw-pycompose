@@ -35,19 +35,23 @@
 # - Define effects AFTER tracks to avoid shifting the line number of the track at hand 
 
 
+### NRT TESTING; NOT COMPO
+#>>> keys 
+>>> drum 
+
 ### Could use a repeating structure, but heavily dependant on any eventual vocals ... 
->>> boom reed boom  
->>> drum hdrum keys bass reed cymbal
->>> drum hdrum keys bass cele cymbal
->>> drum hdrum bass prophet cymbal boom reed hreed  
->>> drum hdrum keys bass rails cymbal boom 
->>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> boom reed boom  
+#>>> drum hdrum keys bass reed cymbal
+#>>> drum hdrum keys bass cele cymbal
+#>>> drum hdrum bass prophet cymbal boom reed hreed  
+#>>> drum hdrum keys bass rails cymbal boom 
+#>>> drum hdrum keys cymbal prophet cymbal experiment
 #>>> drum hdrum keys bass cymbal cele cymbal 
 #>>> drum hdrum bass cymbal reed hreed boom cymbal    
 #>>> drum hdrum keys bass rails cymbal boom reed  
 #>>> keys reed hreed prophet insanity cymbal
 #>>> drum hdrum bass keys hreed prophet insanity boom
->>> end 
+#>>> end 
 
 #>>> experiment
 
@@ -148,7 +152,6 @@
 @SP_youtube
     # Example of reversing - tricky with start but it seems to accept a very high number
     #1:8,rate-0.5,start9999999999999,out20,amp0.2
-
 
 @SP_Roland808:drum ofs0,sus10,amp0.6,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 
