@@ -3,6 +3,7 @@
 from pythonosc import osc_message_builder, udp_client, osc_bundle_builder
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
+from pythonosc.osc_packet import OscPacket
 from shuttle_notation import ResolvedElement
 from jdw_shuttle_lib.shuttle_jdw_translation import MessageType
 

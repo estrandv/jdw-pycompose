@@ -30,6 +30,7 @@ class BillBoard:
     effects: dict[str, BillboardEffect]
     drones: dict[str, BillboardEffect]
     prompts: list[BillBoardPrompt]
+    group_filters: list[list[str]]
 
 # Applies args after the fact, mutating the elements
 # Supports args with operators
@@ -72,14 +73,35 @@ def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardE
 
     return result
 
-def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardTrack]:
+# Legacy compat after filtering changes - performs group filtering of tracks 
+def parse_track_billboard(billboard: str, parser: Parser) -> BillBoard:
+    billboard = parse_track_billboard_unfiltered(billboard, parser)
+
+    group_filter = billboard.group_filters[-1] if len(billboard.group_filters) > 0 else []
+
+    new_tracks = {}
+    for track_name in billboard.tracks:
+        track = billboard.tracks[track_name]
+
+        filter_ok = len(group_filter) == 0 or track.group_name == "" \
+                        or (track.group_name in group_filter)
+
+        if filter_ok:
+            new_tracks[track_name] = track
+
+    billboard.tracks = new_tracks
+
+    return billboard
+
+def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoard:
     
     tracks = {}
     effects = {}
     drones = {}
     prompts = []
 
-    group_filter = ""
+    group_filters: list[list[str]] = []
+
     current_instrument = ""
     current_is_sampler = False 
     current_is_drone = False 
@@ -112,6 +134,8 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
         # Establish group filter
         if ">>>" in data:
             group_filter = "".join(data.split(">>>")[1:])
+            split_filter = group_filter.split(" ")
+            group_filters.append(split_filter)
             continue 
 
         # Up count for actual sequence data, even if commented
@@ -224,46 +248,41 @@ def parse_track_billboard(billboard: str, parser: Parser) -> dict[str,BillboardT
 
                 final_group = group_name if group_name != "" else current_group_name
 
-                filter_ok = group_filter == "" or final_group == "" \
-                    or (final_group in group_filter.split(" "))
+                # Append a top section for default args and then parse
+                parse_string = track_data
+                if current_default_args_string != "":
+                    parse_string = "(" + parse_string + "):" + current_default_args_string
+                elements = parser.parse(parse_string)
 
-                if filter_ok:
+                arg_override(elements, default_args)
 
-                    # Append a top section for default args and then parse
-                    parse_string = track_data
-                    if current_default_args_string != "":
-                        parse_string = "(" + parse_string + "):" + current_default_args_string
-                    elements = parser.parse(parse_string)
+                spacer = "_" + final_group + "_" if final_group != "" else "_"
 
-                    arg_override(elements, default_args)
+                track_id = current_instrument + spacer + str(instrument_line_count)
 
-                    spacer = "_" + final_group + "_" if final_group != "" else "_"
-
-                    track_id = current_instrument + spacer + str(instrument_line_count)
-
-                    final_arg_strings = [string for string in [base_arg_string, current_default_args_string] if string != ""]
-                    final_arg_string = ",".join(final_arg_strings) if final_arg_strings else ""
+                final_arg_strings = [string for string in [base_arg_string, current_default_args_string] if string != ""]
+                final_arg_string = ",".join(final_arg_strings) if final_arg_strings else ""
 
 
-                    if current_is_selected:
-                        print("DEBUG: selected", current_instrument)
+                if current_is_selected:
+                    print("DEBUG: selected", current_instrument)
 
-                    tracks[track_id] = BillboardTrack(
-                        current_instrument,
-                        current_is_sampler,
-                        current_is_drone,
-                        final_group,
-                        elements,
-                        current_is_selected,
-                        parser.parse(current_pads_config_string),
-                        current_default_args_string
-                    )
+                tracks[track_id] = BillboardTrack(
+                    current_instrument,
+                    current_is_sampler,
+                    current_is_drone,
+                    final_group,
+                    elements,
+                    current_is_selected,
+                    parser.parse(current_pads_config_string),
+                    current_default_args_string
+                )
 
-                    # A bit of a hack, but once we have noted at least one track as selected for the instrument 
-                    # we have what we need and can reset 
-                    current_is_selected = False
+                # A bit of a hack, but once we have noted at least one track as selected for the instrument 
+                # we have what we need and can reset 
+                current_is_selected = False
 
-    return BillBoard(tracks, effects, drones, prompts)    
+    return BillBoard(tracks, effects, drones, prompts, group_filters)    
     
 ### TODO: OSC stuff below, might move to its own lib 
 
