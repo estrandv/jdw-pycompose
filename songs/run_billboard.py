@@ -110,10 +110,10 @@ effect_billboard = """
 @router tfiv:in50,out0
 @router tsix:in60,out0
 @router tsev:in70,out0
-@router tsev:in80,out0
-@router tsev:in90,out0
-@router tsev:in92,out0
-@router tsev:in54,out0
+@router teight:in80,out0
+@router tnin:in90,out0
+@router tten:in92,out0
+@router telv:in54,out0
 
 @router routerrails:ofs0,sus10,amp1,bus80,in80,out0
 
@@ -193,6 +193,8 @@ def configure(bdd_name: str):
 def nrt_record(bdd_name: str):
     try:
 
+        all_bundles = []
+
         billboard = read_bdd_nrt(bdd_name)        
         
         legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
@@ -255,17 +257,33 @@ def nrt_record(bdd_name: str):
             billboard_track = billboard.tracks[track_name]
             notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
 
+            #print(track_name, "TRACK TOTAL LEN", nrt_scoring.track_len(score.tracks[track_name]))
+
             if len(notes) > 0 and not nrt_scoring.all_quiet(score.tracks[track_name]):
 
                 score_notes = zero + notes
 
                 file_name = "/home/estrandv/jdw_output/track_" + track_name + ".wav"
 
-                bundle = jdw_osc_utils.create_nrt_record_bundle(notes, file_name, end_time, bpm)
+                bundle = jdw_osc_utils.create_nrt_record_bundle(score_notes, file_name, end_time, bpm)
+
+                all_bundles.append(bundle)
+
+                # It's hard to batch send since the data is so large
+                # But sending all at once will drop packets
+                # So here's a hack, again ... 
+                # TODO: Not sure dropping is the problem anymore 
+
+                time.sleep(0.25)
 
                 client.send(bundle)
+
             else:
                 print("WARN: Empty track will not be sent to NRT", track_name, score.tracks[track_name])
+
+
+        #client.send(jdw_osc_utils.create_batch_bundle(all_bundles))
+
 
             
     except Exception as e:

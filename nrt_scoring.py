@@ -126,7 +126,7 @@ class Score:
         self.extend(longest_track_name)
 
         goal_time = track_len(self.tracks[longest_track_name])
-        #print(longest_track_name, "is longest at ", goal_time)
+        print(longest_track_name, "is longest at ", goal_time)
 
         for track_name in self.source_tracks:
             source_len = total_beats(self.source_tracks[track_name].elements)
@@ -143,5 +143,9 @@ class Score:
                         if diff >= source_len and track_name in track_names:
 
                             self.extend(track_name)
-                        else:    
+                            #print("Extended and now has these elements", len(self.tracks[track_name]))
+                        else:
+                            print("NOT EXTENDING ", track_name)    
                             self.pad(track_name, diff)
+                
+                #print("COMPLETED EXTENSION FOR", track_name, "WITH TIME", track_len(self.tracks[track_name]), "OUT OF GOAL", goal_time)

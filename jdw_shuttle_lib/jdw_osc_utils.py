@@ -60,6 +60,15 @@ def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> Osc
 
     return queue_bundle.build()
 
+def create_batch_bundle(packets: list[OscPacket]) -> OscBundle:
+    bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
+    bundle.add_content(create_msg("/bundle_info", ["batch-send"]))
+    for packet in packets:
+        bundle.add_content(packet)
+
+    return bundle.build() 
+
+
 # Basic quick-syntax for OSC message building, ("/s_new, [1,2,3...]")
 def create_msg(adr: str, args = []) -> OscMessage:
     builder = osc_message_builder.OscMessageBuilder(address=adr)

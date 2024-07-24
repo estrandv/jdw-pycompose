@@ -430,6 +430,7 @@ def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_pr
 
         external_id = common_prefix + effect_name
 
+        print("CREATED NOTE ON", effect_name)
         packets.append(jdw_osc_utils.create_msg("/note_on", [effect.effect_type, external_id, 0] + osc_args))
 
     return packets
