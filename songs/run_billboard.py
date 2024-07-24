@@ -189,7 +189,70 @@ def configure(bdd_name: str):
         print(traceback.format_exc())
         error_beep() 
 
+# Create wav files for the base content of each track, regardless of composition and filtering 
+def nrt_export(bdd_name: str):
+    billboard = read_bdd_nrt(bdd_name)        
+    
+    client = my_client.get_default()
+
+    # Send first, to populate the nrt synth predefineds
+    # Can prob be done as messages within instead  ... .
+    for synthdef in default_synthdefs.get():
+        # TODO: Double check that the NRT synthdef array is not duplcicated iwth repeat calls 
+        client.send(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
+
+    time.sleep(0.5)
+
+    # TODO: specific path read function would make things leaner and more direct 
+    for sample in sample_reading.read_sample_packs("~/sample_packs"):
+        client.send(jdw_osc_utils.create_msg("/load_sample", sample.as_args()))
+
+    time.sleep(0.5)
+
+    # TODO: Below should to some degree be part of billboarding.py, but I'll make it all here first 
+
+    # Create the zero time packets, save them for later ... 
+    zero = get_nrt_base_msgs(billboard)
+
+    for track_name in billboard.tracks:
+        billboard_track = billboard.tracks[track_name]
+
+        # NOTE: Still does not account for e.g. reverb or delay 
+        ring_out = float(billboard_track.elements[-1].args["sus"]) if len(billboard_track.elements) > 0 else 0.0 
+        end_time = sum([float(e.args["time"]) for e in billboard_track.elements]) + ring_out # A little extra to ring out any sustains
+        bpm = 116.0; # TODO: Hardcoded
+
+        notes = billboarding.create_notes_b(billboard_track.elements, billboard_track.synth_name, billboard_track.is_sampler)
+        if len(notes) > 0:
+            score_notes = zero + notes
+
+            file_name = "/home/estrandv/jdw_output/track_" + track_name + ".wav"
+
+            bundle = jdw_osc_utils.create_nrt_record_bundle(score_notes, file_name, end_time, bpm)
+            time.sleep(0.5)
+            client.send(bundle)
+
+def get_nrt_base_msgs(billboard: billboarding.BillBoard):
+
+    common_prefix = "effect_"
+
+    legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
+    zero_time = []
+    # Order is very important, but I get a headache trying to explain it 
+    for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, common_prefix):
+        zero_time.append(oneshot)
+
+    for oneshot in billboarding.create_effect_recreate_packets(billboard.effects, common_prefix):
+        zero_time.append(oneshot)
+
+    for oneshot in billboarding.create_effect_recreate_packets(billboard.drones, common_prefix):
+        zero_time.append(oneshot)
+
+    # Create the zero time packets, save them for later ... 
+    return [jdw_osc_utils.to_timed_osc("0.0", packet) for packet in zero_time]
+
 # Create nrt record messages for each track, using order as dictated by ">>>" sequential group filters to construct the full composition of the song. 
+# TODO: Currently limited by message size - see notes on buffering
 def nrt_record(bdd_name: str):
     try:
 
@@ -197,12 +260,6 @@ def nrt_record(bdd_name: str):
 
         billboard = read_bdd_nrt(bdd_name)        
         
-        legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
-
-        one_shot_messages = []
-
-        zero_time = []
-
         client = my_client.get_default()
 
         # Send first, to populate the nrt synth predefineds
@@ -219,24 +276,10 @@ def nrt_record(bdd_name: str):
 
         time.sleep(0.5)
 
-        common_prefix = "effect_"
-
-        # TODO below: is a time required for zero time nrt messages? 
-
-        # Order is very important, but I get a headache trying to explain it 
-        for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, common_prefix):
-            zero_time.append(oneshot)
-
-        for oneshot in billboarding.create_effect_recreate_packets(billboard.effects, common_prefix):
-            zero_time.append(oneshot)
-
-        for oneshot in billboarding.create_effect_recreate_packets(billboard.drones, common_prefix):
-            zero_time.append(oneshot)
-
         # TODO: Below should to some degree be part of billboarding.py, but I'll make it all here first 
 
         # Create the zero time packets, save them for later ... 
-        zero = [jdw_osc_utils.to_timed_osc("0.0", packet) for packet in zero_time]
+        zero = get_nrt_base_msgs(billboard)
 
         # Make a score, to make timedElements, to make packets (that we can then combine with zero)
         score = Score({}, {})
@@ -255,7 +298,14 @@ def nrt_record(bdd_name: str):
 
         for track_name in score.tracks:
             billboard_track = billboard.tracks[track_name]
-            notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
+
+            # TODO: Notable different modes - send whole composition or just the purest loops of each track? 
+            #   --> This is not the best place, as score has already filtered things. Ideally, the alt mode uses billboard tracks without any filter. 
+            # TODO: Also, I think create_notes_nrt might be a bit dated now that I know times to be relative in jdw_sc
+            if 1 == 1:
+                notes = billboarding.create_notes_b(score.source_tracks[track_name].elements, billboard_track.synth_name, billboard_track.is_sampler)
+            else:
+                notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
 
             #print(track_name, "TRACK TOTAL LEN", nrt_scoring.track_len(score.tracks[track_name]))
 
@@ -274,7 +324,7 @@ def nrt_record(bdd_name: str):
                 # So here's a hack, again ... 
                 # TODO: Not sure dropping is the problem anymore 
 
-                time.sleep(0.25)
+                #time.sleep(0.25)
 
                 client.send(bundle)
 
@@ -283,8 +333,6 @@ def nrt_record(bdd_name: str):
 
 
         #client.send(jdw_osc_utils.create_batch_bundle(all_bundles))
-
-
             
     except Exception as e:
         print(traceback.format_exc())

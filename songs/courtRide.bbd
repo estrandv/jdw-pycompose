@@ -39,12 +39,16 @@
 #>>> keys 
 #>>> drum 
 
+# TODO: NRT
+# "Message too large" inevitably happens. It might be feasible to create something more buffered, e.g. you append zero messages to a buffer and 
+# THEN trigger the nrt record. Or just make the script here and send it or read it as a file. Investigate other options! 
+
 ### Could use a repeating structure, but heavily dependant on any eventual vocals ... 
 #>>> boom reed boom  
-#>>> drum hdrum keys bass reed cymbal
-#>>> drum hdrum keys bass cele cymbal
-#>>> drum hdrum bass prophet cymbal boom reed hreed  
-#>>> drum hdrum keys bass rails cymbal boom 
+>>> drum hdrum keys bass reed cymbal
+>>> drum hdrum keys bass cele cymbal
+>>> drum hdrum bass prophet cymbal boom reed hreed  
+>>> drum hdrum keys bass rails cymbal boom 
 >>> drum hdrum keys cymbal prophet cymbal experiment
 >>> drum hdrum keys bass cymbal cele cymbal 
 >>> drum hdrum bass cymbal reed hreed boom cymbal    

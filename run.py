@@ -20,7 +20,7 @@ elif "--stop" in sys.argv:
         0.0
     ])
 elif "--nrt" in sys.argv:
-    song.nrt_record(BDD_FILE)
+    song.nrt_export(BDD_FILE)
 else:
     # Gate stuff is there to sleep/wake any permanent drones 
     song.run(BDD_FILE)
