@@ -211,8 +211,13 @@ def nrt_export(bdd_name: str):
 
     # TODO: Below should to some degree be part of billboarding.py, but I'll make it all here first 
 
-    # Create the zero time packets, save them for later ... 
+    # Preload the effect and drone rows for nrt, to avoid sending them with every nrt bundle 
     zero = get_nrt_base_msgs(billboard)
+    client.send(jdw_osc_utils.create_msg("/clear_nrt", [])) # Wipe any previously exising nrt preload rows 
+    time.sleep(0.05)
+    for packet in zero:
+        client.send(jdw_osc_utils.create_nrt_preload_bundle(packet))
+        time.sleep(0.05)
 
     for track_name in billboard.tracks:
         billboard_track = billboard.tracks[track_name]
@@ -224,7 +229,7 @@ def nrt_export(bdd_name: str):
 
         notes = billboarding.create_notes_b(billboard_track.elements, billboard_track.synth_name, billboard_track.is_sampler)
         if len(notes) > 0:
-            score_notes = zero + notes
+            score_notes = notes
 
             file_name = "/home/estrandv/jdw_output/track_" + track_name + ".wav"
 
@@ -248,8 +253,7 @@ def get_nrt_base_msgs(billboard: billboarding.BillBoard):
     for oneshot in billboarding.create_effect_recreate_packets(billboard.drones, common_prefix):
         zero_time.append(oneshot)
 
-    # Create the zero time packets, save them for later ... 
-    return [jdw_osc_utils.to_timed_osc("0.0", packet) for packet in zero_time]
+    return zero_time #[jdw_osc_utils.to_timed_osc("0.0", packet) for packet in zero_time]
 
 # Create nrt record messages for each track, using order as dictated by ">>>" sequential group filters to construct the full composition of the song. 
 # TODO: Currently limited by message size - see notes on buffering
@@ -278,8 +282,19 @@ def nrt_record(bdd_name: str):
 
         # TODO: Below should to some degree be part of billboarding.py, but I'll make it all here first 
 
-        # Create the zero time packets, save them for later ... 
+
+        # Preload the effect and drone rows for nrt, to avoid sending them with every nrt bundle 
+        # TODO: FURTHER LIMITATIONS THAT CAN BE IMPOSED TO LIMIT NRT FILE SIZE: 
+        # (1) Only include the synthdef used by that particular track
+        # (2) Only include buffer loads if the track is for sampler 
+        # (3) Only include buffer loads for the particular sampler sample pack 
+        # All of these require some tinkering with clearing preloads
         zero = get_nrt_base_msgs(billboard)
+        client.send(jdw_osc_utils.create_msg("/clear_nrt", [])) # Wipe any previously exising nrt preload rows 
+        time.sleep(0.05)
+        for packet in zero:
+            client.send(jdw_osc_utils.create_nrt_preload_bundle([packet]))
+            time.sleep(0.05)
 
         # Make a score, to make timedElements, to make packets (that we can then combine with zero)
         score = Score({}, {})
@@ -299,19 +314,14 @@ def nrt_record(bdd_name: str):
         for track_name in score.tracks:
             billboard_track = billboard.tracks[track_name]
 
-            # TODO: Notable different modes - send whole composition or just the purest loops of each track? 
-            #   --> This is not the best place, as score has already filtered things. Ideally, the alt mode uses billboard tracks without any filter. 
-            # TODO: Also, I think create_notes_nrt might be a bit dated now that I know times to be relative in jdw_sc
-            if 1 == 1:
-                notes = billboarding.create_notes_b(score.source_tracks[track_name].elements, billboard_track.synth_name, billboard_track.is_sampler)
-            else:
-                notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
+            # TODO: I think create_notes_nrt might be a bit dated now that I know times to be relative in jdw_sc
+            notes = nrt_scoring.create_notes_nrt(score.tracks[track_name], billboard_track.synth_name, billboard_track.is_sampler)
 
             #print(track_name, "TRACK TOTAL LEN", nrt_scoring.track_len(score.tracks[track_name]))
 
             if len(notes) > 0 and not nrt_scoring.all_quiet(score.tracks[track_name]):
 
-                score_notes = zero + notes
+                score_notes = notes
 
                 file_name = "/home/estrandv/jdw_output/track_" + track_name + ".wav"
 
@@ -319,11 +329,7 @@ def nrt_record(bdd_name: str):
 
                 all_bundles.append(bundle)
 
-                # It's hard to batch send since the data is so large
-                # But sending all at once will drop packets
-                # So here's a hack, again ... 
-                # TODO: Not sure dropping is the problem anymore 
-
+                # Might help if dropping packets is ever the issue 
                 #time.sleep(0.25)
 
                 client.send(bundle)
