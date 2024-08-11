@@ -312,7 +312,8 @@ def _track_to_sequence(track: BillboardTrack) -> list[OscBundle]:
             element.args["freq"] = freq
             print(element.args) 
             osc_args = wrp.args_as_osc([])
-            ext_id = drone_prefix + track.group_name
+            # TODO: Remnant of drone prefix support - clean up all the way to the top
+            ext_id = "effect_" + track.group_name
             msg = jdw_osc_utils.create_msg("/note_modify", [ext_id, jdw_osc_utils.SC_DELAY_MS] + osc_args)
             if msg != None: 
                 print("Implicitly created a drone modify note for id: ", ext_id)

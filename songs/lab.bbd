@@ -15,9 +15,9 @@
 #>>> droner 
 #>>> ex 
 #>>> drum droner ex pad 
-#>>> drum droner ex rhodes pad  
->>> drum ex rhodes pad droner 
->>> experiment somedrone rhodes pad 
+>>> drum droner ex rhodes pad  
+#>>> drum ex rhodes pad droner 
+#>>> experiment somedrone rhodes pad 
 #>>> experiment somedrone 
 
 #>>> nicedrone controller experiment

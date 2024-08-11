@@ -237,14 +237,20 @@ def nrt_export(bdd_name: str):
             time.sleep(0.5)
             client.send(bundle)
 
+# Basically routers 
+def get_legacy_effect_recreate_packets(billboard: billboarding.BillBoard):
+    common_prefix = "effect_"
+    legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
+    return billboarding.create_effect_recreate_packets(legacy_effects, common_prefix)
+
 def get_nrt_base_msgs(billboard: billboarding.BillBoard):
 
+    # Prefix is legacy and should be removed, more details in the packet fetchers 
     common_prefix = "effect_"
 
-    legacy_effects: dict[str,BillboardEffect] = billboarding.parse_drone_billboard(effect_billboard, Parser())
     zero_time = []
     # Order is very important, but I get a headache trying to explain it 
-    for oneshot in billboarding.create_effect_recreate_packets(legacy_effects, common_prefix):
+    for oneshot in get_legacy_effect_recreate_packets(billboard):
         zero_time.append(oneshot)
 
     for oneshot in billboarding.create_effect_recreate_packets(billboard.effects, common_prefix):
@@ -260,41 +266,40 @@ def get_nrt_base_msgs(billboard: billboarding.BillBoard):
 def nrt_record(bdd_name: str):
     try:
 
+        ### TODO: Moving forward with better splitting 
+        """
+            This is in reference to the below points on selective zero-time loading. 
+
+            The core issue is that billboard data is not properly grouped:
+                - Each SYNTH on the billboard has TRACKS and EFFECTS
+                - Each TRACK has a GROUP (which CAN be shared with the SYNTH header (default))
+                - So a billboard should be a list of SYNTH_SECTIONS containing tracks, effects and drones as children
+                    - Making it easier to distinguish what is needed where
+                - If this is handled, we can avoid loading too many synths and effects, BUT: 
+                    -> It does not solve buffer redundancy 
+
+            Buffer redundancy is a different beast: 
+                - UPDATE: See below on snippets; the same is now impemented for nrt sample loads (wiped on clear_nrt)
+
+            Note on synthdefs 
+                - Since these are not packets (but native scd code), we cannot send them to NRT preload
+                - Wiping them before NRT means we kinda mess up live coding (but this is def an option since ctrl+u will immediately restore things)
+                - We an add a separate array for NRT synthdefs, that is ALSO loaded for the same messages but wiped with nrt wipe 
+                    -> I'm gonna go with this for now, but the implicit nrt-ness might need some documentation todos
+                    -> This is now implemented. clear_nrt will clear loaded synthdefs. 
+        
+        """
+
         all_bundles = []
 
         billboard = read_bdd_nrt(bdd_name)        
         
         client = my_client.get_default()
 
-        # Send first, to populate the nrt synth predefineds
-        # Can prob be done as messages within instead  ... .
-        for synthdef in default_synthdefs.get():
-            # TODO: Double check that the NRT synthdef array is not duplcicated iwth repeat calls 
-            client.send(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
-
-        time.sleep(0.5)
-
-        # TODO: specific path read function would make things leaner and more direct 
-        for sample in sample_reading.read_sample_packs("~/sample_packs"):
-            client.send(jdw_osc_utils.create_msg("/load_sample", sample.as_args()))
 
         time.sleep(0.5)
 
         # TODO: Below should to some degree be part of billboarding.py, but I'll make it all here first 
-
-
-        # Preload the effect and drone rows for nrt, to avoid sending them with every nrt bundle 
-        # TODO: FURTHER LIMITATIONS THAT CAN BE IMPOSED TO LIMIT NRT FILE SIZE: 
-        # (1) Only include the synthdef used by that particular track
-        # (2) Only include buffer loads if the track is for sampler 
-        # (3) Only include buffer loads for the particular sampler sample pack 
-        # All of these require some tinkering with clearing preloads
-        zero = get_nrt_base_msgs(billboard)
-        client.send(jdw_osc_utils.create_msg("/clear_nrt", [])) # Wipe any previously exising nrt preload rows 
-        time.sleep(0.05)
-        for packet in zero:
-            client.send(jdw_osc_utils.create_nrt_preload_bundle([packet]))
-            time.sleep(0.05)
 
         # Make a score, to make timedElements, to make packets (that we can then combine with zero)
         score = Score({}, {})
@@ -321,6 +326,48 @@ def nrt_record(bdd_name: str):
 
             if len(notes) > 0 and not nrt_scoring.all_quiet(score.tracks[track_name]):
 
+                # NRT messages can get very large if all needed data is included in the message
+                # Instead, we preload what we can via the regular methods, first clearing anything pre-existing
+                # Filtering by context helps reduce redundancy
+
+                client.send(jdw_osc_utils.create_msg("/clear_nrt", [])) # Wipe any previously exising nrt preload rows 
+                time.sleep(0.1)
+
+                # TODO: Synthdef filtering doesn't work because effects are lumped in with regular synths 
+                # Putting a hack in here now using "In.ar()" as effect detection, but long term they should be separated
+                effect_tag = "In.ar("
+
+                if billboard_track.is_sampler:
+                    ### PRELOAD SAMPLES 
+                    for sample in sample_reading.read_sample_packs("~/sample_packs"):
+                        # Hack: check if sample pack is relevant, given the track header info 
+                        if sample.sample_pack in billboard_track.synth_name:
+                            client.send(jdw_osc_utils.create_msg("/load_sample", sample.as_args()))
+                    
+                    # Hack: Just in case we've redefined the default "sampler" synth here, include the overwrite for sampler tracks
+                    for synthdef in default_synthdefs.get():
+                        # No need to load snippets that don't contain the active synth name
+                        if "sampler" in synthdef or effect_tag in synthdef:
+                            client.send(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
+
+                else:
+                    ### PRELOAD SYNTHDEFS 
+                    for synthdef in default_synthdefs.get():
+                        # No need to load snippets that don't contain the active synth name
+                        if billboard_track.synth_name in synthdef or effect_tag in synthdef:
+                            client.send(jdw_osc_utils.create_msg("/create_synthdef", [synthdef]))
+
+                # TODO: CBA checkin all the sleeps make sense, go through later
+                time.sleep(0.05)
+
+                ### PRELOAD EFFECTS AND DRONES
+                
+                # TODO: Skip all but relevant for particular track
+                zero = get_nrt_base_msgs(billboard)
+                for packet in zero:
+                    client.send(jdw_osc_utils.create_nrt_preload_bundle([packet]))
+                    time.sleep(0.05)
+
                 score_notes = notes
 
                 file_name = "/home/estrandv/jdw_output/track_" + track_name + ".wav"
@@ -330,7 +377,7 @@ def nrt_record(bdd_name: str):
                 all_bundles.append(bundle)
 
                 # Might help if dropping packets is ever the issue 
-                #time.sleep(0.25)
+                #time.sleep(2.25)
 
                 client.send(bundle)
 

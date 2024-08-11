@@ -42,19 +42,30 @@
 # TODO: NRT
 # "Message too large" inevitably happens. It might be feasible to create something more buffered, e.g. you append zero messages to a buffer and 
 # THEN trigger the nrt record. Or just make the script here and send it or read it as a file. Investigate other options! 
+# ALSO:
+# More than six tracks in a single nrt seems to lose drums or smth
+# This works: drum hdrum bass keys hreed prophet
+# This loses drums: drum hdrum bass keys hreed prophet insanity
+# On closer inspection, there seems to be a silent crash of the server when heavier tracks such as insanity are included
+# ... which might explain it. And maybe be fixable by reducing the size of the scds 
+# NOTE: "insanity" is just one keyword but actually includes six tracks, which would explain why it hits the limit faster 
+# UPDATE: Tried with wait time. It's not a packet dropping issue; too many tracks will fry the server silently and leave it unresponsive
 
 ### Could use a repeating structure, but heavily dependant on any eventual vocals ... 
+#>>> cele 
+#>>> drum insanity
+
 #>>> boom reed boom  
 >>> drum hdrum keys bass reed cymbal
->>> drum hdrum keys bass cele cymbal
->>> drum hdrum bass prophet cymbal boom reed hreed  
->>> drum hdrum keys bass rails cymbal boom 
->>> drum hdrum keys cymbal prophet cymbal experiment
->>> drum hdrum keys bass cymbal cele cymbal 
->>> drum hdrum bass cymbal reed hreed boom cymbal    
->>> drum hdrum keys bass rails cymbal boom reed  
->>> keys reed hreed prophet insanity cymbal
->>> drum hdrum bass keys hreed prophet insanity boom
+#>>> drum hdrum keys bass cele cymbal
+#>>> drum hdrum bass prophet cymbal boom reed hreed  
+#>>> drum hdrum keys bass rails cymbal boom 
+#>>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> drum hdrum keys bass cymbal cele cymbal 
+#>>> drum hdrum bass cymbal reed hreed boom cymbal    
+#>>> drum hdrum keys bass rails cymbal boom reed  
+#>>> keys reed hreed prophet insanity cymbal
+#>>> drum hdrum bass keys hreed prophet insanity boom
 #>>> end 
 
 #>>> experiment
@@ -84,8 +95,6 @@
     €delay:a echo0.25,echt4
     €reverb:a room0.9,mix0.4,mul0.9
     €clamp:a under6200,over1780
-
-
 
 # TODO: Separate
 @FMRhodes:keys
