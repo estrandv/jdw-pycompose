@@ -363,6 +363,7 @@ def nrt_record(bdd_name: str):
                 ### PRELOAD EFFECTS AND DRONES
                 
                 # TODO: Skip all but relevant for particular track
+                # This will make a lot of noise about missing synthdefs for drones 
                 zero = get_nrt_base_msgs(billboard)
                 for packet in zero:
                     client.send(jdw_osc_utils.create_nrt_preload_bundle([packet]))

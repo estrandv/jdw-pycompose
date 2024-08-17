@@ -39,33 +39,32 @@
 #>>> keys 
 #>>> drum 
 
-# TODO: NRT
-# "Message too large" inevitably happens. It might be feasible to create something more buffered, e.g. you append zero messages to a buffer and 
-# THEN trigger the nrt record. Or just make the script here and send it or read it as a file. Investigate other options! 
-# ALSO:
-# More than six tracks in a single nrt seems to lose drums or smth
-# This works: drum hdrum bass keys hreed prophet
-# This loses drums: drum hdrum bass keys hreed prophet insanity
-# On closer inspection, there seems to be a silent crash of the server when heavier tracks such as insanity are included
-# ... which might explain it. And maybe be fixable by reducing the size of the scds 
-# NOTE: "insanity" is just one keyword but actually includes six tracks, which would explain why it hits the limit faster 
-# UPDATE: Tried with wait time. It's not a packet dropping issue; too many tracks will fry the server silently and leave it unresponsive
-
 ### Could use a repeating structure, but heavily dependant on any eventual vocals ... 
-#>>> cele 
-#>>> drum insanity
 
-#>>> boom reed boom  
+#>>> boom reed hreed keys bass cele drum hdrum 
+
+
+# TODO: Some of these are too long to even send to sc - re-evaluate what is sent with an nrt record message! 
+
+>>> boom reed 
 >>> drum hdrum keys bass reed cymbal
-#>>> drum hdrum keys bass cele cymbal
-#>>> drum hdrum bass prophet cymbal boom reed hreed  
+>>> drum hdrum keys bass cele cymbal
+>>> drum hdrum bass prophet cymbal boom hreed  
+
+>>> drum hdrum keys cymbal prophet cymbal experiment
+>>> drum hdrum keys bass rails cymbal boom 
 #>>> drum hdrum keys bass rails cymbal boom 
-#>>> drum hdrum keys cymbal prophet cymbal experiment
-#>>> drum hdrum keys bass cymbal cele cymbal 
-#>>> drum hdrum bass cymbal reed hreed boom cymbal    
+>>> drum hdrum keys cymbal prophet cymbal experiment
+
+>>> drum hdrum keys bass cymbal cele cymbal 
+>>> drum hdrum bass cymbal reed hreed boom cymbal    
+
+>>> drum hdrum keys cymbal prophet cymbal experiment
+>>> drum hdrum keys bass rails cymbal boom reed  
 #>>> drum hdrum keys bass rails cymbal boom reed  
-#>>> keys reed hreed prophet insanity cymbal
-#>>> drum hdrum bass keys hreed prophet insanity boom
+
+>>> keys reed prophet insanity cymbal
+>>> drum hdrum bass keys reed hreed prophet insanity boom
 #>>> end 
 
 #>>> experiment
@@ -99,20 +98,20 @@
 # TODO: Separate
 @FMRhodes:keys
     
-    (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,pan-0.2
+    (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus8,len4.0,tot0.00,pan-0.2
 
     <cele;out20> ((c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:0.5 x:0.5)*3 \
-        (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.25,chorus0.5,relT0.8,amp0.3,cutoff1000,len8,tot7.00,pan0.3
+        (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.45,chorus0.5,relT0.8,amp0.3,cutoff1000,len8,tot7.00,pan0.3
 
 
 @pluck:insanity out20
 
-    (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.4,time0.5,out20,sus0.2,amp1,len8,tot7.00
+    (c7:1 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:0.5 bb7:0.5 c8:1 bb7:1 g7:1 f7:0 x:1):susT0.8,time0.5,out20,sus0.2,amp1,len8,tot7.00
 
-    (e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.4,sus0.2,len4.0,tot2.00
+    (e8:0.5 e8:1 e8:0.5 e8:0 x:2):amp1,time0.5,out20,susT0.8,sus0.2,len4.0,tot2.00
 
     (x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5 \
-    ):0.5,sus0.2,out20,amp1,susT0.4,len16,tot15.50
+    ):0.5,sus0.2,out20,amp1,susT0.8,len16,tot15.50
 
     c8:0.25,amp0.2,pan-0.2
 
@@ -126,11 +125,12 @@
 
 @aPad:reed out30
 
-    <reed> (c6:0,sus2 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus2 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
-        ):0.5,susT0.25,amp*0.9,sus0.25,len16,tot15.00,pan0.1
+    # TODO: This got messed up somewhere; you can barely hear it 
+    <reed> (c6:0,sus4 c5:1 e5:2 c5:1 f5:1 e5:1 . c5:2 c6:0,sus4 a4:1 c5:2 a4:1 e5:1 d5:1 c5:1 d5:0 x:1 \
+        ):0.5,susT0.5,amp*1,sus0.75,len16,tot15.00,pan0.1
 
     <hreed> (bb6:1 c7:2 f6:2 c6:2 g6:4 bb6:1 g6:2 f6:1 e6:1 f6:1 c7:2 e6:2 f6:2 bb6:2 a6:3.5 c6:0 x:3.5 \
-        ):sus1,susT0.5,amp*0.6,time0.5,len32,tot28.50,pan0.15
+        ):sus2,susT1,amp*0.45,time0.5,len32,tot28.50,pan0.15
 
 
     €clamp:a under1900,over140
@@ -138,7 +138,7 @@
 
 @eBass:bass out60
 
-    (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus4,len4.0,tot0.00,cutoff200,pan0.2
+    (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus8,len4.0,tot0.00,cutoff200,pan0.2
 
     €clamp:a under800,over140
 
@@ -166,14 +166,14 @@
     # Example of reversing - tricky with start but it seems to accept a very high number
     #1:8,rate-0.5,start9999999999999,out20,amp0.2
 
-@SP_Roland808:drum ofs0,sus10,amp0.6,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
+@SP_Roland808:drum ofs0,sus20,amp0.6,out80 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 
     (14:1.5 14:0.5 x:1 14:1 14:1.5 14:0.5 x:2 14:1.5 14:0.5 x:1 14:1 14:1.5 14:0.5 x:0.5 14:0.5 x:1)
 
-    €clamp:a under800,over30
+    €clamp:a under800,over70
     #€analogTape:a out80,out80 
 
-@SP_Roland808:hdrum ofs0,sus10,amp0.5,out40 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
+@SP_Roland808:hdrum ofs0,sus20,amp0.5,out40 1:0 2:14 3:26 4:32 5:54 6:60 7:70 8:95
 
     (x:2 95:1 x:3 95:2 x:2 95:1 x:3 95:0.5 x:0.5 95:1)
     (x:3.5 98:1.5 98:3)
@@ -186,7 +186,7 @@
 
 @SP_EMU_EDrum
 
-@SP_EMU_SP12 ofs0,sus10,amp1,out10
+@SP_EMU_SP12 ofs0,sus20,amp1,out10
 
     <boom> (x:31 28:1):rate0.2,amp*0.7
     <hdrum> (x:12 x:1 4:0.5 4:0.5 4*2:0.5 4:0 x:1):rate2
