@@ -52,7 +52,27 @@ def classify_lines(billboard_string: str) -> list[BillboardLine]:
             classified_lines.append(BillboardLine(line, BillboardLineType.EFFECT_DEFINITION))
         elif tracks_started and decommented != "":
             classified_lines.append(BillboardLine(line, BillboardLineType.TRACK_DEFINITION))
+        elif begins_with(line, "#"):
+            classified_lines.append(BillboardLine(line, BillboardLineType.COMMENT))
         else:
             print("WARN: could not classify line", line)
 
     return classified_lines
+
+# Tests
+if __name__ == "__main__":
+
+    # begins_with
+    assert begins_with("#comment", "#")
+    assert begins_with(">>> filter", ">>>")
+    assert not begins_with(".>>>", ">>>")
+
+    # classify_lines
+    assert classify_lines(">>> hey")[0].type == BillboardLineType.GROUP_FILTER
+    assert classify_lines("#>>> hey")[0].type == BillboardLineType.GROUP_FILTER
+    assert classify_lines("    #>>> hey")[0].type == BillboardLineType.GROUP_FILTER
+
+    assert classify_lines("@synth")[0].type == BillboardLineType.SYNTH_HEADER
+    assert classify_lines("# hello")[0].type == BillboardLineType.COMMENT
+    assert classify_lines("€yeah")[0].type == BillboardLineType.EFFECT_DEFINITION
+    assert classify_lines("@synth\nsomthing")[1].type == BillboardLineType.TRACK_DEFINITION
