@@ -24,9 +24,9 @@ class BillboardLine:
 def line_split(source: str) -> list[str]:
     return [line.strip().replace("\t", " ").replace("    ", " ") for line in source.split("\n")]
 
-# TODO: Test that indices align
 def begins_with(source: str, beginning: str) -> bool:
-    return len(source) >= len(beginning) and "".join(source[0:len(beginning)]) == beginning
+    clean_source = source.strip()
+    return len(clean_source) >= len(beginning) and "".join(clean_source[0:len(beginning)]) == beginning
 
 # Return all lines unaltered and in order, classified for later parsing
 def classify_lines(billboard_string: str) -> list[BillboardLine]:
@@ -71,6 +71,7 @@ if __name__ == "__main__":
     assert classify_lines(">>> hey")[0].type == BillboardLineType.GROUP_FILTER
     assert classify_lines("#>>> hey")[0].type == BillboardLineType.GROUP_FILTER
     assert classify_lines("    #>>> hey")[0].type == BillboardLineType.GROUP_FILTER
+    assert classify_lines("    >>> hey")[0].type == BillboardLineType.GROUP_FILTER
 
     assert classify_lines("@synth")[0].type == BillboardLineType.SYNTH_HEADER
     assert classify_lines("# hello")[0].type == BillboardLineType.COMMENT
