@@ -1,18 +1,10 @@
-# Meant to be broken down into smaller scripts once it takes shape
+from line_classify import BillboardLine, BillboardLineType, is_commented
 
-from line_classify import begins_with, BillboardLine, BillboardLineType, classify_lines
-from dataclasses import dataclass
 
-# TODO: Not really used here
-def decomment(line: str):
-    return decomment("".join(line[1:])) if is_commented(line) else line
-
-def is_commented(line: str):
-    return "#" in line.strip() and line.strip()[0] == "#"
 
 # Returns only the first unbroken set of uncommented (commented does not break chain) group filters
 def extract_group_filters(lines: list[BillboardLine]) -> list[list[str]]:
-    full_set = []
+    full_set: list[list[str]] = []
 
     started = False
     for line in lines:
@@ -27,12 +19,29 @@ def extract_group_filters(lines: list[BillboardLine]) -> list[list[str]]:
 
 # Returns billboard lines sorted by synth headers (each sublist containinng the header and the lines below it)
 def extract_synth_chunks(lines: list[BillboardLine]) -> list[list[BillboardLine]]:
-    separated = []
+    separated: list[list[BillboardLine]] = []
 
     for line in lines:
         if line.type == BillboardLineType.SYNTH_HEADER:
-            separated.append([line])
+            if not is_commented(line.content):
+                separated.append([line])
         elif len(separated) > 0:
             separated[-1].append(line)
 
     return separated
+
+# Tests
+if __name__ == "__main__":
+
+    chunk_result = extract_synth_chunks([
+        BillboardLine("ignored", BillboardLineType.TRACK_DEFINITION),
+        BillboardLine("synth", BillboardLineType.SYNTH_HEADER),
+        BillboardLine("track", BillboardLineType.TRACK_DEFINITION),
+        BillboardLine("#synth", BillboardLineType.SYNTH_HEADER),
+        BillboardLine("effect", BillboardLineType.EFFECT_DEFINITION),
+        BillboardLine("synth", BillboardLineType.SYNTH_HEADER),
+        BillboardLine("comment", BillboardLineType.COMMENT),
+    ])
+
+    assert len(chunk_result) == 2, "Should have 2 synth chunks: " + str(chunk_result)
+    assert len(chunk_result[0]) == 3, "First synth chunk should have 3 included lines: " + str(chunk_result[0])

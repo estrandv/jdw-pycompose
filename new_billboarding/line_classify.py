@@ -5,6 +5,7 @@ from enum import Enum
 
 FILTER_HEADER: str = ">>> "
 SYNTH_HEADER_HEADER: str = "@"
+SELECTION_MARKER: str = "*"
 EFFECT_DEF_HEADER: str = "€"
 COMMENT_SYMBOL = "#"
 
@@ -19,6 +20,12 @@ class BillboardLineType(Enum):
 class BillboardLine:
     content: str
     type: BillboardLineType
+
+def is_commented(line: str):
+    return "#" in line.strip() and line.strip()[0] == "#"
+
+def decomment(line: str) -> str:
+    return decomment("".join(line[1:])) if is_commented(line) else line
 
 # Split by newline, treating backslash as line continuation
 def line_split(source: str) -> list[str]:
@@ -38,14 +45,11 @@ def classify_lines(billboard_string: str) -> list[BillboardLine]:
     for line in line_split(billboard_string):
 
         # Peek into post-comment content, to allow detection of commented types
-        decommented = "".join(line.split(COMMENT_SYMBOL)[1:]) if begins_with(line, COMMENT_SYMBOL) else line
-
-        # Check if whole line is a comment
-        current_is_commented = begins_with(line, COMMENT_SYMBOL)
+        decommented = decomment(line) if is_commented(line) else line
 
         if begins_with(decommented, FILTER_HEADER):
             classified_lines.append(BillboardLine(line, BillboardLineType.GROUP_FILTER))
-        elif begins_with(decommented, SYNTH_HEADER_HEADER):
+        elif begins_with(decommented, SYNTH_HEADER_HEADER) or begins_with(decommented, SELECTION_MARKER):
             classified_lines.append(BillboardLine(line, BillboardLineType.SYNTH_HEADER))
             tracks_started = True
         elif begins_with(decommented, EFFECT_DEF_HEADER):
@@ -54,7 +58,7 @@ def classify_lines(billboard_string: str) -> list[BillboardLine]:
             classified_lines.append(BillboardLine(line, BillboardLineType.TRACK_DEFINITION))
         elif begins_with(line, "#"):
             classified_lines.append(BillboardLine(line, BillboardLineType.COMMENT))
-        else:
+        elif line != "": # Ignore empty
             print("WARN: could not classify line", line)
 
     return classified_lines
@@ -67,6 +71,11 @@ if __name__ == "__main__":
     assert begins_with(">>> filter", ">>>")
     assert not begins_with(".>>>", ">>>")
 
+    # is_commented
+    assert is_commented("#@basic")
+    assert is_commented("###")
+    assert not is_commented("basic#")
+
     # classify_lines
     assert classify_lines(">>> hey")[0].type == BillboardLineType.GROUP_FILTER
     assert classify_lines("#>>> hey")[0].type == BillboardLineType.GROUP_FILTER
@@ -74,6 +83,7 @@ if __name__ == "__main__":
     assert classify_lines("    >>> hey")[0].type == BillboardLineType.GROUP_FILTER
 
     assert classify_lines("@synth")[0].type == BillboardLineType.SYNTH_HEADER
+    assert classify_lines("*@synth")[0].type == BillboardLineType.SYNTH_HEADER
     assert classify_lines("# hello")[0].type == BillboardLineType.COMMENT
     assert classify_lines("€yeah")[0].type == BillboardLineType.EFFECT_DEFINITION
     assert classify_lines("@synth\nsomthing")[1].type == BillboardLineType.TRACK_DEFINITION
