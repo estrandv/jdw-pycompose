@@ -17,11 +17,12 @@ class TrackDefinition:
 @dataclass
 class SynthHeader:
     instrument_name: str
-    is_done: bool
+    is_drone: bool
     is_sampler: bool
     is_selected: bool
     default_args_string: str
     additional_args_string: str
+    group_name: str
 
 
 # TODO: Untested
@@ -32,7 +33,7 @@ def parse_effect_definition(content: str):
 
     space_split = content.split(" ")
     # Cut off the "€ or ¤"
-    core_part = cut_first(space_slot[0], 1)
+    core_part = cut_first(space_split[0], 1)
 
     assert ":" in core_part, "Must provide a unique id for effect, e.g. " + core_part + ":myId"
 
@@ -98,4 +99,4 @@ def parse_synth_header(content: str) -> SynthHeader:
             assert current_group_name != "", "Must provide a :group when declaring a DR_ synth"
             assert current_default_args_string != "", "Must provide default args when declaring a DR_ synth"
 
-        return SynthHeader(instrument_name, current_is_drone, current_is_sampler, is_selected, current_default_args_string, additional_config_string)
+        return SynthHeader(instrument_name, current_is_drone, current_is_sampler, is_selected, current_default_args_string, additional_config_string, current_group_name)

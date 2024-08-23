@@ -1,5 +1,5 @@
 from line_classify import *
-from filtering import extract_synth_chunks, extract_group_filters, is_commented
+from filtering import is_commented
 from dataclasses import dataclass
 from parsing import *
 
@@ -14,12 +14,7 @@ class RawBillboard:
     group_filters: list[list[str]]
     synth_sections: list[SynthSection]
 
-def parse(billboard: str) -> RawBillboard:
-
-    classified_lines = classify_lines(billboard)
-
-    group_filters = extract_group_filters(classified_lines)
-    synth_chunks = extract_synth_chunks(classified_lines)
+def create(group_filters: list[list[str]], synth_chunks: list[list[BillboardLine]]) -> RawBillboard:
 
     # TODO: Remember that default args should be added to local args later (best method is parse(arg + arg + arg))
 

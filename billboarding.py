@@ -11,16 +11,16 @@ class BillboardEffect:
 @dataclass
 class BillBoardPrompt:
     address: str
-    args: list[str] # e.g. /address arg arg arg arg 
+    args: list[str] # e.g. /address arg arg arg arg
 
 @dataclass
 class BillboardTrack:
     synth_name: str
     is_sampler: bool
-    is_drone: bool 
+    is_drone: bool
     group_name: str
     elements: list[ResolvedElement]
-    is_selected: bool 
+    is_selected: bool
     pads_config: list[ResolvedElement]
     default_arg_string: str
 
@@ -73,7 +73,7 @@ def parse_drone_billboard(billboard: str, parser: Parser) -> dict[str,BillboardE
 
     return result
 
-# Legacy compat after filtering changes - performs group filtering of tracks 
+# Legacy compat after filtering changes - performs group filtering of tracks
 def parse_track_billboard(billboard: str, parser: Parser) -> BillBoard:
     billboard = parse_track_billboard_unfiltered(billboard, parser)
 
@@ -94,9 +94,9 @@ def parse_track_billboard(billboard: str, parser: Parser) -> BillBoard:
     return billboard
 
 # TODO: Should parse each sub-element separately to be less messy (effects, drones, tracks, etc.)
-# TODO: Make selection its own separate kind of data 
+# TODO: Make selection its own separate kind of data
 def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoard:
-    
+
     tracks = {}
     effects = {}
     drones = {}
@@ -105,8 +105,8 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
     group_filters: list[list[str]] = []
 
     current_instrument = ""
-    current_is_sampler = False 
-    current_is_drone = False 
+    current_is_sampler = False
+    current_is_drone = False
     current_is_selected = False
     current_group_name = ""
     current_pads_config_string = ""
@@ -114,8 +114,8 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
     # Used to give tracks unique ids per-instrument
     instrument_line_count = 0
 
-    # Make a default arg string that can be added to the start of other arg strings for 
-    #   easy defaulting 
+    # Make a default arg string that can be added to the start of other arg strings for
+    #   easy defaulting
     # TODO: I've completely dropped the ball on aliases - it's time to retire the parser
     base_args = []
     for key in parser.arg_defaults:
@@ -134,7 +134,7 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
             split_filter = group_filter.split(" ")
             group_filters.append(split_filter)
             print("ADDING FILTER", split_filter)
-            continue 
+            continue
 
         # Up count for actual sequence data, even if commented
         if "#" in line or (data != "" and data[0] not in "*@€/"):
@@ -148,7 +148,7 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
                 current_is_selected = True
                 data = "".join(data[1:])
 
-            # Process track headers 
+            # Process track headers
             if data[0] == "@":
 
                 # Expect format: @synth_name:group_name args (pads)
@@ -168,13 +168,13 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
                     if len(space_split) > 2:
                         current_pads_config_string = space_split[2]
 
-                else: 
+                else:
                     current_is_sampler = False
 
-                # TODO: a little bit clumsy, but should work 
+                # TODO: a little bit clumsy, but should work
                 if "".join(instrument_name[0:3]) == "DR_":
                     instrument_name = "".join(instrument_name[3:])
-                    current_is_drone = True 
+                    current_is_drone = True
 
                     assert current_group_name != "", "Must provide a :group when declaring a DR_ synth"
 
@@ -186,13 +186,13 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
 
                     drones[current_group_name] = BillboardEffect(instrument_name, abs_args)
 
-                else: 
-                    current_is_drone = False 
+                else:
+                    current_is_drone = False
 
                 current_instrument = instrument_name
                 instrument_line_count = 0
 
-            # Process effect/drone messages 
+            # Process effect/drone messages
             elif data[0] in "€":
                 space_split = data.split(" ")
                 # Cut off the "€ or ¤"
@@ -213,11 +213,11 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
                     abs_args[key] = effect_args[key].value
 
                 # e.g. reverb_mygroup_3
-                # or reverb_mygroup_a if effect was listed as reverb:a 
+                # or reverb_mygroup_a if effect was listed as reverb:a
                 external_id = effect_type + "_" + current_group_name + "_" + unique_suffix
                 effects[external_id] = BillboardEffect(effect_type, abs_args)
 
-            # Process prompts 
+            # Process prompts
             elif data[0] == "/":
                 space_split = data.split(" ")
                 prompt_args = space_split[1:] if len(space_split
@@ -227,9 +227,9 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
             # Process individual tracks/shuttle strings
             elif current_instrument != "":
 
-                # Create track 
+                # Create track
                 track_data = data
-                meta_data = "" 
+                meta_data = ""
                 group_name = ""
                 default_args = {}
                 if data[0] == "<" and ">" in data:
@@ -272,13 +272,13 @@ def parse_track_billboard_unfiltered(billboard: str, parser: Parser) -> BillBoar
                     current_default_args_string
                 )
 
-                # A bit of a hack, but once we have noted at least one track as selected for the instrument 
-                # we have what we need and can reset 
+                # A bit of a hack, but once we have noted at least one track as selected for the instrument
+                # we have what we need and can reset
                 current_is_selected = False
 
-    return BillBoard(tracks, effects, drones, prompts, group_filters)    
-    
-### TODO: OSC stuff below, might move to its own lib 
+    return BillBoard(tracks, effects, drones, prompts, group_filters)
+
+### TODO: OSC stuff below, might move to its own lib
 
 from jdw_shuttle_lib.shuttle_jdw_translation import ElementWrapper, MessageType
 import jdw_shuttle_lib.jdw_osc_utils as jdw_osc_utils
@@ -291,7 +291,7 @@ def create_notes_b(elements: list[ResolvedElement], synth_name, is_sample = Fals
     for element in elements:
 
         wrapper = ElementWrapper(element, synth_name, MessageType.PLAY_SAMPLE if is_sample else MessageType.NOTE_ON_TIMED)
-        
+
         msg = jdw_osc_utils.create_sequencer_note(wrapper)
 
         if msg != None:
@@ -300,22 +300,22 @@ def create_notes_b(elements: list[ResolvedElement], synth_name, is_sample = Fals
     return sequence
 
 def _track_to_sequence(track: BillboardTrack) -> list[OscBundle]:
-    # Unique handling for drones that hack-skips normal shuttle-based type resolution 
-    # Lots of duplicate code here, TODO: fix later 
+    # Unique handling for drones that hack-skips normal shuttle-based type resolution
+    # Lots of duplicate code here, TODO: fix later
     sequence = []
     if track.is_drone:
         sequence = []
         for element in track.elements:
-            # TODO: This does nothing - I just want default args support without littering 
+            # TODO: This does nothing - I just want default args support without littering
             wrp = ElementWrapper(element, "N/A", MessageType.DRONE)
             freq = wrp.resolve_freq()
             element.args["freq"] = freq
-            print(element.args) 
+            print(element.args)
             osc_args = wrp.args_as_osc([])
             # TODO: Remnant of drone prefix support - clean up all the way to the top
             ext_id = "effect_" + track.group_name
             msg = jdw_osc_utils.create_msg("/note_modify", [ext_id, jdw_osc_utils.SC_DELAY_MS] + osc_args)
-            if msg != None: 
+            if msg != None:
                 print("Implicitly created a drone modify note for id: ", ext_id)
                 sequence.append(jdw_osc_utils.to_timed_osc(str(element.args["time"]), msg))
     else:
@@ -324,7 +324,7 @@ def _track_to_sequence(track: BillboardTrack) -> list[OscBundle]:
     return sequence
 
 # TODO: Complete mess atm due to experimental drone parsing
-# I suspect we might have to break the billboard parse into several parse methods, each focusing on something specialized 
+# I suspect we might have to break the billboard parse into several parse methods, each focusing on something specialized
 def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack], drone_prefix = "effect_") -> list[OscBundle]:
     bundles = []
     for track_name in tracks:
@@ -334,15 +334,15 @@ def create_sequencer_queue_bundles(tracks: dict[str,BillboardTrack], drone_prefi
 
         bundles.append(jdw_osc_utils.create_queue_update_bundle(track_name, sequence))
 
-    return bundles 
+    return bundles
 
 # Creates a batch queue bundle to queue all mentioned tracks at once
 def create_sequencer_queue_bundle(tracks: dict[str,BillboardTrack], stop_missing = True) -> OscBundle:
-    
+
     bundles = create_sequencer_queue_bundles(tracks)
     return jdw_osc_utils.create_batch_queue_bundle(bundles, stop_missing)
 
-# TODO: Extremely out of date, does not account for drones, probably not effects either 
+# TODO: Extremely out of date, does not account for drones, probably not effects either
 def create_nrt_record_bundles(tracks: dict[str,BillboardTrack], zero_time_messages: list[OscPacket] = [], bpm = 120) -> list[OscBundle]:
 
     bundles = []
@@ -352,28 +352,28 @@ def create_nrt_record_bundles(tracks: dict[str,BillboardTrack], zero_time_messag
         sequence = [jdw_osc_utils.to_timed_osc("0.0", msg) for msg in zero_time_messages] \
             + create_notes_b(tracks[track].elements, tracks[track].synth_name, tracks[track].is_sampler)
 
-        # Example nrt send 
-        # TODO: Hardcodes, but fine for now since it's not public-facing 
+        # Example nrt send
+        # TODO: Hardcodes, but fine for now since it's not public-facing
         file_name = "/home/estrandv/jdw_output/track_" + track + ".wav"
-        end_time = sum([float(e.args["time"]) for e in tracks[track].elements]) + 4.0 # A little extra 
-        
+        end_time = sum([float(e.args["time"]) for e in tracks[track].elements]) + 4.0 # A little extra
+
         bundles.append(jdw_osc_utils.create_nrt_record_bundle(sequence, file_name, end_time, bpm))
 
-    return bundles 
+    return bundles
 
 # Configure keyboard to use selected tracks from the billboard and their args and pad specs
 def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
-    
+
     packets = []
 
     all_selected = [key for key in billboard.tracks if billboard.tracks[key].is_selected]
     samplers = [key for key in all_selected if billboard.tracks[key].is_sampler]
     synths = [key for key in all_selected if not billboard.tracks[key].is_sampler]
-    
+
     if len(samplers) > 0:
         selected_sampler = billboard.tracks[samplers[-1]]
-        
-        # Arg bit is a little hacky, since it is already applied to the elements and 
+
+        # Arg bit is a little hacky, since it is already applied to the elements and
         #   only kept as a string for this specific purpose
         raw_args = parse_args(selected_sampler.default_arg_string)
         osc_args = []
@@ -401,9 +401,9 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
 
         selected_synth = billboard.tracks[synths[-1]]
         print("DEBUG: Synth selected", selected_synth)
-        
 
-        # Arg bit is a little hacky, since it is already applied to the elements and 
+
+        # Arg bit is a little hacky, since it is already applied to the elements and
         #   only kept as a string for this specific purpose
         raw_args = parse_args(selected_synth.default_arg_string)
         osc_args = []
@@ -415,9 +415,9 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
         packets.append(jdw_osc_utils.create_msg("/keyboard_instrument_name", [selected_synth.synth_name]))
         packets.append(jdw_osc_utils.create_msg("/keyboard_args", osc_args))
 
-    return packets 
+    return packets
 
-# TODO: See other todos on prefix; this is not moddable for drones atm and will reuslt in weird behaviour if changed 
+# TODO: See other todos on prefix; this is not moddable for drones atm and will reuslt in weird behaviour if changed
 def create_effect_recreate_packets(effects: dict[str,BillboardEffect], common_prefix = "effect_" ) -> list[OscPacket]:
 
     packets = []
@@ -452,29 +452,29 @@ def create_effect_mod_packets(effects: dict[str,BillboardEffect], common_prefix 
     return packets
 
 if __name__ == "__main__":
-    parser = Parser() 
+    parser = Parser()
     parser.arg_defaults = {"time": 0.0, "sus": 0.0} # Because of to_timed_osc expectation + timed_play expectation
 
     effects = parse_drone_billboard("""
     @reverb effect_one:in4,out0
     @synth drone:amp0
-    
+
     """, parser)
 
     tracks = parse_track_billboard("""
-    
+
     >>> fish leaf
 
 *@SP_cake arg0 22:4 23:5
     <leaf> g6
     <not_leaf> g8
-    
+
 
     *@synth
     <fish> a4 a5 a5
     # <fish> commented:0
-    
-    
+
+
     """, parser)
 
 
@@ -482,17 +482,17 @@ if __name__ == "__main__":
     assert tracks.tracks["cake_leaf_1"].elements[0].prefix == "g"
     assert tracks.tracks["synth_fish_1"].group_name == "fish"
     assert tracks.tracks["cake_leaf_1"].is_sampler
-    assert tracks.tracks["synth_fish_1"].is_sampler == False 
+    assert tracks.tracks["synth_fish_1"].is_sampler == False
     assert len(tracks.tracks) == 2
 
     keys_config = create_keys_config_packets(tracks)
     assert len(keys_config) == 5, len(keys_config)
 
     meta_test = parse_track_billboard("""
-    
+
     @noise
     <mup;bus14,cheese0,sus+1> g4:sus14 g4 g4 g4
-    
+
     """, parser)
 
     print([key for key in meta_test.tracks])
@@ -513,7 +513,7 @@ if __name__ == "__main__":
     this is a line that should continue \
     and there is nothing you can do about it
     this is again a regular line
-    
+
     """)
 
     lineresult = [line for line in linetest if line != ""]
