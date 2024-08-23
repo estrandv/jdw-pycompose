@@ -13,6 +13,17 @@ from raw_billboard import SynthSection, create
 
 from dataclasses import dataclass
 
+@dataclass
+class BillboardSynthSection:
+    # By name
+    tracks: dict[str, list[ElementMessage]]
+    effects: list[EffectMessage]
+
+@dataclass
+class Billboard:
+    sections: list[BillboardSynthSection]
+    group_filters: list[list[str]]
+
 # Contains the original effect and the message it was resolved as
 @dataclass
 class EffectMessage:
@@ -36,7 +47,7 @@ class ElementMessage:
     def get_time(self) -> str:
         return str(self.element.args["time"]) if "time" in self.element.args else "0.0"
 
-def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ElementMessage]:
+def parse_track(track: TrackDefinition, header: SynthHeader, drone_ext_id_override: str = "") -> list[ElementMessage]:
 
     # Easiest way to apply default args
     full_source = "(" + track.content + "):" + header.default_args_string if header.default_args_string != "" else track.content
@@ -74,7 +85,8 @@ def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ElementMess
 
             # Drone tracks use note mod by default
             if header.is_drone:
-                messages.append(ElementMessage(element, to_note_mod(element)))
+                # Sadly, a vagrant arg
+                messages.append(ElementMessage(element, to_note_mod(element, drone_ext_id_override)))
             elif header.is_sampler:
                 messages.append(ElementMessage(element, to_play_sample(element, header.instrument_name)))
             else:
@@ -83,17 +95,16 @@ def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ElementMess
 
     return messages
 
-def parse_effects(effects: list[EffectDefinition], header: SynthHeader) -> list[EffectMessage]:
-    msgs: list[EffectMessage] = []
-    for effect in effects:
-        # TODO: Not sure about blank scenarios here
-        arg_source = ",".join([header.default_args_string, effect.args_string])
-        args = parse_args(arg_source)
-        osc_args = args_as_osc(args, [])
-        external_id = "effect_" + effect.unique_suffix + "_" + header.group_name
-        msgs.append(EffectMessage(effect, external_id, header.instrument_name, osc_args))
+def parse_effect(effect: EffectDefinition, header: SynthHeader, external_id_override: str = "") -> EffectMessage:
+    # TODO: Not sure about blank scenarios here
+    arg_source = ",".join([header.default_args_string, effect.args_string])
+    args = parse_args(arg_source)
+    osc_args = args_as_osc(args, [])
+    external_id = "effect_" + effect.unique_suffix + "_" + header.group_name if external_id_override == "" else external_id_override
+    return EffectMessage(effect, external_id, header.instrument_name, osc_args)
 
-    return msgs
+def parse_drone_header(header: SynthHeader) -> EffectDefinition:
+    return EffectDefinition(header.instrument_name, "", header.default_args_string)
 
 def full(billboard_string: str):
     lines = classify_lines(billboard_string)
@@ -101,32 +112,40 @@ def full(billboard_string: str):
     synth_chunks = extract_synth_chunks(lines)
     raw_billboard = create(filters, synth_chunks)
 
+    sections: list[BillboardSynthSection] = []
     for synth_section in raw_billboard.synth_sections:
 
-        # Combine args for the tracks to create the actual arg strings
-        # Parse tracks with added ():-args
-        # Parse other args
-        # Parse pads config
-        # Perform osc message conversion
+        tracks: dict[str, list[ElementMessage]] = {}
+        effects: list[EffectMessage] = []
 
-        # NOTE: The structs we have now are probably the final ones; any additional parsing
-        # can be done in helper methods here
+        for effect in synth_section.effects:
+            effects.append(parse_effect(effect, synth_section.header))
 
-        # TODO: Working on better conversion methods in shuttle_jdw_translation
-        # Gonna make some corner case conversion inline here instead
-
-        ###
-
-        # Track conversion
         for track in synth_section.tracks:
-            resolved = parse_track(track, synth_section.header)
 
-        ####
+            # TODO: There is a small challenge here:
+                # 1. Each note mod in a drone track should mod the external id of the header drone and nothing else
+                # 2. Ideally, each track should create its own header drone (with a unique id)
+                # 3. I'm not entirely sure what the effect creation order should be
+            # I've done it with a vagrant arg for now, but we might want completely separate message resolution for drone tracks ...
 
+            if synth_section.header.is_drone:
+                # Add an effect create/mod for the drone that the track will interact with
+                header_drone_def = parse_drone_header(synth_section.header)
+                hdrone_id = "effect_" + synth_section.header.group_name + "_" + str(track.index)
+                effects.append(parse_effect(header_drone_def, synth_section.header))
 
+                # Duplicates here, beacuse of the stupid vagrant arg
+                resolved = parse_track(track, synth_section.header, hdrone_id)
+                track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
+                tracks[track_name] = resolved
 
+            else:
+                resolved = parse_track(track, synth_section.header)
+                track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
+                tracks[track_name] = resolved
 
-        pass
+        sections.append(BillboardSynthSection(tracks, effects))
 
 
 @dataclass
