@@ -107,16 +107,8 @@ def parse_synth_header(content: str) -> SynthHeader:
 def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ResolvedElement]:
     # Easiest way to apply default args
     full_source = "(" + track.content + "):" + header.default_args_string if header.default_args_string != "" else track.content
-
-    print("DEBUG: track parsing as: " + full_source)
-
     override_args = parse_args(track.arg_override, {})
-    print("DEBUG: override args", override_args)
     elements = Parser().parse(full_source)
-    print("DEBUG: args in elements", [element.args["amp"] for element in elements])
-    print("TODO: FAILURE IS BECAUSE: ResolvedElement does not return dynamic args; that is only for raw calls to parse_args!")
-
-    # TODO: We need a local parse_args that resolves the final args as decimal for things like effects
 
     _arg_override(elements, override_args)
 
@@ -126,7 +118,6 @@ def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ResolvedEle
 # Supports args with operators
 def _arg_override(elements: list[ResolvedElement], override: dict[str,DynamicArg]):
     for arg_key in override:
-        print("DEBUG", arg_key, "applied as", override_arg.value)
         override_arg = override[arg_key]
         for element in elements:
             new_value = override_arg.value

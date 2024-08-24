@@ -3,6 +3,7 @@ from pythonosc.osc_message import OscMessage
 from shuttle_notation.parsing.element import ResolvedElement
 from shuttle_notation.parsing.full_parse import Parser
 from shuttle_notation.parsing.information_parsing import parse_args
+from shuttle_hacks import parse_orphaned_args
 from shuttle_jdw_translation import create_msg, ElementMessage, args_as_osc, is_symbol, resolve_special_message, to_note_mod, to_note_on, to_note_on_timed, to_play_sample
 import raw_billboard
 from filtering import extract_group_filters, extract_synth_chunks
@@ -45,14 +46,7 @@ class Billboard:
     group_filters: list[list[str]]
 
 def parse_effect(effect: EffectDefinition, header: SynthHeader, external_id_override: str = "") -> EffectMessage:
-    # TODO: Not sure about blank scenarios here
-    arg_source = ",".join([header.default_args_string, effect.args_string])
-
-    # TODO: Instead of arg_source, we must actually perform the multipliers proper here
-    # args_as_osc should be chaned to expect Decimal, as it comes from elements
-    # _arg_override has a good example of the operations, but it will take some tweaking to apply for this
-    # NOTE: I checked in shuttle notation and couldn't find any easy way to reuse what we have there
-    args = parse_args(arg_source)
+    args = parse_orphaned_args([header.default_args_string, effect.args_string])
     osc_args = args_as_osc(args, [])
     external_id = "effect_" + effect.unique_suffix + "_" + header.group_name if external_id_override == "" else external_id_override
     return EffectMessage(effect, external_id, header.instrument_name, osc_args)
@@ -202,9 +196,9 @@ if __name__ == "__main__":
     (x:2 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 c6:2.5 c6:1 g6:1 f6:1 e6:1 f6:0.5 e6:1 f6:0 x:0.5 \
     ):0.5,sus0.2,out20,amp1,susT0.8,len16,tot15.50
 
-    c8:0.25,amp0.2,pan-0.2
+    #c8:0.25,amp0.2,pan-0.2
 
-    c5:0.25,amp0.4,pan-0.3
+    #c5:0.25,amp0.4,pan-0.3
 
 
     €reverb:a room0.8,mix0.15,mul0.75

@@ -1,6 +1,7 @@
 # TODO: Copy-paste from old lib
 
 from dataclasses import dataclass
+from decimal import Decimal
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
 from shuttle_notation.parsing.information_parsing import DynamicArg
@@ -157,10 +158,8 @@ def resolve_freq(element: ResolvedElement) -> float:
 
         return note_number_to_hz(new_index)
 
-def args_as_osc(raw_args: dict[str, DynamicArg], override: list[str | float]):
+def args_as_osc(raw_args: dict[str, Decimal], override: list[str | float]):
     osc_args: list[str | float] = []
-
-    print("DEBUG", raw_args)
 
     for arg in override:
         osc_args.append(arg)
@@ -168,8 +167,7 @@ def args_as_osc(raw_args: dict[str, DynamicArg], override: list[str | float]):
     for arg in raw_args:
         if arg not in osc_args:
             osc_args.append(arg)
-            print("DEBUG", arg, raw_args[arg])
-            osc_args.append(float(raw_args[arg].value))
+            osc_args.append(float(raw_args[arg]))
     return osc_args
 
 
@@ -212,7 +210,12 @@ def to_note_mod(element: ResolvedElement, external_id_override: str = "") -> Osc
 def to_note_on_timed(element: ResolvedElement, instrument_name: str) -> OscMessage:
     freq = resolve_freq(element)
     external_id = resolve_external_id(element)
-    gate_time = str(element.args["sus"])
+
+    sus: float = element.args["sus"] if "sus" in element.args else 0.0
+    if sus == 0.0:
+        print("WARN: Element converted to timed note press did not contain a sus arg (will be 0.0): ", element)
+
+    gate_time = str(sus)
     osc_args = args_as_osc(element.args, ["freq", freq])
     return create_msg("/note_on_timed", [instrument_name, external_id, gate_time, SC_DELAY_MS] + osc_args)
 
