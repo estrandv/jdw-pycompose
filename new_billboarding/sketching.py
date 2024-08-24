@@ -1,3 +1,4 @@
+from typing_extensions import Callable
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from shuttle_notation.parsing.element import ResolvedElement
@@ -47,8 +48,8 @@ class ElementMessage:
     def get_time(self) -> str:
         return str(self.element.args["time"]) if "time" in self.element.args else "0.0"
 
-def parse_track(track: TrackDefinition, header: SynthHeader, drone_ext_id_override: str = "") -> list[ElementMessage]:
-
+# Parse the shuttle string of the track, resolving any arg inheritance, returning the list of its elements
+def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ResolvedElement]:
     # Easiest way to apply default args
     full_source = "(" + track.content + "):" + header.default_args_string if header.default_args_string != "" else track.content
 
@@ -56,44 +57,27 @@ def parse_track(track: TrackDefinition, header: SynthHeader, drone_ext_id_overri
     elements = Parser().parse(full_source)
     _arg_override(elements, override_args)
 
-    messages: list[ElementMessage] = []
-    for element in elements:
+    return elements
 
-        ### Taken from the original type fetcher, to be expanded with broader context (sample, drone, etc)
+# Some elements have symbols or other syntax that force a certain osc format
+def resolve_special_message(element: ResolvedElement, instrument_name: str) -> ElementMessage | None:
+    if begins_with(element.suffix, "@"):
+        # Remove symbol from suffix to create note mod external id
+        return ElementMessage(element, to_note_mod(element, cut_first(element.suffix, 1)))
+    elif is_symbol(element, "x"):
+        # Silence
+        return ElementMessage(element, create_msg("/empty_msg", []))
+    elif is_symbol(element, "."):
+        # Ignore
+        pass
+    elif is_symbol(element, "§"):
+        # Loop start marker
+        return ElementMessage(element, create_msg("/loop_started", []))
+    elif begins_with(element.suffix, "$"):
+        # Drone, note that suffix is trimmed similar to for note mod
+        return ElementMessage(element, to_note_on(element, instrument_name, cut_first(element.suffix, 1)))
 
-        if begins_with(element.suffix, "@"):
-            # Remove symbol from suffix to create note mod external id
-            messages.append(ElementMessage(element, to_note_mod(element, cut_first(element.suffix, 1))))
-            pass
-        elif is_symbol(element, "x"):
-            messages.append(ElementMessage(element, create_msg("/empty_msg", [])))
-            # Silence
-            pass
-        elif is_symbol(element, "."):
-            # Ignore
-            pass
-        elif is_symbol(element, "§"):
-            # Loop start marker
-            messages.append(ElementMessage(element, create_msg("/loop_started", [])))
-            pass
-        elif begins_with(element.suffix, "$"):
-            # Drone, note that suffix is trimmed similar to for note mod
-            messages.append(ElementMessage(element, to_note_on(element, header.instrument_name, cut_first(element.suffix, 1))))
-            pass
-        else:
-            # Default (sample / note timed)
-
-            # Drone tracks use note mod by default
-            if header.is_drone:
-                # Sadly, a vagrant arg
-                messages.append(ElementMessage(element, to_note_mod(element, drone_ext_id_override)))
-            elif header.is_sampler:
-                messages.append(ElementMessage(element, to_play_sample(element, header.instrument_name)))
-            else:
-                messages.append(ElementMessage(element, to_note_on_timed(element, header.instrument_name)))
-
-
-    return messages
+    return None
 
 def parse_effect(effect: EffectDefinition, header: SynthHeader, external_id_override: str = "") -> EffectMessage:
     # TODO: Not sure about blank scenarios here
@@ -123,27 +107,33 @@ def full(billboard_string: str):
 
         for track in synth_section.tracks:
 
-            # TODO: There is a small challenge here:
-                # 1. Each note mod in a drone track should mod the external id of the header drone and nothing else
-                # 2. Ideally, each track should create its own header drone (with a unique id)
-                # 3. I'm not entirely sure what the effect creation order should be
-            # I've done it with a vagrant arg for now, but we might want completely separate message resolution for drone tracks ...
+            hdrone_id = "" # All track messages should mod the same id if track is drone
 
+            # Create a drone for each track to modify, if track is drone
             if synth_section.header.is_drone:
                 # Add an effect create/mod for the drone that the track will interact with
                 header_drone_def = parse_drone_header(synth_section.header)
                 hdrone_id = "effect_" + synth_section.header.group_name + "_" + str(track.index)
                 effects.append(parse_effect(header_drone_def, synth_section.header))
 
-                # Duplicates here, beacuse of the stupid vagrant arg
-                resolved = parse_track(track, synth_section.header, hdrone_id)
-                track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
-                tracks[track_name] = resolved
+            # Define behaviour for elements that don't conform to any special message standard
+            def create_default_message(element: ResolvedElement) -> ElementMessage:
+                # Drone tracks use note mod by default
+                if synth_section.header.is_drone:
+                    return ElementMessage(element, to_note_mod(element, hdrone_id))
+                elif synth_section.header.is_sampler:
+                    return ElementMessage(element, to_play_sample(element, synth_section.header.instrument_name))
+                else:
+                    return ElementMessage(element, to_note_on_timed(element, synth_section.header.instrument_name))
 
-            else:
-                resolved = parse_track(track, synth_section.header)
-                track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
-                tracks[track_name] = resolved
+            elements = parse_track(track, synth_section.header)
+            resolved: list[ElementMessage] = []
+            for element in elements:
+                special = resolve_special_message(element, synth_section.header.instrument_name)
+                resolved.append(special if special != None else create_default_message(element))
+
+            track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
+            tracks[track_name] = resolved
 
         sections.append(BillboardSynthSection(tracks, effects))
 

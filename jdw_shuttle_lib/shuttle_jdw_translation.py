@@ -78,7 +78,7 @@ def args_as_osc(raw_args: dict[str, DynamicArg], override: list[str | float]):
 
 # TODO: Idea is to have each of these here and skip wrapper entirely
 # See conversion methods in jdw_osc_utils - empty and marker only ones left but they can be elsewhere
-def to_note_mod(element: ResolvedElement, external_id_override = "") -> OscMessage:
+def to_note_mod(element: ResolvedElement, external_id_override: str = "") -> OscMessage:
     external_id = resolve_external_id(element) if external_id_override == "" else external_id_override
     osc_args = args_as_osc(element.args, ["freq", resolve_freq(element)])
     return create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
