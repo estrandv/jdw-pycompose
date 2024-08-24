@@ -11,15 +11,15 @@ from natsort import natsorted # Proper sorting of strings that might contain num
 @dataclass
 class Sample:
     path: str
-    sample_pack: str 
+    sample_pack: str
     buffer_index: int
-    category: str 
+    category: str
 
-    def as_args(self) -> list:
+    def as_args(self) -> list[str | float | int]:
         # ("/load_sample", [wav_file, "testsamples", 100, "bd"])
         return [self.path, self.sample_pack, self.buffer_index, self.category]
 
-def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[Sample]:
+def read_sample_packs(path_string: str, allowed_extensions: list[str] = [".wav"]) -> list[Sample]:
 
     if len(path_string) == 0:
         return
@@ -46,14 +46,14 @@ def read_sample_packs(path_string: str, allowed_extensions = [".wav"]) -> list[S
                     filtered_files.append(file)
 
             files = natsorted(filtered_files)
-            
+
             for file in files:
                 samples.append(Sample(
                     pack_path + file,
                     pack,
                     buffer_index,
-                    "" # TODO: Resolve somehow 
+                    "" # TODO: Resolve somehow
                 ))
                 buffer_index += 1
 
-    return samples 
+    return samples

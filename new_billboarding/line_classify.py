@@ -60,7 +60,7 @@ def classify_lines(billboard_string: str) -> list[BillboardLine]:
         elif tracks_started and decommented != "":
             classified_lines.append(BillboardLine(line, BillboardLineType.TRACK_DEFINITION))
         elif begins_with(decommented, COMMAND_SYMBOL):
-            classify_lines.append(BillboardLine(line, BillboardLineType.COMMAND))
+            classified_lines.append(BillboardLine(line, BillboardLineType.COMMAND))
         elif begins_with(line, "#"):
             classified_lines.append(BillboardLine(line, BillboardLineType.COMMENT))
         elif line != "": # Ignore empty

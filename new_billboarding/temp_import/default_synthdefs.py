@@ -1,6 +1,6 @@
 
 
-# Standard: 
+# Standard:
 # - Top args should be exact same (and exist) for everyone, second row is occasional, third row is unique
 # - "+++" divides
 split_stack = """
@@ -14,7 +14,7 @@ SynthDef.new("experimental",
     freq = [freq, freq+fmod];
     freq=(freq * [1, 1.005]);
 
-    //amp = amp * lfo; 
+    //amp = amp * lfo;
 
     //freq = freq * LFPulse.kr(2.00028, 0, width:0.25, mul: 0.5);
     //amp = amp * LFPulse.kr(440.28, 0, width:0.25, mul: 1);
@@ -22,7 +22,7 @@ SynthDef.new("experimental",
     lfo = SinOsc.ar(1.222, mul: 1.0);
 
     osc=VarSaw.ar(freq, mul: (amp / 4) * lfo, width: 1) + Saw.ar(freq * 2.0002, mul: amp * fxo, width: wid);
-    
+
 
 	env = Env.adsr(
 		attackTime: attT,
@@ -31,7 +31,7 @@ SynthDef.new("experimental",
 		releaseTime: relT);
 
     env=EnvGen.ar(envelope: env, gate: gate, doneAction: Done.freeSelf);
-    
+
     osc=(osc * env);
     osc = Mix(osc) * 0.5;
     osc = Pan2.ar(osc, pan);
@@ -47,8 +47,8 @@ SynthDef("eBass",
 
     var osc1, osc2, filter, filter2, env, filterenv, ab;
     amp = amp * 0.2;
-    freq = (freq * (In.kr(fBus) + 1)) * fmod; 
-    
+    freq = (freq * (In.kr(fBus) + 1)) * fmod;
+
     osc1 = Saw.ar(freq);
     osc2 = Mix(Saw.ar(freq * [0.125,1,1.5], [0.5,0.4,0.1]));
     osc2 = Mix(Saw.ar(freq * 2) * [fxs, 0.1], osc2);
@@ -67,7 +67,7 @@ SynthDef("eBass",
 
 +++
 
-SynthDef(\FMRhodes, {|amp=1,freq=440,gate=1,out=0,pan=0,
+SynthDef("FMRhodes", {|amp=1,freq=440,gate=1,out=0,pan=0,
     attT = 0.001, relT = 1, lfoS = 4.8, lfoD = 0.1
     inputLevel = 0.2, modIndex = 0.2, mix = 0.2|
 
@@ -129,10 +129,10 @@ SynthDef("organReed", {|amp=1,freq=440,gate=1,out=0,pan=0,
     snd = Mix.ar(snd * env);
 
     Out.ar(out, Pan2.ar(snd, pan))})
-    
+
 +++
 SynthDef.new("pluck", {|amp=1,freq=440,gate=1,out=0,pan=0,
-        susT=1, 
+        susT=1,
         fmod=0, blur=1|
     var osc, env;
     susT = susT * blur;
@@ -240,12 +240,12 @@ SynthDef("ksBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 		in: snd,
 		freq: LinExp.ar(Amplitude.ar(in: snd), 0, 1, filtermin, filtermax),
 		rq: rq);
-	
+
 	// Compressor for fun
 	snd = CompanderD.ar(
-		in: snd, 
-		thresh: thresh, 
-		slopeBelow: 1, 
+		in: snd,
+		thresh: thresh,
+		slopeBelow: 1,
 		slopeAbove: 1/ratio);
 
 	// Output stuff
@@ -275,7 +275,7 @@ SynthDef.new("dBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 SynthDef("feedbackPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
 	// Envelope Controls
-	attT = 3, decT = 1, susL = 1, relT = 5, 
+	attT = 3, decT = 1, susL = 1, relT = 5,
     crv = 0,
 	// Other Controls (interval is in semitones)
 	sampleRate = 2, notes = 3, interval = 14|
@@ -461,7 +461,7 @@ SynthDef.new("distortion", {|out=0, drive=0.5|
 +++
 
 SynthDef.new("analogTape", {|out=0|
-    var snd; 
+    var snd;
     snd = In.ar(out,2);
 
     //snd = VarSaw.ar(440.0, width: 0.5);
@@ -472,7 +472,7 @@ SynthDef.new("analogTape", {|out=0|
 +++
 
 SynthDef.new("analogChew", {|out=0|
-    var snd; 
+    var snd;
     snd = In.ar(out,2);
 
     //snd = snd + VarSaw.ar(440.0, width: 0.5);

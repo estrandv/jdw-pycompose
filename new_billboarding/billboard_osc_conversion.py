@@ -59,9 +59,11 @@ def get_all_command_messages(billboard: Billboard) -> list[OscMessage]:
             ret.append(create_msg("/set_bpm", [int(cmd.args[0])]))
         if cmd.address == "/keyboard_quantization":
             ret.append(create_msg("/keyboard_quantization", [cmd.args[0]]))
-
-        # TODO: Routers should probably be defined as commands called "raw effect" or smth, then
-        # be reated like effects but always read -first-
+        if cmd.address == "/create_router":
+            in_arg = float(cmd.args[0])
+            out_arg = float(cmd.args[1])
+            ext_id = "effect_router_" + str(in_arg) + "_" + str(out_arg)
+            ret.append(create_msg("/note_on", ["router", ext_id, 0, "in", in_arg, "out", out_arg]))
 
     return ret
 
