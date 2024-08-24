@@ -16,8 +16,6 @@ class RawBillboard:
 
 def create(group_filters: list[list[str]], synth_chunks: list[list[BillboardLine]]) -> RawBillboard:
 
-    # TODO: Remember that default args should be added to local args later (best method is parse(arg + arg + arg))
-
     synth_sections: list[SynthSection] = []
     for chunk in synth_chunks:
         assert len(chunk) > 0, "Malformed synth chunk: no content"

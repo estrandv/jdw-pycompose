@@ -1,3 +1,6 @@
+from shuttle_notation.parsing.element import ResolvedElement
+from shuttle_notation.parsing.full_parse import Parser
+from shuttle_notation.parsing.information_parsing import DynamicArg, parse_args
 from line_classify import *
 from dataclasses import dataclass
 
@@ -24,10 +27,9 @@ class SynthHeader:
     additional_args_string: str
     group_name: str
 
-
-# TODO: Untested
 def cut_first(source: str, amount: int) -> str:
-    return "".join(source[amount:]) if len(source) >= amount else ""
+    possible = len(source) >= amount
+    return "".join(source[amount:]) if possible else ""
 
 def parse_effect_definition(content: str):
 
@@ -100,3 +102,57 @@ def parse_synth_header(content: str) -> SynthHeader:
             assert current_default_args_string != "", "Must provide default args when declaring a DR_ synth"
 
         return SynthHeader(instrument_name, current_is_drone, current_is_sampler, is_selected, current_default_args_string, additional_config_string, current_group_name)
+
+# Parse the shuttle string of the track, resolving any arg inheritance, returning the list of its elements
+def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ResolvedElement]:
+    # Easiest way to apply default args
+    full_source = "(" + track.content + "):" + header.default_args_string if header.default_args_string != "" else track.content
+
+    print("DEBUG: track parsing as: " + full_source)
+
+    override_args = parse_args(track.arg_override, {})
+    print("DEBUG: override args", override_args)
+    elements = Parser().parse(full_source)
+    print("DEBUG: args in elements", [element.args["amp"] for element in elements])
+    print("TODO: FAILURE IS BECAUSE: ResolvedElement does not return dynamic args; that is only for raw calls to parse_args!")
+
+    # TODO: We need a local parse_args that resolves the final args as decimal for things like effects
+
+    _arg_override(elements, override_args)
+
+    return elements
+
+# Applies args after the fact, mutating the elements
+# Supports args with operators
+def _arg_override(elements: list[ResolvedElement], override: dict[str,DynamicArg]):
+    for arg_key in override:
+        print("DEBUG", arg_key, "applied as", override_arg.value)
+        override_arg = override[arg_key]
+        for element in elements:
+            new_value = override_arg.value
+            if arg_key in element.args:
+                if override_arg.operator == "*":
+                    element.args[arg_key] *= new_value
+                elif override_arg.operator == "+":
+                    element.args[arg_key] += new_value
+                elif override_arg.operator == "-":
+                    element.args[arg_key] -= new_value
+                else:
+                    element.args[arg_key] = new_value
+            else:
+                element.args[arg_key] = new_value
+
+# Tests
+if __name__ == "__main__":
+
+    assert cut_first("abcd", 3) == "d"
+    assert cut_first("    ", 1) == "   "
+    assert cut_first("a", 0) == "a"
+    assert cut_first("a", 1) == ""
+    assert cut_first("0", 2) == ""
+
+    # Quick unasserted execution happy-case
+    parse_synth_header("@SP_mysynth:group arg1,arg2,arg3 1:1 2:2 3:3")
+    parse_track_definition("c4 g4 f2 x", 0)
+    parse_effect_definition("€effect:req arg1,arg2,arg3")
+    parse_track(TrackDefinition("c4 c4 d4", "special", "sus4.0", 1), SynthHeader("synth", False, False, False, "arg2.0", "22:2", "group"))
