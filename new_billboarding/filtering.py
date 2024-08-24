@@ -1,6 +1,7 @@
 from line_classify import BillboardLine, BillboardLineType, is_commented
 
-
+def extract_commands(lines: list[BillboardLine]) -> list[str]:
+    return [line.content for line in lines if not is_commented(line.content) and line.type == BillboardLineType.COMMAND]
 
 # Returns only the first unbroken set of uncommented (commented does not break chain) group filters
 def extract_group_filters(lines: list[BillboardLine]) -> list[list[str]]:

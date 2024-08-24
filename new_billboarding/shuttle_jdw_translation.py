@@ -65,7 +65,7 @@ def create_nrt_record_bundle(
 
     return main_bundle.build()
 
-def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> OscBundle:
+def create_queue_update_bundle(queue_id: str, timed_osc_msgs: list[OscBundle]) -> OscBundle:
 
     # Building a standard queue_update bundle
     queue_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
@@ -74,7 +74,7 @@ def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> Osc
 
     note_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
 
-    for msg in sequence:
+    for msg in timed_osc_msgs:
         note_bundle.add_content(msg)
 
     queue_bundle.add_content(note_bundle.build())
@@ -90,7 +90,7 @@ def create_batch_bundle(packets: list[OscPacket]) -> OscBundle:
     return bundle.build()
 
 # Basic quick-syntax for OSC message building, ("/s_new, [1,2,3...]")
-def create_msg(adr: str, args: list[str | float] = []) -> OscMessage:
+def create_msg(adr: str, args: list[str | float | int] = []) -> OscMessage:
     builder = osc_message_builder.OscMessageBuilder(address=adr)
     for arg in args:
         builder.add_arg(arg)
@@ -102,17 +102,6 @@ def to_timed_osc(time: str, osc_packet: OscMessage | OscPacket) -> OscBundle:
     bundle.add_content(create_msg("/timed_msg_info", [time]))
     bundle.add_content(osc_packet)
     return bundle.build()
-
-# Applies JDW rules to Shuttle-data in order to determine the corresponding message type and contents for any given Element
-
-class MessageType(Enum):
-    PLAY_SAMPLE = 0
-    NOTE_MOD = 1
-    DRONE = 2
-    EMPTY = 3
-    IGNORE = 4
-    NOTE_ON_TIMED = 5
-    LOOP_START_MARKER = 6
 
 def is_symbol(element: ResolvedElement, sym: str) -> bool:
     return element.suffix.lower() == sym \
@@ -200,8 +189,6 @@ def resolve_special_message(element: ResolvedElement, instrument_name: str) -> E
 
     return None
 
-# TODO: Idea is to have each of these here and skip wrapper entirely
-# See conversion methods in jdw_osc_utils - empty and marker only ones left but they can be elsewhere
 def to_note_mod(element: ResolvedElement, external_id_override: str = "") -> OscMessage:
     external_id = resolve_external_id(element) if external_id_override == "" else external_id_override
     osc_args = args_as_osc(element.args, ["freq", resolve_freq(element)])
