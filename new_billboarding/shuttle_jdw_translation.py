@@ -216,4 +216,8 @@ def to_note_on(element: ResolvedElement, instrument_name: str, external_id_overr
     external_id = resolve_external_id(element) if external_id_override == "" else external_id_override
     freq = resolve_freq(element)
     osc_args = args_as_osc(element.args, ["freq", freq])
-    return create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
+
+    if instrument_name == "Roland808":
+            print("DEBUG WARN: found a sampler defined as a regular synth")
+
+    return create_msg("/note_on", [instrument_name, external_id, SC_DELAY_MS] + osc_args)

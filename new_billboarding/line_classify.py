@@ -31,7 +31,8 @@ def decomment(line: str) -> str:
 
 # Split by newline, treating backslash as line continuation
 def line_split(source: str) -> list[str]:
-    return [line.strip().replace("\t", " ").replace("    ", " ") for line in source.split("\n")]
+    de_broken = source.replace("\\\n", "")
+    return [line.strip().replace("\t", " ").replace("    ", " ") for line in de_broken.split("\n")]
 
 def begins_with(source: str, beginning: str) -> bool:
     clean_source = source.strip()

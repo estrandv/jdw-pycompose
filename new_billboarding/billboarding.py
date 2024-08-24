@@ -61,8 +61,8 @@ class Billboard:
 def parse_effect(effect: EffectDefinition, header: SynthHeader, external_id_override: str = "") -> EffectMessage:
     args = parse_orphaned_args([header.default_args_string, effect.args_string])
     osc_args = args_as_osc(args, [])
-    external_id = "effect_" + effect.unique_suffix + "_" + header.group_name if external_id_override == "" else external_id_override
-    return EffectMessage(effect, external_id, header.instrument_name, osc_args)
+    external_id = ("effect_" + effect.unique_suffix + "_" + header.group_name) if external_id_override == "" else external_id_override
+    return EffectMessage(effect, external_id, effect.instrument_name, osc_args)
 
 def parse_drone_header(header: SynthHeader) -> EffectDefinition:
     return EffectDefinition(header.instrument_name, "", header.default_args_string)

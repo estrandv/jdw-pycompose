@@ -1,8 +1,8 @@
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
-from new_billboarding.billboarding import Billboard
-from new_billboarding.shuttle_jdw_translation import args_as_osc, create_batch_bundle, create_batch_queue_bundle, create_msg, create_queue_update_bundle, to_timed_osc
+from billboarding import Billboard
+from shuttle_jdw_translation import args_as_osc, create_batch_bundle, create_batch_queue_bundle, create_msg, create_queue_update_bundle, to_timed_osc
 
 def get_synth_keyboard_config(billboard: Billboard) -> list[OscMessage]:
 
