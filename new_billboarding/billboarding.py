@@ -41,9 +41,14 @@ class BillboardKeyConfiguration:
     for_sampler: bool
 
 @dataclass
+class BillboardTrack:
+    messages: list[ElementMessage]
+    group_name: str
+
+@dataclass
 class BillboardSynthSection:
     # By name
-    tracks: dict[str, list[ElementMessage]]
+    tracks: dict[str, BillboardTrack]
     effects: list[EffectMessage]
     key_configuration: BillboardKeyConfiguration | None
 
@@ -57,6 +62,9 @@ class Billboard:
     sections: list[BillboardSynthSection]
     group_filters: list[list[str]]
     commands: list[BillboardCommand]
+
+    def get_final_filter(self) -> list[str]:
+        return self.group_filters[-1] if len(self.group_filters) > 0 else []
 
 def parse_effect(effect: EffectDefinition, header: SynthHeader, external_id_override: str = "") -> EffectMessage:
     args = parse_orphaned_args([header.default_args_string, effect.args_string])
@@ -84,7 +92,7 @@ def parse_billboard(billboard_string: str) -> Billboard:
     sections: list[BillboardSynthSection] = []
     for synth_section in raw_billboard.synth_sections:
 
-        tracks: dict[str, list[ElementMessage]] = {}
+        tracks: dict[str, BillboardTrack] = {}
         effects: list[EffectMessage] = []
 
         for effect in synth_section.effects:
@@ -118,7 +126,8 @@ def parse_billboard(billboard_string: str) -> Billboard:
                 resolved.append(special if special != None else create_default_message(element))
 
             track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
-            tracks[track_name] = resolved
+            group_name = track.group_override if track.group_override != "" else synth_section.header.group_name
+            tracks[track_name] = BillboardTrack(resolved, group_name)
 
         # Save keyboard/sampler configuration data for selected synth headers
         pads: list[PadConfig] = parse_pads_config(synth_section.header.additional_args_string) if synth_section.header.additional_args_string != "" else []

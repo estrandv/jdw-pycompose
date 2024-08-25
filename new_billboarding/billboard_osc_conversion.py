@@ -43,7 +43,7 @@ def get_sampler_keyboard_config(billboard: Billboard) -> list[OscMessage]:
 def get_all_effects_mod(billboard: Billboard) -> list[OscMessage]:
     ret: list[OscMessage] = []
     for section in billboard.sections:
-        ret += [e.as_create_osc() for e in section.effects]
+        ret += [e.as_mod_osc() for e in section.effects]
     return ret
 
 def get_all_effects_create(billboard: Billboard) -> list[OscMessage]:
@@ -72,6 +72,10 @@ def get_sequencer_batch_queue_bundle(billboard: Billboard) -> OscBundle:
     for sec in billboard.sections:
         for track_name in sec.tracks:
             track = sec.tracks[track_name]
-            timed_sequence = [to_timed_osc(msg.get_time(), msg.osc) for msg in track]
-            queue_bundle = create_queue_update_bundle(track_name, timed_sequence)
+
+            # Use the last defined group filter for queue updates
+            if track.group_name in billboard.get_final_filter() or len(billboard.get_final_filter()) == 0:
+                timed_sequence = [to_timed_osc(msg.get_time(), msg.osc) for msg in track.messages]
+                queue_bundle = create_queue_update_bundle(track_name, timed_sequence)
+                queue_bundles.append(queue_bundle)
     return create_batch_queue_bundle(queue_bundles, True)
