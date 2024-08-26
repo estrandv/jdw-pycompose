@@ -9,7 +9,7 @@ from shuttle_jdw_translation import create_msg, ElementMessage, args_as_osc, is_
 import raw_billboard
 from filtering import extract_commands, extract_default_args, extract_group_filters, extract_synth_chunks
 from line_classify import QUEUE_COMMAND_SYMBOL, UPDATE_COMMAND_SYMBOL, begins_with, classify_lines
-from parsing import EffectDefinition, SynthHeader, TrackDefinition, cut_first, parse_track
+from parsing import EffectDefinition, SynthHeader, TrackDefinition, cut_first, parse_track, parse_command, CommandContext, BillboardCommand
 from raw_billboard import SynthSection, create
 
 from dataclasses import dataclass
@@ -52,16 +52,6 @@ class BillboardSynthSection:
     effects: list[EffectMessage]
     key_configuration: BillboardKeyConfiguration | None
 
-class CommandType(Enum):
-    UPDATE = 0
-    QUEUE = 1
-
-@dataclass
-class BillboardCommand:
-    address: str
-    cmd_type: CommandType
-    args: list[str]
-
 @dataclass
 class Billboard:
     sections: list[BillboardSynthSection]
@@ -80,14 +70,6 @@ def parse_effect(effect: EffectDefinition, group_name: str, default_args: str, e
 def parse_drone_header(header: SynthHeader) -> EffectDefinition:
     return EffectDefinition(header.instrument_name, "", header.default_args_string)
 
-# TODO: Move to parsing, along with classes
-def parse_command(line: str) -> BillboardCommand:
-    split = line.strip().split(" ")
-    type_notation: str = split[0]
-    # TODO: Expand to proper check if more types are added
-    type: CommandType = CommandType.QUEUE if type_notation == QUEUE_COMMAND_SYMBOL else CommandType.UPDATE
-    args: list[str] = split[2:] if len(split) > 2 else []
-    return BillboardCommand(split[1], type, args)
 
 def parse_billboard(billboard_string: str) -> Billboard:
     lines = classify_lines(billboard_string)

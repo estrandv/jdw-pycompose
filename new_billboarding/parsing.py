@@ -103,6 +103,33 @@ def parse_synth_header(content: str) -> SynthHeader:
 
         return SynthHeader(instrument_name, current_is_drone, current_is_sampler, is_selected, current_default_args_string, additional_config_string, current_group_name)
 
+
+class CommandContext(Enum):
+    UPDATE = 0
+    QUEUE = 1
+    ALL = 2
+
+@dataclass
+class BillboardCommand:
+    address: str
+    context: CommandContext
+    args: list[str]
+
+# TODO: Move to parsing, along with classes
+def parse_command(line: str) -> BillboardCommand:
+    split = line.strip().split(" ")
+    type_notation: str = split[0]
+
+    context: CommandContext = CommandContext.ALL
+    if type_notation == QUEUE_COMMAND_SYMBOL:
+        context = CommandContext.QUEUE
+    elif type_notation == UPDATE_COMMAND_SYMBOL:
+        context = CommandContext.UPDATE
+
+    args: list[str] = split[2:] if len(split) > 2 else []
+    return BillboardCommand(split[1], context, args)
+
+
 # Parse the shuttle string of the track, resolving any arg inheritance, returning the list of its elements
 def parse_track(track: TrackDefinition, default_arg_string: str) -> list[ResolvedElement]:
     # Easiest way to apply default args

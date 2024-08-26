@@ -2,7 +2,7 @@ from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
 from billboarding import Billboard
-from billboarding import CommandType
+from parsing import CommandContext
 from shuttle_jdw_translation import args_as_osc, create_batch_bundle, create_batch_queue_bundle, create_msg, create_queue_update_bundle, to_timed_osc
 
 def get_synth_keyboard_config(billboard: Billboard) -> list[OscMessage]:
@@ -53,11 +53,11 @@ def get_all_effects_create(billboard: Billboard) -> list[OscMessage]:
         ret += [e.as_create_osc() for e in section.effects]
     return ret
 
-def get_all_command_messages(billboard: Billboard, type_filter: list[CommandType] = []) -> list[OscMessage]:
+def get_all_command_messages(billboard: Billboard, type_filter: list[CommandContext] = []) -> list[OscMessage]:
     ret: list[OscMessage] = []
     for cmd in billboard.commands:
 
-        if cmd.cmd_type in type_filter or len(type_filter) == 0:
+        if cmd.context in type_filter or len(type_filter) == 0:
 
             if cmd.address == "/set_bpm":
                 ret.append(create_msg("/set_bpm", [int(cmd.args[0])]))

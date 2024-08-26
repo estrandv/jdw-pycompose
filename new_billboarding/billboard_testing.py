@@ -10,7 +10,7 @@ from billboarding import parse_billboard
 
 from billboarding import Billboard
 from default_configuration import get_default_samples, get_default_synthdefs, get_effects_clear
-from billboarding import CommandType
+from billboarding import CommandContext
 import temp_import.default_synthdefs as default_synthdefs
 import temp_import.sample_reading as sample_reading
 
@@ -43,7 +43,7 @@ def configure(bdd_path: str):
         all_messages += get_synth_keyboard_config(billboard)
 
         all_messages += [get_effects_clear()]
-        all_messages += get_all_command_messages(billboard, [])
+        all_messages += get_all_command_messages(billboard, [CommandContext.ALL, CommandContext.UPDATE])
         all_messages += get_all_effects_create(billboard)
 
         for msg in all_messages:
@@ -66,10 +66,8 @@ def update_queue(bdd_path: str):
         #   - UPDATE: Yes. I think regex might actually grab "effect_a_" as a match for all with e.g. "effect_a_mygroup". This is a bit unintuitive but not really a bug...
         # TODO: Split default synths by ";" instead and just make it an scd file for proper highlighting
         # TODO: Default synths and sample config should both be neat files like the bbd to allow them to live in another repo
-        # TODO: No need to send default synths or sample loads not mentioned in the billboard
-        #   - Technically... but if we do it on "setup" rather than "update" we might want to
         # TODO: In the future, we might want to be able to specify sample loading in bbd
-        all_messages += get_all_command_messages(billboard, [CommandType.QUEUE])
+        all_messages += get_all_command_messages(billboard, [CommandContext.ALL, CommandContext.QUEUE])
         all_messages += get_all_effects_mod(billboard)
         all_messages += [get_sequencer_batch_queue_bundle(billboard)]
 
