@@ -11,10 +11,10 @@ class SynthSection:
 
 @dataclass
 class RawBillboard:
-    group_filters: list[list[str]]
     synth_sections: list[SynthSection]
 
-def create(group_filters: list[list[str]], synth_chunks: list[list[BillboardLine]]) -> RawBillboard:
+# TODO: Just do parse_synth_sections instead
+def create(synth_chunks: list[list[BillboardLine]]) -> RawBillboard:
 
     synth_sections: list[SynthSection] = []
     for chunk in synth_chunks:
@@ -42,4 +42,4 @@ def create(group_filters: list[list[str]], synth_chunks: list[list[BillboardLine
 
         synth_sections.append(SynthSection(header, tracks, effects))
 
-    return RawBillboard(group_filters, synth_sections)
+    return RawBillboard(synth_sections)

@@ -8,7 +8,10 @@ SYNTH_HEADER_HEADER: str = "@"
 SELECTION_MARKER: str = "*"
 EFFECT_DEF_HEADER: str = "€"
 COMMENT_SYMBOL = "#"
-COMMAND_SYMBOL = "/"
+UPDATE_COMMAND_SYMBOL = "UPDATE_COMMAND"
+QUEUE_COMMAND_SYMBOL = "QUEUE_COMMAND"
+COMMAND_SYMBOLS = [UPDATE_COMMAND_SYMBOL, QUEUE_COMMAND_SYMBOL]
+DEFAULT_STATEMENT = "DEFAULT"
 
 class BillboardLineType(Enum):
     COMMENT = 0 # Other types can also be commented; this is for raw information comments
@@ -17,6 +20,7 @@ class BillboardLineType(Enum):
     TRACK_DEFINITION = 3
     EFFECT_DEFINITION = 4
     COMMAND = 5
+    DEFAULT_STATEMENT = 6
 
 @dataclass
 class BillboardLine:
@@ -59,10 +63,12 @@ def classify_lines(billboard_string: str) -> list[BillboardLine]:
             classified_lines.append(BillboardLine(line, BillboardLineType.EFFECT_DEFINITION))
         elif tracks_started and decommented != "":
             classified_lines.append(BillboardLine(line, BillboardLineType.TRACK_DEFINITION))
-        elif begins_with(decommented, COMMAND_SYMBOL):
+        elif any([begins_with(decommented, s) for s in COMMAND_SYMBOLS]):
             classified_lines.append(BillboardLine(line, BillboardLineType.COMMAND))
         elif begins_with(line, "#"):
             classified_lines.append(BillboardLine(line, BillboardLineType.COMMENT))
+        elif begins_with(line, DEFAULT_STATEMENT):
+            classified_lines.append(BillboardLine(line, BillboardLineType.DEFAULT_STATEMENT))
         elif line != "": # Ignore empty
             print("WARN: could not classify line", line)
 

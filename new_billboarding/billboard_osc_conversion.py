@@ -2,6 +2,7 @@ from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
 from billboarding import Billboard
+from billboarding import CommandType
 from shuttle_jdw_translation import args_as_osc, create_batch_bundle, create_batch_queue_bundle, create_msg, create_queue_update_bundle, to_timed_osc
 
 def get_synth_keyboard_config(billboard: Billboard) -> list[OscMessage]:
@@ -52,18 +53,21 @@ def get_all_effects_create(billboard: Billboard) -> list[OscMessage]:
         ret += [e.as_create_osc() for e in section.effects]
     return ret
 
-def get_all_command_messages(billboard: Billboard) -> list[OscMessage]:
+def get_all_command_messages(billboard: Billboard, type_filter: list[CommandType] = []) -> list[OscMessage]:
     ret: list[OscMessage] = []
     for cmd in billboard.commands:
-        if cmd.address == "/set_bpm":
-            ret.append(create_msg("/set_bpm", [int(cmd.args[0])]))
-        if cmd.address == "/keyboard_quantization":
-            ret.append(create_msg("/keyboard_quantization", [cmd.args[0]]))
-        if cmd.address == "/create_router":
-            in_arg = float(cmd.args[0])
-            out_arg = float(cmd.args[1])
-            ext_id = "effect_router_" + str(in_arg) + "_" + str(out_arg)
-            ret.append(create_msg("/note_on", ["router", ext_id, 0, "in", in_arg, "out", out_arg]))
+
+        if cmd.cmd_type in type_filter or len(type_filter) == 0:
+
+            if cmd.address == "/set_bpm":
+                ret.append(create_msg("/set_bpm", [int(cmd.args[0])]))
+            if cmd.address == "/keyboard_quantization":
+                ret.append(create_msg("/keyboard_quantization", [cmd.args[0]]))
+            if cmd.address == "/create_router":
+                in_arg = float(cmd.args[0])
+                out_arg = float(cmd.args[1])
+                ext_id = "effect_router_" + str(in_arg) + "_" + str(out_arg)
+                ret.append(create_msg("/note_on", ["router", ext_id, 0, "in", in_arg, "out", out_arg]))
 
     return ret
 

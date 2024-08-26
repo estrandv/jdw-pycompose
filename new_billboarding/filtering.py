@@ -3,6 +3,11 @@ from line_classify import BillboardLine, BillboardLineType, is_commented
 def extract_commands(lines: list[BillboardLine]) -> list[str]:
     return [line.content for line in lines if not is_commented(line.content) and line.type == BillboardLineType.COMMAND]
 
+def extract_default_args(lines: list[BillboardLine]) -> str:
+    default_statements: list[BillboardLine] = [line for line in lines if line.type == BillboardLineType.DEFAULT_STATEMENT]
+    found: str | None = default_statements[-1].content if len(default_statements) > 0 else None
+    return found.split(" ")[1] if found != None else ""
+
 # Returns only the first unbroken set of uncommented (commented does not break chain) group filters
 def extract_group_filters(lines: list[BillboardLine]) -> list[list[str]]:
     full_set: list[list[str]] = []

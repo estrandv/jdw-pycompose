@@ -104,9 +104,9 @@ def parse_synth_header(content: str) -> SynthHeader:
         return SynthHeader(instrument_name, current_is_drone, current_is_sampler, is_selected, current_default_args_string, additional_config_string, current_group_name)
 
 # Parse the shuttle string of the track, resolving any arg inheritance, returning the list of its elements
-def parse_track(track: TrackDefinition, header: SynthHeader) -> list[ResolvedElement]:
+def parse_track(track: TrackDefinition, default_arg_string: str) -> list[ResolvedElement]:
     # Easiest way to apply default args
-    full_source = "(" + track.content + "):" + header.default_args_string if header.default_args_string != "" else track.content
+    full_source = "(" + track.content + "):" + default_arg_string if default_arg_string != "" else track.content
     override_args = parse_args(track.arg_override, {})
     elements = Parser().parse(full_source)
 

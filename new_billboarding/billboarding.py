@@ -1,14 +1,14 @@
 from decimal import Decimal
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
-from shuttle_notation.parsing.element import ResolvedElement
+from shuttle_notation.parsing.element import Enum, ResolvedElement
 from shuttle_notation.parsing.full_parse import Parser
 from shuttle_notation.parsing.information_parsing import parse_args
 from shuttle_hacks import parse_orphaned_args
 from shuttle_jdw_translation import create_msg, ElementMessage, args_as_osc, is_symbol, resolve_special_message, to_note_mod, to_note_on, to_note_on_timed, to_play_sample
 import raw_billboard
-from filtering import extract_commands, extract_group_filters, extract_synth_chunks
-from line_classify import begins_with, classify_lines
+from filtering import extract_commands, extract_default_args, extract_group_filters, extract_synth_chunks
+from line_classify import QUEUE_COMMAND_SYMBOL, UPDATE_COMMAND_SYMBOL, begins_with, classify_lines
 from parsing import EffectDefinition, SynthHeader, TrackDefinition, cut_first, parse_track
 from raw_billboard import SynthSection, create
 
@@ -52,9 +52,14 @@ class BillboardSynthSection:
     effects: list[EffectMessage]
     key_configuration: BillboardKeyConfiguration | None
 
+class CommandType(Enum):
+    UPDATE = 0
+    QUEUE = 1
+
 @dataclass
 class BillboardCommand:
     address: str
+    cmd_type: CommandType
     args: list[str]
 
 @dataclass
@@ -66,37 +71,48 @@ class Billboard:
     def get_final_filter(self) -> list[str]:
         return self.group_filters[-1] if len(self.group_filters) > 0 else []
 
-def parse_effect(effect: EffectDefinition, header: SynthHeader, external_id_override: str = "") -> EffectMessage:
-    args = parse_orphaned_args([header.default_args_string, effect.args_string])
+def parse_effect(effect: EffectDefinition, group_name: str, default_args: str, external_id_override: str = "") -> EffectMessage:
+    args = parse_orphaned_args([default_args, effect.args_string])
     osc_args = args_as_osc(args, [])
-    external_id = ("effect_" + effect.unique_suffix + "_" + header.group_name) if external_id_override == "" else external_id_override
+    external_id = ("effect_" + effect.unique_suffix + "_" + group_name) if external_id_override == "" else external_id_override
     return EffectMessage(effect, external_id, effect.instrument_name, osc_args)
 
 def parse_drone_header(header: SynthHeader) -> EffectDefinition:
     return EffectDefinition(header.instrument_name, "", header.default_args_string)
 
+# TODO: Move to parsing, along with classes
 def parse_command(line: str) -> BillboardCommand:
     split = line.strip().split(" ")
-    args: list[str] = split[1:] if len(split) > 1 else []
-    return BillboardCommand(split[0], args)
+    type_notation: str = split[0]
+    # TODO: Expand to proper check if more types are added
+    type: CommandType = CommandType.QUEUE if type_notation == QUEUE_COMMAND_SYMBOL else CommandType.UPDATE
+    args: list[str] = split[2:] if len(split) > 2 else []
+    return BillboardCommand(split[1], type, args)
 
 def parse_billboard(billboard_string: str) -> Billboard:
     lines = classify_lines(billboard_string)
     filters = extract_group_filters(lines)
+    billboard_default_args = extract_default_args(lines)
     command_lines = extract_commands(lines)
     commands = [parse_command(line) for line in command_lines]
 
     synth_chunks = extract_synth_chunks(lines)
-    raw_billboard = create(filters, synth_chunks)
+    raw_billboard = create(synth_chunks)
 
     sections: list[BillboardSynthSection] = []
     for synth_section in raw_billboard.synth_sections:
+
+        # Build a combined default arg string from both DEFAULT and synth header args, prioritizing synth header args
+        full_default_args = billboard_default_args
+        if full_default_args != "" and synth_section.header.default_args_string != "":
+            full_default_args += ","
+        full_default_args += synth_section.header.default_args_string
 
         tracks: dict[str, BillboardTrack] = {}
         effects: list[EffectMessage] = []
 
         for effect in synth_section.effects:
-            effects.append(parse_effect(effect, synth_section.header))
+            effects.append(parse_effect(effect, synth_section.header.group_name, full_default_args))
 
         for track in synth_section.tracks:
 
@@ -107,7 +123,7 @@ def parse_billboard(billboard_string: str) -> Billboard:
                 # Add an effect create/mod for the drone that the track will interact with
                 header_drone_def = parse_drone_header(synth_section.header)
                 hdrone_id = "effect_" + synth_section.header.group_name + "_" + str(track.index)
-                effects.append(parse_effect(header_drone_def, synth_section.header))
+                effects.append(parse_effect(header_drone_def, synth_section.header.group_name, full_default_args, hdrone_id))
 
             # Define behaviour for elements that don't conform to any special message standard
             def create_default_message(element: ResolvedElement) -> ElementMessage:
@@ -119,7 +135,7 @@ def parse_billboard(billboard_string: str) -> Billboard:
                 else:
                     return ElementMessage(element, to_note_on_timed(element, synth_section.header.instrument_name))
 
-            elements = parse_track(track, synth_section.header)
+            elements = parse_track(track, full_default_args)
             resolved: list[ElementMessage] = []
             for element in elements:
                 special = resolve_special_message(element, synth_section.header.instrument_name)

@@ -10,28 +10,40 @@ from billboarding import parse_billboard
 
 from billboarding import Billboard
 from default_configuration import get_default_samples, get_default_synthdefs, get_effects_clear
+from billboarding import CommandType
 import temp_import.default_synthdefs as default_synthdefs
 import temp_import.sample_reading as sample_reading
 
+def default_client() -> SimpleUDPClient:
+    return SimpleUDPClient("127.0.0.1", 13339) # Router
+
+# One-time stups like loading all default synths (many messages, time-intensive)
+def setup(bdd_path: str):
+    client = default_client()
+
+    with open(bdd_path, 'r') as bdd_file:
+        billboard: Billboard = parse_billboard(bdd_file.read())
+
+        all_messages: list[OscMessage] = [sample.load_msg for sample in get_default_samples()] + [synth.load_msg for synth in get_default_synthdefs()]
+
+        for msg in all_messages:
+            sleep(0.005) # Seems to be needed to prevent dropped messages. This is a tested minimum for 100% configure.
+            client.send(msg)
+
 def configure(bdd_path: str):
-    client = SimpleUDPClient("127.0.0.1", 13339) # Router, should normally just use default
+    client = default_client()
+
 
     with open(bdd_path, 'r') as bdd_file:
         billboard: Billboard = parse_billboard(bdd_file.read())
 
         all_messages: list[OscMessage] = []
 
-
-        # Note that this loads -a lot- of stuff and should maybe be placed in a separate "boot config" run
-        #all_messages += [sample.load_msg for sample in get_default_samples()]
-        #all_messages += [synth.load_msg for synth in get_default_synthdefs()]
-
-
         all_messages += get_sampler_keyboard_config(billboard)
         all_messages += get_synth_keyboard_config(billboard)
 
         all_messages += [get_effects_clear()]
-        all_messages += get_all_command_messages(billboard)
+        all_messages += get_all_command_messages(billboard, [])
         all_messages += get_all_effects_create(billboard)
 
         for msg in all_messages:
@@ -39,8 +51,7 @@ def configure(bdd_path: str):
             client.send(msg)
 
 def update_queue(bdd_path: str):
-    client = SimpleUDPClient("127.0.0.1", 13339) # Router, should normally just use default
-
+    client = default_client()
 
     with open(bdd_path, 'r') as bdd_file:
         billboard: Billboard = parse_billboard(bdd_file.read())
@@ -51,10 +62,15 @@ def update_queue(bdd_path: str):
         all_messages += get_synth_keyboard_config(billboard)
         all_messages += get_sampler_keyboard_config(billboard)
 
-        # TODO: Used to have keybaord quantization but not sure I want all commands to run on queue
-        # TODO: effects mod seems to behave a bit weirdly
-        # TODO: Noted that drones don't work at all at present - investigate!
-        #all_messages += get_all_effects_mod(billboard)
+        # TODO: effects mod seems to behave a bit weirdly - might be because new method fails to give them unique ids if they dont have a group
+        #   - UPDATE: Yes. I think regex might actually grab "effect_a_" as a match for all with e.g. "effect_a_mygroup". This is a bit unintuitive but not really a bug...
+        # TODO: Split default synths by ";" instead and just make it an scd file for proper highlighting
+        # TODO: Default synths and sample config should both be neat files like the bbd to allow them to live in another repo
+        # TODO: No need to send default synths or sample loads not mentioned in the billboard
+        #   - Technically... but if we do it on "setup" rather than "update" we might want to
+        # TODO: In the future, we might want to be able to specify sample loading in bbd
+        all_messages += get_all_command_messages(billboard, [CommandType.QUEUE])
+        all_messages += get_all_effects_mod(billboard)
         all_messages += [get_sequencer_batch_queue_bundle(billboard)]
 
         for msg in all_messages:
@@ -62,5 +78,6 @@ def update_queue(bdd_path: str):
             client.send(msg)
 
 example = "/home/estrandv/programming/jdw-pycompose/songs/courtRide.bbd"
+setup(example)
 configure(example)
 update_queue(example)
