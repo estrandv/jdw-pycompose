@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from pythonosc.osc_message import OscMessage
-from shuttle_jdw_translation import create_msg
+from jdw_osc_utils import create_msg
 import temp_import.default_synthdefs as default_synthdefs
 import temp_import.sample_reading as sample_reading
 

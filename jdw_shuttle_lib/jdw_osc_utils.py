@@ -58,7 +58,7 @@ def create_nrt_record_bundle(
 
     return main_bundle.build()
 
-def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> OscBundle:
+def create_queue_update_bundle(queue_id: str, sequence: list[OscBundle]) -> OscBundle:
 
     # Building a standard queue_update bundle
     queue_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
@@ -119,7 +119,6 @@ def resolve_jdw_msg(element: ElementWrapper) -> OscPacket | None:
 
         case MessageType.NOTE_MOD:
             osc_args = element.args_as_osc(["freq", freq])
-            print("DEBUG: Note modify created: \"" + external_id + "\"", osc_args)
             msg = create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
 
         case MessageType.EMPTY:

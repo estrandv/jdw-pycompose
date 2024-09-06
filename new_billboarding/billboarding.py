@@ -1,56 +1,17 @@
-from decimal import Decimal
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from shuttle_notation.parsing.element import Enum, ResolvedElement
 from shuttle_notation.parsing.full_parse import Parser
 from shuttle_notation.parsing.information_parsing import parse_args
 from shuttle_hacks import parse_orphaned_args
-from shuttle_jdw_translation import create_msg, ElementMessage, args_as_osc, is_symbol, resolve_special_message, to_note_mod, to_note_on, to_note_on_timed, to_play_sample
-import raw_billboard
+from jdw_osc_utils import create_msg, ElementMessage, args_as_osc, is_symbol, resolve_special_message, to_note_mod, to_note_on, to_note_on_timed, to_play_sample
 from filtering import extract_commands, extract_default_args, extract_group_filters, extract_synth_chunks
 from line_classify import QUEUE_COMMAND_SYMBOL, UPDATE_COMMAND_SYMBOL, begins_with, classify_lines
-from parsing import EffectDefinition, SynthHeader, TrackDefinition, cut_first, parse_track, parse_command, CommandContext, BillboardCommand
-from raw_billboard import SynthSection, create
+from parsing import BillboardSynthSection, process_synth_section, parse_pads_config, PadConfig, parse_drone_header, parse_effect, EffectMessage, EffectDefinition, SynthHeader, TrackDefinition, cut_first, parse_track, parse_command, CommandContext, BillboardCommand, SynthSection, parse_synth_chunk
 
 from dataclasses import dataclass
 
-# Contains the original effect and the message it was resolved as
-@dataclass
-class EffectMessage:
-    effect: EffectDefinition
-    external_id: str
-    synth_name: str
-    osc_args: list[str | float]
 
-    def as_create_osc(self) -> OscMessage:
-        return create_msg("/note_on", [self.synth_name, self.external_id, 0] + self.osc_args)
-
-    def as_mod_osc(self) -> OscMessage:
-        return create_msg("/note_modify", [self.external_id, 0] + self.osc_args)
-
-@dataclass
-class PadConfig:
-    pad_number: int
-    configured_index: int
-
-@dataclass
-class BillboardKeyConfiguration:
-    instrument_name: str
-    pads_config: list[PadConfig]
-    args: dict[str, Decimal]
-    for_sampler: bool
-
-@dataclass
-class BillboardTrack:
-    messages: list[ElementMessage]
-    group_name: str
-
-@dataclass
-class BillboardSynthSection:
-    # By name
-    tracks: dict[str, BillboardTrack]
-    effects: list[EffectMessage]
-    key_configuration: BillboardKeyConfiguration | None
 
 @dataclass
 class Billboard:
@@ -61,16 +22,7 @@ class Billboard:
     def get_final_filter(self) -> list[str]:
         return self.group_filters[-1] if len(self.group_filters) > 0 else []
 
-def parse_effect(effect: EffectDefinition, group_name: str, default_args: str, external_id_override: str = "") -> EffectMessage:
-    args = parse_orphaned_args([default_args, effect.args_string])
-    osc_args = args_as_osc(args, [])
-    external_id = ("effect_" + effect.unique_suffix + "_" + group_name) if external_id_override == "" else external_id_override
-    return EffectMessage(effect, external_id, effect.instrument_name, osc_args)
-
-def parse_drone_header(header: SynthHeader) -> EffectDefinition:
-    return EffectDefinition(header.instrument_name, "", header.default_args_string)
-
-
+# TODO: Consider scope of this file - this is an orchestration method but other parts are more final-step
 def parse_billboard(billboard_string: str) -> Billboard:
     lines = classify_lines(billboard_string)
     filters = extract_group_filters(lines)
@@ -79,70 +31,14 @@ def parse_billboard(billboard_string: str) -> Billboard:
     commands = [parse_command(line) for line in command_lines]
 
     synth_chunks = extract_synth_chunks(lines)
-    raw_billboard = create(synth_chunks)
 
-    sections: list[BillboardSynthSection] = []
-    for synth_section in raw_billboard.synth_sections:
+    synth_sections = [parse_synth_chunk(chunk) for chunk in synth_chunks]
 
-        # Build a combined default arg string from both DEFAULT and synth header args, prioritizing synth header args
-        full_default_args = billboard_default_args
-        if full_default_args != "" and synth_section.header.default_args_string != "":
-            full_default_args += ","
-        full_default_args += synth_section.header.default_args_string
-
-        tracks: dict[str, BillboardTrack] = {}
-        effects: list[EffectMessage] = []
-
-        for effect in synth_section.effects:
-            effects.append(parse_effect(effect, synth_section.header.group_name, full_default_args))
-
-        for track in synth_section.tracks:
-
-            hdrone_id = "" # All track messages should mod the same id if track is drone
-
-            # Create a drone for each track to modify, if track is drone
-            if synth_section.header.is_drone:
-                # Add an effect create/mod for the drone that the track will interact with
-                header_drone_def = parse_drone_header(synth_section.header)
-                hdrone_id = "effect_" + synth_section.header.group_name + "_" + str(track.index)
-                effects.append(parse_effect(header_drone_def, synth_section.header.group_name, full_default_args, hdrone_id))
-
-            # Define behaviour for elements that don't conform to any special message standard
-            def create_default_message(element: ResolvedElement) -> ElementMessage:
-                # Drone tracks use note mod by default
-                if synth_section.header.is_drone:
-                    return ElementMessage(element, to_note_mod(element, hdrone_id))
-                elif synth_section.header.is_sampler:
-                    return ElementMessage(element, to_play_sample(element, synth_section.header.instrument_name))
-                else:
-                    return ElementMessage(element, to_note_on_timed(element, synth_section.header.instrument_name))
-
-            elements = parse_track(track, full_default_args)
-            resolved: list[ElementMessage] = []
-            for element in elements:
-                special = resolve_special_message(element, synth_section.header.instrument_name)
-                resolved.append(special if special != None else create_default_message(element))
-
-            track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
-            group_name = track.group_override if track.group_override != "" else synth_section.header.group_name
-            tracks[track_name] = BillboardTrack(resolved, group_name)
-
-        # Save keyboard/sampler configuration data for selected synth headers
-        pads: list[PadConfig] = parse_pads_config(synth_section.header.additional_args_string) if synth_section.header.additional_args_string != "" else []
-        key_args = parse_orphaned_args([synth_section.header.default_args_string])
-        key_configuration = BillboardKeyConfiguration(synth_section.header.instrument_name, pads, key_args, synth_section.header.is_sampler)
-        keys = key_configuration if synth_section.header.is_selected else None
-
-        sections.append(BillboardSynthSection(tracks, effects, keys))
+    sections: list[BillboardSynthSection] = [process_synth_section(s, billboard_default_args) for s in synth_sections]
 
     return Billboard(sections, filters, commands)
 
-def parse_pads_config(source_string: str) -> list[PadConfig]:
-    elements = Parser().parse(source_string)
 
-    # e.g. 22:5
-    # TODO: Then convert to /keyboard_pad_samples k v k v ...
-    return [PadConfig(e.index, int(e.args["time"])) for e in elements]
 
 
 # Tests

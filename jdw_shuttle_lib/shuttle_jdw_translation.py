@@ -8,6 +8,7 @@ import jdw_shuttle_lib.note_utils as note_utils
 from enum import Enum
 from pretty_midi import note_number_to_hz
 
+from new_billboarding.line_classify import begins_with
 
 # Applies JDW rules to Shuttle-data in order to determine the corresponding message type and contents for any given Element
 
@@ -76,6 +77,36 @@ def args_as_osc(raw_args: dict[str, DynamicArg], override: list[str | float]):
             osc_args.append(float(raw_args[arg].value))
     return osc_args
 
+
+# Contains the original element and the message it was resolved as
+@dataclass
+class ElementMessage:
+    element: ResolvedElement
+    osc: OscMessage
+
+    def get_time(self) -> str:
+        return str(self.element.args["time"]) if "time" in self.element.args else "0.0"
+
+# Some elements have symbols or other syntax that force a certain osc format
+def resolve_special_message(element: ResolvedElement, instrument_name: str) -> ElementMessage | None:
+    if begins_with(element.suffix, "@"):
+        # Remove symbol from suffix to create note mod external id
+        return ElementMessage(element, to_note_mod(element, cut_first(element.suffix, 1)))
+    elif is_symbol(element, "x"):
+        # Silence
+        return ElementMessage(element, create_msg("/empty_msg", []))
+    elif is_symbol(element, "."):
+        # Ignore
+        pass
+    elif is_symbol(element, "§"):
+        # Loop start marker
+        return ElementMessage(element, create_msg("/loop_started", []))
+    elif begins_with(element.suffix, "$"):
+        # Drone, note that suffix is trimmed similar to for note mod
+        return ElementMessage(element, to_note_on(element, instrument_name, cut_first(element.suffix, 1)))
+
+    return None
+
 # TODO: Idea is to have each of these here and skip wrapper entirely
 # See conversion methods in jdw_osc_utils - empty and marker only ones left but they can be elsewhere
 def to_note_mod(element: ResolvedElement, external_id_override: str = "") -> OscMessage:
@@ -103,6 +134,7 @@ def to_note_on(element: ResolvedElement, instrument_name: str, external_id_overr
     return create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
 
 # TODO: Trying to move away from this, slowly - hence the duplicates above
+# Remove once nothing uses it anymore
 @dataclass
 class ElementWrapper:
     element: ResolvedElement

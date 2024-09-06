@@ -1,12 +1,18 @@
-# utilities for converting shuttle elements into jackdaw-compatible OSC messages
+from dataclasses import dataclass
+from decimal import Decimal
+from pythonosc.osc_message import OscMessage
+from pythonosc.osc_packet import OscPacket
+from shuttle_notation.parsing.information_parsing import DynamicArg
+import note_utils as note_utils
+from enum import Enum
+from pretty_midi import note_number_to_hz
 
+from line_classify import begins_with
 from pythonosc import osc_message_builder, udp_client, osc_bundle_builder
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
 from shuttle_notation import ResolvedElement
-from shuttle_jdw_translation import MessageType
-from shuttle_jdw_translation import ElementWrapper
 
 # TODO: Pass in, somehow...
 SC_DELAY_MS = 70
@@ -57,7 +63,7 @@ def create_nrt_record_bundle(
 
     return main_bundle.build()
 
-def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> OscBundle:
+def create_queue_update_bundle(queue_id: str, timed_osc_msgs: list[OscBundle]) -> OscBundle:
 
     # Building a standard queue_update bundle
     queue_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
@@ -66,7 +72,7 @@ def create_queue_update_bundle(queue_id: str, sequence: list[OscMessage]) -> Osc
 
     note_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
 
-    for msg in sequence:
+    for msg in timed_osc_msgs:
         note_bundle.add_content(msg)
 
     queue_bundle.add_content(note_bundle.build())
@@ -81,9 +87,8 @@ def create_batch_bundle(packets: list[OscPacket]) -> OscBundle:
 
     return bundle.build()
 
-
 # Basic quick-syntax for OSC message building, ("/s_new, [1,2,3...]")
-def create_msg(adr: str, args: list[str | float] = []) -> OscMessage:
+def create_msg(adr: str, args: list[str | float | int] = []) -> OscMessage:
     builder = osc_message_builder.OscMessageBuilder(address=adr)
     for arg in args:
         builder.add_arg(arg)
@@ -96,44 +101,121 @@ def to_timed_osc(time: str, osc_packet: OscMessage | OscPacket) -> OscBundle:
     bundle.add_content(osc_packet)
     return bundle.build()
 
-def resolve_jdw_msg(element: ElementWrapper) -> OscPacket | None:
-    external_id = element.resolve_external_id()
-    freq = element.resolve_freq()
-    msg_type = element.resolve_message_type()
+def is_symbol(element: ResolvedElement, sym: str) -> bool:
+    return element.suffix.lower() == sym \
+        and element.prefix == "" \
+        and element.index == 0
 
-    msg = None
+def resolve_external_id(element: ResolvedElement) -> str:
+    resolved = element.suffix
+    return resolved if resolved != "" else "id_" + str(element.index)
 
-    match msg_type:
-        case MessageType.NOTE_ON_TIMED:
-            gate_time = str(element.element.args["sus"])
-            osc_args = element.args_as_osc(["freq", freq])
-            msg = create_msg("/note_on_timed", [element.instrument_name, external_id, gate_time, SC_DELAY_MS] + osc_args)
+def resolve_freq(element: ResolvedElement) -> float:
 
-        case MessageType.PLAY_SAMPLE:
-            msg = create_msg("/play_sample", [external_id, element.instrument_name, element.element.index, element.element.prefix, SC_DELAY_MS] + element.args_as_osc())
+    if "freq" in element.args:
+        return float(element.args["freq"])
 
-        case MessageType.DRONE:
-            osc_args = element.args_as_osc(["freq", freq])
-            msg = create_msg("/note_on", [element.instrument_name, external_id, SC_DELAY_MS] + osc_args)
+    letter_check = note_utils.note_letter_to_midi(element.prefix)
 
-        case MessageType.NOTE_MOD:
-            osc_args = element.args_as_osc(["freq", freq])
-            print("DEBUG: Note modify created: \"" + external_id + "\"", osc_args)
-            msg = create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
+    if letter_check == -1:
 
-        case MessageType.EMPTY:
-            msg = create_msg("/empty_msg", [])
+        # Placeholders
+        # TODO: Complete bullshit, but helps with keybaoard usage for now
+        #octave = 0 if element.index > 12 else 3
+        octave = 0
 
-        case MessageType.LOOP_START_MARKER:
-            msg = create_msg("/loop_started", [])
-        case _:
-            pass
+        extra = (12 * (octave + 1)) if octave > 0 else 0
+        new_index = element.index + extra
+        # TODO: port transpose from scales.py
+        #   Implied scale: Chromatic
+        #scale = scales.MAJOR
+        #new_index = transpose(new_index, scale)
+        freq = note_number_to_hz(new_index)
+        return freq
 
-    return msg
+    else:
+        # E.g. "C" or "C#" or "Cb"
+        letter_and_semitone = element.prefix.lower()
+        # As in the "3" of "c3"
+        octave = element.index if element.index != None else 1
 
-# Resolves the appropriate type of message for the element and returns it, wrapped inside its "time" argument
-def create_sequencer_note(element: ElementWrapper) -> OscBundle | None:
+        # Math, same as for index freq calculation
+        extra = (12 * (octave - 1)) if octave > 0 else 0
+        new_index = letter_check + extra
 
-    msg = resolve_jdw_msg(element)
+        return note_number_to_hz(new_index)
 
-    return to_timed_osc(str(element.element.args["time"]), msg) if msg != None else None
+def args_as_osc(raw_args: dict[str, Decimal], override: list[str | float]):
+    osc_args: list[str | float] = []
+
+    for arg in override:
+        osc_args.append(arg)
+
+    for arg in raw_args:
+        if arg not in osc_args:
+            osc_args.append(arg)
+            osc_args.append(float(raw_args[arg]))
+    return osc_args
+
+
+# Contains the original element and the message it was resolved as
+@dataclass
+class ElementMessage:
+    element: ResolvedElement
+    osc: OscMessage
+
+    def get_time(self) -> str:
+        return str(self.element.args["time"]) if "time" in self.element.args else "0.0"
+
+# Some elements have symbols or other syntax that force a certain osc format
+def resolve_special_message(element: ResolvedElement, instrument_name: str) -> ElementMessage | None:
+    if begins_with(element.suffix, "@"):
+        # Remove symbol from suffix to create note mod external id
+        return ElementMessage(element, to_note_mod(element, cut_first(element.suffix, 1)))
+    elif is_symbol(element, "x"):
+        # Silence
+        return ElementMessage(element, create_msg("/empty_msg", []))
+    elif is_symbol(element, "."):
+        # Ignore
+        pass
+    elif is_symbol(element, "§"):
+        # Loop start marker
+        return ElementMessage(element, create_msg("/loop_started", []))
+    elif begins_with(element.suffix, "$"):
+        # Drone, note that suffix is trimmed similar to for note mod
+        return ElementMessage(element, to_note_on(element, instrument_name, cut_first(element.suffix, 1)))
+
+    return None
+
+def to_note_mod(element: ResolvedElement, external_id_override: str = "") -> OscMessage:
+    external_id = resolve_external_id(element) if external_id_override == "" else external_id_override
+    osc_args = args_as_osc(element.args, ["freq", resolve_freq(element)])
+    return create_msg("/note_modify", [external_id, SC_DELAY_MS] + osc_args)
+
+def to_note_on_timed(element: ResolvedElement, instrument_name: str) -> OscMessage:
+    freq = resolve_freq(element)
+    external_id = resolve_external_id(element)
+
+    sus: float = element.args["sus"] if "sus" in element.args else 0.0
+    if sus == 0.0:
+        print("WARN: Element converted to timed note press did not contain a sus arg (will be 0.0): ", element)
+
+    gate_time = str(sus)
+    osc_args = args_as_osc(element.args, ["freq", freq])
+    return create_msg("/note_on_timed", [instrument_name, external_id, gate_time, SC_DELAY_MS] + osc_args)
+
+def to_play_sample(element: ResolvedElement, instrument_name: str) -> OscMessage:
+    osc_args = args_as_osc(element.args, ["freq", resolve_freq(element)])
+    return create_msg("/play_sample", [
+        resolve_external_id(element), instrument_name, element.index, element.prefix, SC_DELAY_MS
+    ] + osc_args)
+
+def to_note_on(element: ResolvedElement, instrument_name: str, external_id_override: str = "") -> OscMessage:
+    external_id = resolve_external_id(element) if external_id_override == "" else external_id_override
+    freq = resolve_freq(element)
+    osc_args = args_as_osc(element.args, ["freq", freq])
+
+    if instrument_name == "Roland808":
+            print("DEBUG WARN: found a sampler defined as a regular synth")
+
+    return create_msg("/note_on", [instrument_name, external_id, SC_DELAY_MS] + osc_args)

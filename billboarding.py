@@ -400,7 +400,6 @@ def create_keys_config_packets(billboard: BillBoard) -> list[OscPacket]:
     if len(synths) > 0:
 
         selected_synth = billboard.tracks[synths[-1]]
-        print("DEBUG: Synth selected", selected_synth)
 
 
         # Arg bit is a little hacky, since it is already applied to the elements and
