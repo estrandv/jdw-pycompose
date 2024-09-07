@@ -5,7 +5,7 @@ from time import sleep
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.udp_client import SimpleUDPClient
-from billboard_osc_conversion import get_all_command_messages, get_all_effects_create, get_all_effects_mod, get_sampler_keyboard_config, get_sequencer_batch_queue_bundle, get_synth_keyboard_config
+from billboard_osc_conversion import NrtBundleInfo, get_all_command_messages, get_all_effects_create, get_all_effects_mod, get_nrt_record_bundles, get_sampler_keyboard_config, get_sequencer_batch_queue_bundle, get_synth_keyboard_config
 from billboarding import parse_billboard
 
 from billboarding import Billboard
@@ -53,7 +53,6 @@ def configure(bdd_path: str):
 def nrt_record(bdd_path: str):
     client = default_client()
     with open(bdd_path, 'r') as bdd_file:
-        billboard: Billboard = parse_billboard(bdd_file.read())
 
         """
         TODO: NRT STEPS
@@ -95,6 +94,15 @@ def nrt_record(bdd_path: str):
 
         """
 
+        billboard: Billboard = parse_billboard(bdd_file.read())
+        bundle_infos: list[NrtBundleInfo] = get_nrt_record_bundles(billboard)
+        for info in bundle_infos:
+            print("DEBUG: NRT recording", info.track_name)
+            for preload in info.preload_messages:
+                client.send(preload)
+                sleep(0.005)
+            client.send(info.nrt_bundle)
+
 
 def update_queue(bdd_path: str):
     client = default_client()
@@ -122,6 +130,7 @@ def update_queue(bdd_path: str):
             client.send(msg)
 
 example = "/home/estrandv/programming/jdw-pycompose/songs/courtRide.bbd"
-setup(example)
-configure(example)
-update_queue(example)
+#setup(example)
+#configure(example)
+#update_queue(example)
+nrt_record(example)

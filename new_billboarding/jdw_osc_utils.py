@@ -45,7 +45,7 @@ def create_batch_queue_bundle(queues: list[OscBundle], stop_missing: bool) -> Os
     return queue_bundle.build()
 
 def create_nrt_record_bundle(
-    sequence: list[OscMessage], # timed
+    sequence: list[OscBundle], # timed
     file_name: str,
     end_time: float,
     bpm: float = 120.0 # TODO: Fix type when the expectation in jdw-sc is corrected

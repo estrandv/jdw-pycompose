@@ -3,18 +3,18 @@
 from decimal import Decimal
 from pythonosc.osc_bundle import OscBundle
 from shuttle_notation.parsing.element import ResolvedElement
-from typing_extensions import Literal
-from new_billboarding.jdw_osc_utils import ElementMessage, create_msg, to_timed_osc
-from dataclasses import dataclass
+from jdw_osc_utils import ElementMessage, create_msg, to_timed_osc
+from dataclasses import dataclass, field
 
-from new_billboarding.parsing import BillboardTrack
+from parsing import BillboardTrack
 
 def element_beats(element: ElementMessage) -> Decimal:
     return Decimal(element.get_time())
 
 def source_len(elements: list[ElementMessage]) -> Decimal:
     res = sum([element_beats(element) for element in elements])
-    return res if res is Decimal else Decimal("0.0")
+    print("DEBUG: res", res)
+    return res if isinstance(res, Decimal) else Decimal("0.0")
 
 @dataclass
 class TrackSource:
@@ -29,32 +29,44 @@ class ScoreMessage:
 
 def total_beats(elements: list[ScoreMessage]) -> Decimal:
     res = sum([element.time for element in elements])
-    return res if res is Decimal else Decimal("0.0")
+    return res if isinstance(res, Decimal) else Decimal("0.0")
 
 @dataclass
 class Score:
-    track_sources: dict[str, TrackSource] = {}
-    tracks: dict[str, list[ScoreMessage]] = {}
+    track_sources: dict[str, TrackSource] = field(default_factory=dict)
+    tracks: dict[str, list[ScoreMessage]] = field(default_factory=dict)
 
     # Export a finished set of tracks from the modifications done by extend() and pad()
     def unpack_timed_tracks(self) -> dict[str, list[OscBundle]]:
         export_dict: dict[str, list[OscBundle]] = {}
-        saved_silence = Decimal("0.0")
+
+        # Compress messages so that silence gets appended to the previous note
+        # This declutters the final score object in supercollider but isn't strictly important
+        # TODO: Destructive operation, maybe place elsewhere
+        for track_name in self.tracks:
+
+            new_set: list[ScoreMessage] = []
+
+            for msg in self.tracks[track_name]:
+                if not isinstance(msg.message, ElementMessage):
+                    if len(new_set) > 0:
+                        new_set[-1].time += msg.time
+                    else:
+                        new_set.append(msg)
+                else:
+                    new_set.append(msg)
+
+            self.tracks[track_name] = new_set
+
         for track_name in self.tracks:
             export_dict[track_name] = []
             for msg in self.tracks[track_name]:
-                if msg.message is ElementMessage:
-
-                    new_time = saved_silence + msg.time
-                    saved_silence = Decimal("0.0")
-                    timed_bundle = to_timed_osc(str(new_time.normalize()), msg.message.osc)
+                if isinstance(msg.message, ElementMessage):
+                    timed_bundle = to_timed_osc(str(msg.time.normalize()), msg.message.osc)
                     export_dict[track_name].append(timed_bundle)
                 else:
-                    saved_silence += msg.time
-
-            # Finally: Make sure end silence is not lost
-            if len(export_dict[track_name]) > 0 and saved_silence > Decimal("0.0"):
-                timed_bundle = to_timed_osc(str(saved_silence.normalize()), create_msg("/empty_message", []))
+                    timed_bundle = to_timed_osc(str(msg.time.normalize()), create_msg("/empty_message", []))
+                    export_dict[track_name].append(timed_bundle)
 
         return export_dict
 
@@ -75,13 +87,14 @@ class Score:
     def get_end_time(self):
         return max([total_beats(self.tracks[track_name]) for track_name in self.tracks])
 
-    def extend_groups(self, group_names: list[str], static_track_names: list[str] = []):
+    def extend_groups(self, group_names: list[str], also_extend_groupless: bool = True):
 
         def track_conforms(tname: str, gname: str):
-            return len(group_names) == 0 or (tname in static_track_names) or (gname in group_names)
+            return len(group_names) == 0 or (gname == "" and also_extend_groupless) or (gname in group_names)
 
         # Determine tracks to extend
         track_names = [key for key in self.track_sources if track_conforms(key, self.track_sources[key].group_name)]
+
 
         if len(track_names) == 0:
             print("WARN: no track conforms to group filter", group_names)
@@ -93,10 +106,13 @@ class Score:
 
             cur_longest = source_len(self.track_sources[longest_track_name].elements) if longest_track_name != None else Decimal("0.0")
 
-            if source_len(self.track_sources[key].elements) > cur_longest:
+            this_len = source_len(self.track_sources[key].elements)
+
+
+            if this_len > cur_longest:
                 longest_track_name = key
 
-        if longest_track_name is str:
+        if isinstance(longest_track_name, str):
             self.extend_track(longest_track_name)
             goal_time = total_beats(self.tracks[longest_track_name])
             print(longest_track_name, "is longest at ", goal_time)
@@ -119,5 +135,5 @@ class Score:
                                 self.extend_track(track_name)
                                 #print("Extended and now has these elements", len(self.tracks[track_name]))
                             else:
-                                print("NOT EXTENDING ", track_name)
+                                print("DEBUG: Track not extended (padding with silence): ", track_name)
                                 self.pad_track(track_name, diff)
