@@ -55,41 +55,11 @@ def nrt_record(bdd_path: str):
     with open(bdd_path, 'r') as bdd_file:
 
         """
-        TODO: NRT STEPS
-        - Requirement: Must not pre-filter anything with groups
-            => Billboard just retains them so I think this is ok!
-        - Requirement: Must time-osc all setup messages as 0.0, with the rest as normal
-        - Requirement: Must filter according to:
-            - Only load synthdefs that:
-                - Equal the master instrument (or sampler if sampler) OR
-                    => UPDATE: Added header to BillBoardSynthSection; now we know instrument_name and is_sampler
-                - Equal one of the track-provided effects (BillBoardTrack has EffectMessage which has instrument_name)
-            - Only load samples that/when:
-                - (easy) using sampler
-                - (easy) are part of the sample pack
-                - (hard) are referenced by a track
-            - Only load routers referenced by a track
-        - Requirement: Must create timeline
-            - Needed to represent the whole repeating structure
-            - Uses the SCORE class from nrt_scoring
-                - Which should be modified to use as raw classes as possible (so list of elements instead of direct track references)
-        - Requirement: Must reuse as much as possible
-            - Today, track osc is determined in parsing.process_synth_section
-            - This is present in parse_billboard from billboarding, so the final result is workable
-            - Only in get_sequencer_batch_queue_bundle is time added, so we can easily dodge that and create our own
-            - Scoring fetches time independently, but if it were to use ElementMessage it could resolve it as written there
 
-        => Conclusion: Full Billboard can be used as starting data
-
-        => Starting point: Rewrite of scoring using ElementMessage (remember: relative times are not needed)
-            - According to above: fetch time straight from ElementMessage definition; use BigDecimal conversion for timekeeping
-            - Note: output can still be raw elementMessage; time is only needed in scoring to know how long the tracks are
-                - So we can use an internal timed class but still export ElementMessage
-
-                => UPDATE: Made an NRT scoring model that allows us to export the finished tracks as pure timed osc, accounting for silence
-                    -> Next up is to just use that to construct an nrt message the normal way (walk through flters and extend)
-        => Then: All 0.0 messages can just be fetched and appended at start with a 0.0 timewrap (create_timed)
-
+            Most filtering now works, but there are some remaining issues:
+                1. Effects seem...weaker? In NRT. Especially samples seem not to be as affected by e.g. CLAMP and come off really loud
+                2. Even with heavy filtering, tracks with many notes are still too big and we will have to move towards a preload approach to scoring
+                    - This does not have to break the current structure at all, but will take some implementation in jdw-sc
 
 
         """
@@ -97,11 +67,17 @@ def nrt_record(bdd_path: str):
         billboard: Billboard = parse_billboard(bdd_file.read())
         bundle_infos: list[NrtBundleInfo] = get_nrt_record_bundles(billboard)
         for info in bundle_infos:
-            print("DEBUG: NRT recording", info.track_name)
-            for preload in info.preload_messages:
-                client.send(preload)
-                sleep(0.005)
-            client.send(info.nrt_bundle)
+            # TODO: Testing if any tracks are short enough for single-send
+            #if info.track_name == "Roland808_drum_0":
+            #if info.track_name not in ["Roland808_drum_0", "Roland808_hdrum_2"]:
+            if True:
+                print("DEBUG: NRT recording", info.track_name)
+                for preload in info.preload_messages:
+                    client.send(preload)
+                    sleep(0.005)
+                client.send(info.nrt_bundle)
+            #else:
+            #    print("DEBUG: NOT RIGHT", info.track_name)
 
 
 def update_queue(bdd_path: str):
@@ -130,7 +106,7 @@ def update_queue(bdd_path: str):
             client.send(msg)
 
 example = "/home/estrandv/programming/jdw-pycompose/songs/courtRide.bbd"
-#setup(example)
-#configure(example)
-#update_queue(example)
-nrt_record(example)
+setup(example)
+configure(example)
+update_queue(example)
+#nrt_record(example)

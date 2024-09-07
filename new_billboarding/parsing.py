@@ -275,8 +275,9 @@ def process_synth_section(synth_section: SynthSection, billboard_default_args: s
             special = resolve_special_message(element, synth_section.header.instrument_name)
             resolved.append(special if special != None else create_default_message(element))
 
-        track_name = "_".join([synth_section.header.instrument_name, synth_section.header.group_name, str(track.index)])
+
         group_name = track.group_override if track.group_override != "" else synth_section.header.group_name
+        track_name = "_".join([synth_section.header.instrument_name, group_name, str(track.index)])
         tracks[track_name] = BillboardTrack(resolved, group_name)
 
     # Save keyboard/sampler configuration data for selected synth headers

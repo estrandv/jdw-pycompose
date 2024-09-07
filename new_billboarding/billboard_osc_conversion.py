@@ -3,8 +3,9 @@ from decimal import Decimal
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
+from shuttle_notation.parsing.information_parsing import ElementInformation
 from billboarding import Billboard
-from default_configuration import get_default_samples, get_default_synthdefs
+from default_configuration import SampleMessage, get_default_samples, get_default_synthdefs
 from nrt_scoring import Score
 from parsing import BillboardSynthSection, BillboardTrack, CommandContext
 from jdw_osc_utils import ElementMessage, args_as_osc, create_batch_bundle, create_batch_queue_bundle, create_msg, create_nrt_record_bundle, create_queue_update_bundle, to_timed_osc
@@ -85,6 +86,58 @@ class NrtBundleInfo:
     nrt_bundle: OscBundle
     preload_messages: list[OscMessage]
 
+def filter_used_samples(all_samples: list[SampleMessage], pack_name: str, track_messages: list[ElementMessage]) -> list[SampleMessage]:
+    pack_samples: list[SampleMessage] = [sample for sample in all_samples if sample.sample.sample_pack == pack_name]
+
+    used_samples: list[SampleMessage] = []
+
+    # Replicating the category/index logic used in jdw-sc. Kinda clumsy, but works for a POC ...
+    usage_by_category: dict[str, list[int]] = {}
+
+    for msg in track_messages:
+
+        # TODO: THIS CAN BUG: Jdw-sc defaults unknown prefixes to category <blank>, but this won't.
+        # Kinda speaks to the fragility of this system, but it's possible that we rework categories in
+        # the future, so I'm keeping it here in full display.
+        # NOTE: An easy way to avoid category resolution is to just count all categorized samples as used
+        # .... ACTUALLY, I think category IS DETERMINED HERE, not in JDW_SC, so we can prob reuse that logic... duh.
+        # SO, TODO: First check in the category resolution of default samples if this category is valid or should be ""
+        if msg.element.prefix not in usage_by_category:
+            usage_by_category[msg.element.prefix] = []
+
+        if msg.element.index not in usage_by_category[msg.element.prefix]:
+            usage_by_category[msg.element.prefix].append(msg.element.index)
+
+    for sample in pack_samples:
+
+        samples_in_category: list[SampleMessage] = [s for s in pack_samples if s.sample.category == sample.sample.category]
+
+        # E.g. we're using 33 and 22 from "bd" in track indices
+        # We resolve that "bd" has 12 samples
+        # So we must first determine the <actual index> using modulo, since out-of-bounds will loop-around in jdw-sc
+        # We can see that "bd33" is index (33-24) in "bd", so we mark the sample of that index in "bd" as used
+        used: bool = False
+        index_in_category: int = samples_in_category.index(sample)
+        for usage_index in usage_by_category[sample.sample.category]:
+            actual_usage_index = usage_index % len(samples_in_category)
+            if actual_usage_index == index_in_category:
+                used = True
+
+        if used:
+            used_samples.append(sample)
+
+    return used_samples
+
+"""
+
+    FAQ
+
+    Q: But why can't we just construct the full scd nrt script here, instead of in jdw-sc, since we know all the data already?
+    A: Jdw-sc has a lot of "smart messages", like note_on_timed or play_sample, that we'd have to resolve here as well in that case.
+        - This is easier!
+
+
+"""
 def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
 
     all_bundle_infos: list[NrtBundleInfo] = []
@@ -116,12 +169,6 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
         all_preload_messages: list[OscMessage] = [create_msg("/clear_nrt", [])]
         all_setup_messages: list[OscBundle] = timed_cmd_msgs + timed_eff_msgs
 
-        if section.header.is_sampler:
-            # Only load samples from the active pack
-            # TODO: ODes this work, or will instrument name sitll be "SP_*"?
-            sample_load_msgs: list[OscMessage] = [sample.load_msg for sample in get_default_samples() if sample.sample.sample_pack == section.header.instrument_name]
-            all_preload_messages += sample_load_msgs
-
         # TODO: Default synth name parsing is currently broken (names have different formats and the parse is half-finished)
         needed_effect_names: list[str] = [e.synth_name for e in section.effects] + ["sampler", "router"]
         def synth_needed(synth_name) -> bool:
@@ -132,6 +179,14 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
 
         # Begin creating track file definitions
         for track_name in section.tracks:
+
+            # Prepare sample loads, if relevant
+            if section.header.is_sampler:
+                all_samples = get_default_samples()
+                my_samples = filter_used_samples(all_samples, section.header.instrument_name, section.tracks[track_name].messages)
+                all_preload_messages += [s.load_msg for s in my_samples]
+
+            # Finalize track
             nrt_track = timed_track_messages[track_name]
 
             score_bundles = all_setup_messages + nrt_track
@@ -141,7 +196,7 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
             # TODO: Bpm from command messagee
             bpm: float = 116.0 # TODO: See notes on current bpm type expectation issues
             file_name: str = "/home/estrandv/jdw_output/track_" + str(track_name) + ".wav"
-            end_time: Decimal = score.get_end_time() + Decimal("8.0") # A little extra
+            end_time: Decimal = score.get_end_time() + Decimal("8.0") # A little extra, but still doesn't account properly for release/delay/reverb
             bundle = create_nrt_record_bundle(score_bundles, file_name, float(end_time), bpm)
             bundle_info = NrtBundleInfo(track_name, bundle, all_preload_messages)
             all_bundle_infos.append(bundle_info)

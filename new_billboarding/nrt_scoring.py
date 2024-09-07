@@ -13,7 +13,6 @@ def element_beats(element: ElementMessage) -> Decimal:
 
 def source_len(elements: list[ElementMessage]) -> Decimal:
     res = sum([element_beats(element) for element in elements])
-    print("DEBUG: res", res)
     return res if isinstance(res, Decimal) else Decimal("0.0")
 
 @dataclass
@@ -115,7 +114,6 @@ class Score:
         if isinstance(longest_track_name, str):
             self.extend_track(longest_track_name)
             goal_time = total_beats(self.tracks[longest_track_name])
-            print(longest_track_name, "is longest at ", goal_time)
 
 
             for track_name in self.track_sources:
@@ -127,13 +125,12 @@ class Score:
                         while total_beats(self.tracks[track_name]) < goal_time:
                             diff = goal_time - total_beats(self.tracks[track_name])
 
-                            if diff < slen and track_name in track_names:
-                                print("Can't extend ", track_name, diff, slen)
+                            #if diff < slen and track_name in track_names:
+                                #print("Can't extend ", track_name, diff, slen)
 
                             if diff >= slen and track_name in track_names:
 
                                 self.extend_track(track_name)
                                 #print("Extended and now has these elements", len(self.tracks[track_name]))
                             else:
-                                print("DEBUG: Track not extended (padding with silence): ", track_name)
                                 self.pad_track(track_name, diff)
