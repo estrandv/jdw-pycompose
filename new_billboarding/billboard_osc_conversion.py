@@ -110,20 +110,10 @@ def filter_used_samples(all_samples: list[SampleMessage], pack_name: str, track_
 
     for sample in pack_samples:
 
-        samples_in_category: list[SampleMessage] = [s for s in pack_samples if s.sample.category == sample.sample.category]
+        category = sample.sample.category if sample.sample.category in usage_by_category else ""
+        usage_in_category: list[int] = usage_by_category[category]
 
-        # E.g. we're using 33 and 22 from "bd" in track indices
-        # We resolve that "bd" has 12 samples
-        # So we must first determine the <actual index> using modulo, since out-of-bounds will loop-around in jdw-sc
-        # We can see that "bd33" is index (33-24) in "bd", so we mark the sample of that index in "bd" as used
-        used: bool = False
-        index_in_category: int = samples_in_category.index(sample)
-        for usage_index in usage_by_category[sample.sample.category]:
-            actual_usage_index = usage_index % len(samples_in_category)
-            if actual_usage_index == index_in_category:
-                used = True
-
-        if used:
+        if sample.sample.tone_index in usage_in_category:
             used_samples.append(sample)
 
     return used_samples
@@ -163,7 +153,10 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
 
     # Begin creating the bundles
     for section in billboard.sections:
+
+        # TODO: Trying to understand why samplers sound strange in NRT
         timed_eff_msgs: list[OscBundle] = [to_timed_osc("0.0", msg) for msg in get_section_effects_create(section)]
+        #timed_eff_msgs: list[OscBundle] = [to_timed_osc("0.0", msg) for msg in get_all_effects_create(billboard)]
 
         # Preload messages are messages not part of the bundle but needed before the bundle is sent
         all_preload_messages: list[OscMessage] = [create_msg("/clear_nrt", [])]
@@ -172,6 +165,7 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
         # TODO: Default synth name parsing is currently broken (names have different formats and the parse is half-finished)
         needed_effect_names: list[str] = [e.synth_name for e in section.effects] + ["sampler", "router"]
         def synth_needed(synth_name) -> bool:
+            #return True
             return section.header.instrument_name == synth_name or synth_name in needed_effect_names
         synth_create_msgs: list[OscMessage] = [synth.load_msg for synth in get_default_synthdefs() if synth_needed(synth.name)]
 
@@ -183,7 +177,9 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
             # Prepare sample loads, if relevant
             if section.header.is_sampler:
                 all_samples = get_default_samples()
+                # TODO: Bring filtering back
                 my_samples = filter_used_samples(all_samples, section.header.instrument_name, section.tracks[track_name].messages)
+                #my_samples = all_samples
                 all_preload_messages += [s.load_msg for s in my_samples]
 
             # Finalize track

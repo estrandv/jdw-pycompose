@@ -8,7 +8,7 @@ import jdw_shuttle_lib.note_utils as note_utils
 from enum import Enum
 from pretty_midi import note_number_to_hz
 
-from new_billboarding.line_classify import begins_with
+from line_classify import begins_with
 
 # Applies JDW rules to Shuttle-data in order to determine the corresponding message type and contents for any given Element
 

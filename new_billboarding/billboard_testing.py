@@ -57,10 +57,9 @@ def nrt_record(bdd_path: str):
         """
 
             Most filtering now works, but there are some remaining issues:
-                1. Effects seem...weaker? In NRT. Especially samples seem not to be as affected by e.g. CLAMP and come off really loud
-                2. Even with heavy filtering, tracks with many notes are still too big and we will have to move towards a preload approach to scoring
+                - Even with heavy filtering, tracks with many notes are still too big and we will have to move towards a preload approach to scoring
                     - This does not have to break the current structure at all, but will take some implementation in jdw-sc
-
+                - I reworked samples to no longer loop-around modulo and instead require exact indices... see if this had any effect on the keyboards
 
         """
 
@@ -106,7 +105,7 @@ def update_queue(bdd_path: str):
             client.send(msg)
 
 example = "/home/estrandv/programming/jdw-pycompose/songs/courtRide.bbd"
-setup(example)
-configure(example)
-update_queue(example)
-#nrt_record(example)
+#setup(example)
+#configure(example)
+#update_queue(example)
+nrt_record(example)

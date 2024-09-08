@@ -104,6 +104,8 @@ class Score:
     # Extend tracks that conform to group, pad the rest to match new timeline len
     def extend_groups(self, group_names: list[str], static_track_names: list[str] = []):
 
+        print("DEBUG: EXTEND CALLED")
+
         def track_conforms(tname, gname):
             return len(group_names) == 0 or (tname in static_track_names) or (gname in group_names)
 
@@ -124,6 +126,7 @@ class Score:
                 longest_track_name = key
 
         # Start by extending the longest track
+        print("DEBUG: ATTEMPTING TO EXTEND LONGEST TRACK", longest_track_name)
         self.extend(longest_track_name)
 
         goal_time = track_len(self.tracks[longest_track_name])

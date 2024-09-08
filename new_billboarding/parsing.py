@@ -97,7 +97,7 @@ def parse_pads_config(source_string: str) -> list[PadConfig]:
 def parse_effect(effect: EffectDefinition, group_name: str, default_args: str, external_id_override: str = "") -> EffectMessage:
     args = parse_orphaned_args([default_args, effect.args_string])
     osc_args = args_as_osc(args, [])
-    external_id = ("effect_" + effect.unique_suffix + "_" + group_name) if external_id_override == "" else external_id_override
+    external_id = ("effect_" + group_name + "_" + effect.unique_suffix) if external_id_override == "" else external_id_override
     return EffectMessage(effect, external_id, effect.instrument_name, osc_args)
 
 def parse_drone_header(header: SynthHeader) -> EffectDefinition:
