@@ -12,8 +12,8 @@ from billboarding import Billboard
 from default_configuration import get_default_samples, get_default_synthdefs, get_effects_clear
 from billboarding import CommandContext
 from jdw_osc_utils import create_nrt_preload_bundle
-import temp_import.default_synthdefs as default_synthdefs
-import temp_import.sample_reading as sample_reading
+import default_synthdefs as default_synthdefs
+import sample_reading as sample_reading
 
 def default_client() -> SimpleUDPClient:
     return SimpleUDPClient("127.0.0.1", 13339) # Router
@@ -124,8 +124,8 @@ def update_queue(bdd_path: str):
             sleep(0.005) # Seems to be needed to prevent dropped messages
             client.send(msg)
 
-example = "/home/estrandv/programming/jdw-pycompose/songs/courtRide.bbd"
+#example = "/home/estrandv/programming/jdw-pycompose/songs/courtRide.bbd"
 #setup(example)
 #configure(example)
 #update_queue(example)
-nrt_record(example)
+#nrt_record(example)
