@@ -85,6 +85,7 @@ class NrtBundleInfo:
     track_name: str
     nrt_bundle: OscBundle
     preload_messages: list[OscMessage]
+    preload_bundles: list[OscBundle]
 
 def filter_used_samples(all_samples: list[SampleMessage], pack_name: str, track_messages: list[ElementMessage]) -> list[SampleMessage]:
     pack_samples: list[SampleMessage] = [sample for sample in all_samples if sample.sample.sample_pack == pack_name]
@@ -193,8 +194,10 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
             bpm: float = 116.0 # TODO: See notes on current bpm type expectation issues
             file_name: str = "/home/estrandv/jdw_output/track_" + str(track_name) + ".wav"
             end_time: Decimal = score.get_end_time() + Decimal("8.0") # A little extra, but still doesn't account properly for release/delay/reverb
-            bundle = create_nrt_record_bundle(score_bundles, file_name, float(end_time), bpm)
-            bundle_info = NrtBundleInfo(track_name, bundle, all_preload_messages)
+
+            # No score bundles are included in this since it creates too massive bundles, instead we put them in preload
+            bundle = create_nrt_record_bundle([], file_name, float(end_time), bpm)
+            bundle_info = NrtBundleInfo(track_name, bundle, all_preload_messages, preload_bundles=score_bundles)
             all_bundle_infos.append(bundle_info)
 
     return all_bundle_infos

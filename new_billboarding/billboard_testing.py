@@ -11,6 +11,7 @@ from billboarding import parse_billboard
 from billboarding import Billboard
 from default_configuration import get_default_samples, get_default_synthdefs, get_effects_clear
 from billboarding import CommandContext
+from jdw_osc_utils import create_nrt_preload_bundle
 import temp_import.default_synthdefs as default_synthdefs
 import temp_import.sample_reading as sample_reading
 
@@ -61,22 +62,41 @@ def nrt_record(bdd_path: str):
                     - This does not have to break the current structure at all, but will take some implementation in jdw-sc
                 - I reworked samples to no longer loop-around modulo and instead require exact indices... see if this had any effect on the keyboards
 
+            # NEXT UP: PRELOAD SCORE LINES
+            - jdw-sc.osc_daemon: '"nrt_record" =>'
+                - This actually uses "preload_rows" already, but they are untimed raw packets that implicitly get appended to 0.0
+                    - We could keep today's behaviour easily by having them be timed but sending them with time 0.0
+                        - Original call is in '"nrt_preload" => '
+                        - Seems I used to call nrt_preload in the old billboarding for effects and drones
+                            - Now I guess they're just appended via manual calls
+                            - So apart from us having a create_nrt_preload_bundle which can be useful to extend, we don't have to mind
+                                whether anything breaks
+
+                => TODO:
+                    x Change definition of nrt_preload bundles to contain timed messages in jdw-sc (and here)
+                        x Combine the preload and score messages in nrt_record so that the full set advances the timeline
+                    - Send score rows as preload instead of alongside the nrt bundle
+
+
         """
 
         billboard: Billboard = parse_billboard(bdd_file.read())
         bundle_infos: list[NrtBundleInfo] = get_nrt_record_bundles(billboard)
         for info in bundle_infos:
-            # TODO: Testing if any tracks are short enough for single-send
-            #if info.track_name == "Roland808_drum_0":
-            #if info.track_name not in ["Roland808_drum_0", "Roland808_hdrum_2"]:
-            if True:
-                print("DEBUG: NRT recording", info.track_name)
-                for preload in info.preload_messages:
-                    client.send(preload)
-                    sleep(0.005)
-                client.send(info.nrt_bundle)
-            #else:
-            #    print("DEBUG: NOT RIGHT", info.track_name)
+            print("DEBUG: NRT recording", info.track_name)
+            for preload in info.preload_messages:
+                # TODO: We can batch this too, ya know
+                client.send(preload)
+                sleep(0.005)
+
+            # Just some batching hack I stole off stackoverflow
+            batch_size = 10
+            preload_batches = [info.preload_bundles[i * batch_size:(i + 1) * batch_size] for i in range((len(info.preload_bundles) + batch_size - 1) // batch_size )]
+            for batch in preload_batches:
+                client.send(create_nrt_preload_bundle(batch))
+                sleep(0.005)
+
+            client.send(info.nrt_bundle)
 
 
 def update_queue(bdd_path: str):

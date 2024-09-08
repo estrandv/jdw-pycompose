@@ -17,7 +17,7 @@ from shuttle_notation import ResolvedElement
 # TODO: Pass in, somehow...
 SC_DELAY_MS = 70
 
-def create_nrt_preload_bundle(content: list[OscPacket]) -> OscBundle:
+def create_nrt_preload_bundle(content: list[OscBundle]) -> OscBundle:
 
     content_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
     content_bundle.add_content(create_msg("/bundle_info", ["nrt_preload"]))
