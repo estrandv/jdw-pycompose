@@ -5,11 +5,11 @@ from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.udp_client import SimpleUDPClient
 from billboard_osc_conversion import NrtBundleInfo, get_all_command_messages, get_all_effects_create, get_all_effects_mod, get_nrt_record_bundles, get_sampler_keyboard_config, get_sequencer_batch_queue_bundle, get_synth_keyboard_config
-from billboarding import parse_billboard
+from billboard_construction import parse_billboard
 
-from billboarding import Billboard
+from billboard_classes import Billboard
 from default_configuration import get_default_samples, get_default_synthdefs, get_effects_clear
-from parsing import CommandContext
+from billboard_classes import CommandContext
 from jdw_osc_utils import create_nrt_preload_bundle
 import default_synthdefs as default_synthdefs
 import sample_reading as sample_reading
@@ -47,7 +47,7 @@ def configure(bdd_path: str):
         all_messages += get_all_effects_create(billboard)
 
         for msg in all_messages:
-            sleep(0.005) # Seems to be needed to prevent dropped messages. This is a tested minimum for 100% configure.
+            sleep(0.001) # Not 100% sure this is needed anymore but it's nice when configure doesn't drop any packets
             client.send(msg)
 
 def nrt_record(bdd_path: str):

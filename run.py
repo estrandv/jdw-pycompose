@@ -3,13 +3,11 @@ import sys
 
 import jdw_osc_utils
 
-BDD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
-BDD_FILE = "courtRide.bbd"
-#BDD_FILE = "lab.bbd"
-#BDD_FILE = "nrt_test.bbd"
+BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
+BBD_FILE = "courtRide.bbd"
 
 if "--update" in sys.argv:
-    song.configure(BDD_ROOT + BDD_FILE)
+    song.configure(BBD_ROOT + BBD_FILE)
 elif "--stop" in sys.argv:
     song.default_client().send(jdw_osc_utils.create_msg("/hard_stop", []))
     # Note that this kills any existing drones, which will have to be manually recreated
@@ -20,10 +18,10 @@ elif "--stop" in sys.argv:
         0.0
     ])
     # TODO: Make setup separate
-    song.setup(BDD_ROOT + BDD_FILE)
+    song.setup(BBD_ROOT + BBD_FILE)
 
 elif "--nrt" in sys.argv:
-    song.nrt_record(BDD_ROOT + BDD_FILE)
+    song.nrt_record(BBD_ROOT + BBD_FILE)
 else:
-    song.configure(BDD_ROOT + BDD_FILE)
-    song.update_queue(BDD_ROOT + BDD_FILE)
+    song.configure(BBD_ROOT + BBD_FILE)
+    song.update_queue(BBD_ROOT + BBD_FILE)

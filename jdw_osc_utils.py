@@ -13,6 +13,7 @@ from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
 from shuttle_notation import ResolvedElement
+from billboard_classes import ElementMessage
 
 # TODO: Pass in, somehow...
 SC_DELAY_MS = 70
@@ -24,7 +25,6 @@ def create_nrt_preload_bundle(content: list[OscBundle]) -> OscBundle:
 
     nested_bundle = osc_bundle_builder.OscBundleBuilder(osc_bundle_builder.IMMEDIATELY)
     for cnt in content:
-        print(cnt)
         content_bundle.add_content(cnt)
 
     #content_bundle.add_content(nested_bundle.build())
@@ -158,14 +158,6 @@ def args_as_osc(raw_args: dict[str, Decimal], override: list[str | float]):
     return osc_args
 
 
-# Contains the original element and the message it was resolved as
-@dataclass
-class ElementMessage:
-    element: ResolvedElement
-    osc: OscMessage
-
-    def get_time(self) -> str:
-        return str(self.element.args["time"]) if "time" in self.element.args else "0.0"
 
 # Some elements have symbols or other syntax that force a certain osc format
 def resolve_special_message(element: ResolvedElement, instrument_name: str) -> ElementMessage | None:
@@ -214,8 +206,4 @@ def to_note_on(element: ResolvedElement, instrument_name: str, external_id_overr
     external_id = resolve_external_id(element) if external_id_override == "" else external_id_override
     freq = resolve_freq(element)
     osc_args = args_as_osc(element.args, ["freq", freq])
-
-    if instrument_name == "Roland808":
-            print("DEBUG WARN: found a sampler defined as a regular synth")
-
     return create_msg("/note_on", [instrument_name, external_id, SC_DELAY_MS] + osc_args)

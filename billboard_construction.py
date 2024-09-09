@@ -1,22 +1,104 @@
-# Purpose: master method for parsing the entire billboard from a source string by orchestrating other libs.
-# TODO: Rethink purpose and class placement
+from billboard_classes import *
+from jdw_osc_utils import args_as_osc
+from shuttle_hacks import parse_orphaned_args
+from shuttle_notation.parsing.full_parse import Parser
+from jdw_osc_utils import ElementMessage, args_as_osc, resolve_special_message, to_note_mod, to_note_on_timed, to_play_sample
+from parse_classes import SynthSection
+from line_classify import QUEUE_COMMAND_SYMBOL, UPDATE_COMMAND_SYMBOL
+from parsing import parse_track
 
-from filtering import extract_commands, extract_default_args, extract_group_filters, extract_synth_chunks
+def parse_pads_config(source_string: str) -> list[PadConfig]:
+    elements = Parser().parse(source_string)
+
+    # e.g. 22:5
+    # TODO: Then convert to /keyboard_pad_samples k v k v ...
+    return [PadConfig(e.index, int(e.args["time"])) for e in elements]
+
+def parse_effect(effect: EffectDefinition, group_name: str, default_args: str, external_id_override: str = "") -> EffectMessage:
+    args = parse_orphaned_args([default_args, effect.args_string])
+    osc_args = args_as_osc(args, [])
+    external_id = ("effect_" + group_name + "_" + effect.unique_suffix) if external_id_override == "" else external_id_override
+    return EffectMessage(effect, external_id, effect.instrument_name, osc_args)
+
+def parse_command(line: str) -> BillboardCommand:
+    split = line.strip().split(" ")
+    type_notation: str = split[0]
+
+    context: CommandContext = CommandContext.ALL
+    if type_notation == QUEUE_COMMAND_SYMBOL:
+        context = CommandContext.QUEUE
+    elif type_notation == UPDATE_COMMAND_SYMBOL:
+        context = CommandContext.UPDATE
+
+    args: list[str] = split[2:] if len(split) > 2 else []
+    return BillboardCommand(split[1], context, args)
+
+
+def parse_drone_header(header: SynthHeader) -> EffectDefinition:
+    return EffectDefinition(header.instrument_name, "", header.default_args_string)
+
+
+def process_synth_section(synth_section: SynthSection, billboard_default_args: str) -> BillboardSynthSection:
+
+    # Build a combined default arg string from both DEFAULT and synth header args, prioritizing synth header args
+    full_default_args = billboard_default_args
+    if full_default_args != "" and synth_section.header.default_args_string != "":
+        full_default_args += ","
+    full_default_args += synth_section.header.default_args_string
+
+    tracks: dict[str, BillboardTrack] = {}
+    effects: list[EffectMessage] = []
+
+    for effect in synth_section.effects:
+        effects.append(parse_effect(effect, synth_section.header.group_name, full_default_args))
+
+    for track in synth_section.tracks:
+
+        hdrone_id = "" # All track messages should mod the same id if track is drone
+
+        # Create a drone for each track to modify, if track is drone
+        if synth_section.header.is_drone:
+            # Add an effect create/mod for the drone that the track will interact with
+            header_drone_def = parse_drone_header(synth_section.header)
+            hdrone_id = "effect_" + synth_section.header.group_name + "_" + str(track.index)
+            effects.append(parse_effect(header_drone_def, synth_section.header.group_name, full_default_args, hdrone_id))
+
+        # Define behaviour for elements that don't conform to any special message standard
+        def create_default_message(element: ResolvedElement) -> ElementMessage:
+            # Drone tracks use note mod by default
+            if synth_section.header.is_drone:
+                return ElementMessage(element, to_note_mod(element, hdrone_id))
+            elif synth_section.header.is_sampler:
+                return ElementMessage(element, to_play_sample(element, synth_section.header.instrument_name))
+            else:
+                return ElementMessage(element, to_note_on_timed(element, synth_section.header.instrument_name))
+
+        elements = parse_track(track, full_default_args)
+        resolved: list[ElementMessage] = []
+        for element in elements:
+            special = resolve_special_message(element, synth_section.header.instrument_name)
+            resolved.append(special if special != None else create_default_message(element))
+
+
+        group_name = track.group_override if track.group_override != "" else synth_section.header.group_name
+        track_name = "_".join([synth_section.header.instrument_name, group_name, str(track.index)])
+        tracks[track_name] = BillboardTrack(resolved, group_name)
+
+    # Save keyboard/sampler configuration data for selected synth headers
+    pads: list[PadConfig] = parse_pads_config(synth_section.header.additional_args_string) if synth_section.header.additional_args_string != "" else []
+    key_args = parse_orphaned_args([synth_section.header.default_args_string])
+    key_configuration = BillboardKeyConfiguration(synth_section.header.instrument_name, pads, key_args, synth_section.header.is_sampler)
+    keys = key_configuration if synth_section.header.is_selected else None
+
+    return BillboardSynthSection(tracks, effects, keys, synth_section.header)
+
+
+# TODO: Perhaps a bit out of scope
 from line_classify import classify_lines
-from parsing import BillboardSynthSection, process_synth_section, parse_command, BillboardCommand, parse_synth_chunk
+from parsing import parse_synth_chunk
+from filtering import extract_commands, extract_default_args, extract_group_filters, extract_synth_chunks
 
-from dataclasses import dataclass
 
-@dataclass
-class Billboard:
-    sections: list[BillboardSynthSection]
-    group_filters: list[list[str]]
-    commands: list[BillboardCommand]
-
-    def get_final_filter(self) -> list[str]:
-        return self.group_filters[-1] if len(self.group_filters) > 0 else []
-
-# TODO: Consider scope of this file - this is an orchestration method but other parts are more final-step
 def parse_billboard(billboard_string: str) -> Billboard:
     lines = classify_lines(billboard_string)
     filters = extract_group_filters(lines)

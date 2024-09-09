@@ -6,10 +6,10 @@ from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_packet import OscPacket
 from shuttle_notation.parsing.information_parsing import ElementInformation
-from billboarding import Billboard
+from billboard_classes import Billboard
 from default_configuration import SampleMessage, get_default_samples, get_default_synthdefs
 from nrt_scoring import Score
-from parsing import BillboardSynthSection, BillboardTrack, CommandContext
+from billboard_classes import BillboardSynthSection, BillboardTrack, CommandContext
 from jdw_osc_utils import ElementMessage, args_as_osc, create_batch_bundle, create_batch_queue_bundle, create_msg, create_nrt_record_bundle, create_queue_update_bundle, to_timed_osc
 
 

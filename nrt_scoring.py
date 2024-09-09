@@ -1,4 +1,3 @@
-# todo: WIP translation to be used with new billboarding
 
 from decimal import Decimal
 from pythonosc.osc_bundle import OscBundle
@@ -6,7 +5,7 @@ from shuttle_notation.parsing.element import ResolvedElement
 from jdw_osc_utils import ElementMessage, create_msg, to_timed_osc
 from dataclasses import dataclass, field
 
-from parsing import BillboardTrack
+from billboard_classes import BillboardTrack
 
 def element_beats(element: ElementMessage) -> Decimal:
     return Decimal(element.get_time())
@@ -125,12 +124,8 @@ class Score:
                         while total_beats(self.tracks[track_name]) < goal_time:
                             diff = goal_time - total_beats(self.tracks[track_name])
 
-                            #if diff < slen and track_name in track_names:
-                                #print("Can't extend ", track_name, diff, slen)
-
                             if diff >= slen and track_name in track_names:
 
                                 self.extend_track(track_name)
-                                #print("Extended and now has these elements", len(self.tracks[track_name]))
                             else:
                                 self.pad_track(track_name, diff)

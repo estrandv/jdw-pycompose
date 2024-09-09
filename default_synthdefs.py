@@ -11,5 +11,4 @@ def get() -> list[str]:
                 full = "SynthDef.new" + cut
                 defs.append(full)
 
-    print(defs)
     return defs
