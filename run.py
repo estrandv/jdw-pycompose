@@ -1,4 +1,4 @@
-import billboard_testing as song 
+import billboard_running as song
 import sys
 
 import jdw_osc_utils
@@ -9,10 +9,10 @@ BDD_FILE = "courtRide.bbd"
 #BDD_FILE = "nrt_test.bbd"
 
 if "--update" in sys.argv:
-    song.configure(BDD_ROOT + BDD_FILE) 
+    song.configure(BDD_ROOT + BDD_FILE)
 elif "--stop" in sys.argv:
     song.default_client().send(jdw_osc_utils.create_msg("/hard_stop", []))
-    # Note that this kills any existing drones, which will have to be manually recreated 
+    # Note that this kills any existing drones, which will have to be manually recreated
     song.default_client().send_message("/note_modify", [
         "(.*)",
         0,
@@ -25,5 +25,5 @@ elif "--stop" in sys.argv:
 elif "--nrt" in sys.argv:
     song.nrt_record(BDD_ROOT + BDD_FILE)
 else:
-    song.configure(BDD_ROOT + BDD_FILE) 
+    song.configure(BDD_ROOT + BDD_FILE)
     song.update_queue(BDD_ROOT + BDD_FILE)

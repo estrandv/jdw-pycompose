@@ -1,3 +1,6 @@
+# Purpose: Make extraction of default samples and synthdefs easy
+# TODO: Can be combined with sample_reading and read default synths from and scd
+
 from dataclasses import dataclass
 
 from pythonosc.osc_message import OscMessage

@@ -1,17 +1,11 @@
-from pythonosc.osc_bundle import OscBundle
-from pythonosc.osc_message import OscMessage
-from shuttle_notation.parsing.element import Enum, ResolvedElement
-from shuttle_notation.parsing.full_parse import Parser
-from shuttle_notation.parsing.information_parsing import parse_args
-from shuttle_hacks import parse_orphaned_args
-from jdw_osc_utils import create_msg, ElementMessage, args_as_osc, is_symbol, resolve_special_message, to_note_mod, to_note_on, to_note_on_timed, to_play_sample
+# Purpose: master method for parsing the entire billboard from a source string by orchestrating other libs.
+# TODO: Rethink purpose and class placement
+
 from filtering import extract_commands, extract_default_args, extract_group_filters, extract_synth_chunks
-from line_classify import QUEUE_COMMAND_SYMBOL, UPDATE_COMMAND_SYMBOL, begins_with, classify_lines
-from parsing import BillboardSynthSection, process_synth_section, parse_pads_config, PadConfig, parse_drone_header, parse_effect, EffectMessage, EffectDefinition, SynthHeader, TrackDefinition, cut_first, parse_track, parse_command, CommandContext, BillboardCommand, SynthSection, parse_synth_chunk
+from line_classify import classify_lines
+from parsing import BillboardSynthSection, process_synth_section, parse_command, BillboardCommand, parse_synth_chunk
 
 from dataclasses import dataclass
-
-
 
 @dataclass
 class Billboard:

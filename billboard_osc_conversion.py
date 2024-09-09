@@ -1,3 +1,5 @@
+# Purpose: Creating send-ready OSC data from fully parsed Billboard classes, ideally as pure orchestrations of other lib conversion methods.
+
 from dataclasses import dataclass
 from decimal import Decimal
 from pythonosc.osc_bundle import OscBundle
@@ -87,7 +89,7 @@ class NrtBundleInfo:
     preload_messages: list[OscMessage]
     preload_bundles: list[OscBundle]
 
-def filter_used_samples(all_samples: list[SampleMessage], pack_name: str, track_messages: list[ElementMessage]) -> list[SampleMessage]:
+def _filter_used_samples(all_samples: list[SampleMessage], pack_name: str, track_messages: list[ElementMessage]) -> list[SampleMessage]:
     pack_samples: list[SampleMessage] = [sample for sample in all_samples if sample.sample.sample_pack == pack_name]
 
     used_samples: list[SampleMessage] = []
@@ -126,6 +128,10 @@ def filter_used_samples(all_samples: list[SampleMessage], pack_name: str, track_
     Q: But why can't we just construct the full scd nrt script here, instead of in jdw-sc, since we know all the data already?
     A: Jdw-sc has a lot of "smart messages", like note_on_timed or play_sample, that we'd have to resolve here as well in that case.
         - This is easier!
+
+    Q: Why do we do so much "nrt preloading" instead of sending everything in the same bundle?
+    A: Since NRT recording uses -a lot- of data to compose whole songs of dynamic length, having everything in the same bundle
+        can literally make the message too big for your network card.
 
 
 """
@@ -179,7 +185,7 @@ def get_nrt_record_bundles(billboard: Billboard) -> list[NrtBundleInfo]:
             if section.header.is_sampler:
                 all_samples = get_default_samples()
                 # TODO: Bring filtering back
-                my_samples = filter_used_samples(all_samples, section.header.instrument_name, section.tracks[track_name].messages)
+                my_samples = _filter_used_samples(all_samples, section.header.instrument_name, section.tracks[track_name].messages)
                 #my_samples = all_samples
                 all_preload_messages += [s.load_msg for s in my_samples]
 
