@@ -7,7 +7,6 @@ from pythonosc.osc_message import OscMessage
 from pythonosc.udp_client import SimpleUDPClient
 
 from file_utilities import get_default_samples, get_default_synthdefs
-import sample_reading as sample_reading
 
 from jdw_billboarding import get_configuration_messages, NrtData, get_nrt_data, get_queue_update_packets
 
