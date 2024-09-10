@@ -1,7 +1,7 @@
 import billboard_running as song
 import sys
 
-import jdw_osc_utils
+from jdw_billboarding.lib import jdw_osc_utils
 
 BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
 BBD_FILE = "courtRide.bbd"
