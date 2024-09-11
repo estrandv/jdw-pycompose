@@ -10,6 +10,8 @@ from file_utilities import get_default_samples, get_default_synthdefs
 
 from jdw_billboarding import get_configuration_messages, NrtData, get_nrt_data, get_queue_update_packets
 
+from listener import Listener
+
 def default_client() -> SimpleUDPClient:
     return SimpleUDPClient("127.0.0.1", 13339) # Router
 
@@ -36,6 +38,9 @@ def configure(bdd_path: str):
 def nrt_record(bdd_path: str):
     client = default_client()
 
+    listener = Listener()
+    print("LISTENER LIVE")
+
     synthdefs: list[SynthDefMessage] = get_default_synthdefs()
     samples: list[SampleMessage] = get_default_samples()
 
@@ -52,6 +57,7 @@ def nrt_record(bdd_path: str):
                 client.send(batch)
                 sleep(0.005)
             client.send(nrt_track.main_bundle)
+            listener.wait_for("/nrt_record_finished")
 
 def update_queue(bdd_path: str):
     client = default_client()
