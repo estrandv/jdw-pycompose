@@ -38,6 +38,7 @@
 
 COMMAND /set_bpm 116
 COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 7
 
 UPDATE_COMMAND /create_router 10 0
 UPDATE_COMMAND /create_router 20 0
@@ -53,23 +54,22 @@ UPDATE_COMMAND /create_router 54 0
 
 DEFAULT time0.5,sus0.2,amp1.0
 
->>> drum hdrum keys bass reed cymbal
->>> drum hdrum keys bass cele cymbal
->>> drum hdrum bass prophet cymbal boom hreed
+#>>> drum hdrum keys bass reed cymbal
+#>>> drum hdrum keys bass cele cymbal
+#>>> drum hdrum bass prophet cymbal boom hreed
 
 >>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> drum hdrum keys bass rails cymbal boom
 >>> drum hdrum keys bass rails cymbal boom
->>> drum hdrum keys bass rails cymbal boom
->>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> drum hdrum keys cymbal prophet cymbal experiment
 
 >>> drum hdrum keys bass cymbal cele cymbal
->>> drum hdrum bass cymbal reed hreed boom cymbal
+#>>> drum hdrum bass cymbal reed hreed boom cymbal
+#>>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> drum hdrum keys bass rails cymbal boom reed
+#>>> drum hdrum keys bass rails cymbal boom reed
 
->>> drum hdrum keys cymbal prophet cymbal experiment
->>> drum hdrum keys bass rails cymbal boom reed
->>> drum hdrum keys bass rails cymbal boom reed
-
->>> keys reed prophet insanity cymbal
+#>>> keys reed prophet insanity cymbal
 >>> drum hdrum bass keys reed hreed prophet insanity boom
 
 # NOTE: detectsilence can mess up drones that go out of arrangement - never quiet such a drone to amp 0 after starting.
@@ -83,7 +83,7 @@ DEFAULT time0.5,sus0.2,amp1.0
     €distortion:a drive0.5
     #€delay:a
 
-*@moogBass:prophet susT0.5,sus0.01,amp1,lfoS2,cutoff4000,pan-0.1,out50
+@moogBass:prophet susT0.5,sus0.01,amp1,lfoS2,cut4000,pan-0.1,out50
 
     (x:1,fish0 c6:1 e6:1 f6:1 e6:0,susT2 x:12):0.5
 
@@ -95,10 +95,10 @@ DEFAULT time0.5,sus0.2,amp1.0
 
     (c5:4 c5:4 bb4:4 a4:2 bb4:2):chorus0.4,susT1.1,amp1,time0.5,sus8,len4.0,tot0.00,pan-0.2
 
-@FMRhodes:cele out94
+*@FMRhodes:cele out94
 
     ((c6:1 bb6:1 a6:0.5 g6:1.5 f6:1 g6:0.5 a6:1 f6:0.5 g6:0 x:0.5 x:0.5)*3 \
-        (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.45,chorus0.5,relT0.8,amp0.3,cutoff1000,len8,tot7.00,pan0.3
+        (c6:1 bb6:1 a6:0.5 g6:1.5 x:1 x:0.5 x:1 x:0.5 x:0 x:1)):sus0.45,chorus0.5,relT0.8,amp0.3,cut1000,len8,tot7.00,pan0.3
 
     €reverb:a room0.8,mix0.15,mul0.75
     €clamp:a under1500,over880
@@ -137,7 +137,7 @@ DEFAULT time0.5,sus0.2,amp1.0
 
 @eBass:bass out60
 
-    (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus8,len4.0,tot0.00,cutoff200,pan0.2
+    (c4:4 c4:4 bb3:4 a3:2 bb3:2):chorus0.4,susT1.1,amp1,time0.5,sus8,len4.0,tot0.00,cut200,pan0.2
 
     €clamp:a under800,over140
 

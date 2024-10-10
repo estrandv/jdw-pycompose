@@ -1,0 +1,66 @@
+COMMAND /set_bpm 126
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 3
+
+UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_router 12 0
+UPDATE_COMMAND /create_router 14 0
+
+UPDATE_COMMAND /create_router 26 0
+UPDATE_COMMAND /create_router 16 0
+UPDATE_COMMAND /create_router 18 0
+UPDATE_COMMAND /create_router 42 0
+UPDATE_COMMAND /create_router 44 0
+UPDATE_COMMAND /create_router 46 0
+
+
+DEFAULT time0.5,sus0.2,amp1.0
+
+>>> brah drum
+>>> brah drum drumsnare drumslap apad  
+>>> brah drum drumsnare drumslam sitarlow apad vocverse 
+#>>> brah drum drumsnare drumslam sitarlow apad 
+#>>> drumblast brah drum drumsnare drumslam drumslap sitarhigh 
+>>> drumblast brah drum drumsnare drumslam drumslap sitarhigh vocchorus
+#>>> brah drum drumsnare drumslam apad drumblast basss 
+#>>> brah drum basss drumsnare sitarlow 
+#>>> brah drum drumsnare drumslam apad outro
+#>>> brah drum drumsnare drumslam apad outro vocoutro
+
+*@dBass:bass
+
+<outro> (x:2 c6:1 c6:1 c6:1 b5:2 g5:3 c6:1 c6:1 c6:1 d6:2 b5:1 c6:0):len16,tot16.00
+
+*@gritBass:basss amp1 
+(c4:1 c4:0.5 c4:0.5 c4:1 c4:0.5 c4:0.5 c4:1 c4:0.5 c4:0.5 c4:1 c4:0.5 c4:0.5):len8,tot7.50
+
+
+@karp:sitar  
+<sitarhigh> (e7:1 g7:2 e7:1 g7:2 g7:1 a7:1 g7:3 c8:1 b7:1 a7:1 g7:1 a7:1 g7:1 e7:2 e7:1 g7:1 a7:1 g7:1 e7:1 e7:3 c8:1 b7:1 a7:1 b7:1 a7:1 g7:0):len32,tot32.00
+<sitarlow> (f5:1 a5:1 b5:1 c6:1 a5:1 b5:1 a5:1 b5:1 c6:1 a5:1 f5:1 a5:1 f5:1 a5:1 c6:1 b5:1 a5:0):len16,tot16.00
+*@FMRhodes:vocals sus2,out44
+
+    <vocverse> (x:4.25 e5:1.75 c5:6 f5:1 e5:2 e5:1.75 g5:1 f5:1 e5:3 c5:6 e5:1 f5:2 e5:5 e5:1.75 c5:6 b5:2.75 b5:2.25 g5:2 g5:0.75 g5:2 f5:1 e5:5 e5:2 f5:1 e5:1.75):len64,tot62.25
+    <vocoutro> (x:2 g6:2 g6:1 f6:0.5 e6:1.5 d6:1 e6:2 c6:2 c6:1 e6:2 d6:0.75 e6:2.25 g6:0.25 a6:0.25 g6:1.5 g6:1.25 f6:0.25 e6:1.5 d6:1 e6:2.25 c6:2.75 d6:2 c6:3 g6:2 g6:1 f6:0.5 e6:1.5 d6:1 e6:2 c6:2.25 c6:0.75 d6:0.5 e6:1.5 f6:1 e6:2 g6:2 g6:1 f6:0.5 e6:1.5 d6:1 c6:5 c6:1 d6:2 c6:0\
+        ):len64,tot64.00,amp0.35
+    <vocchorus> (c7:1 g6:2 c7:1 d7:2 c7:1 d7:1 e7:1 d7:2 c7:1 g6:4 c7:1 b6:0.5 g6:1.25 c7:1.25 d7:2 e7:2 c7:8):len32,tot24.00,amp0.5
+
+@aPad:apad
+(x:6 d7:1 b6:1 c7:0):len8,tot8.00
+
+*@SP_EMU_SP12:drumx ofs0.002,sus10,out42,amp0.5
+    <drumsnare> (x:2 4:4 4:0.5 4:1.5):len8,tot6.50
+    <drum> 16:2
+    <drumslam> (7:1 7:1 3:2 7:1.5 7:0.5 3:2):len8,tot6.00 
+    <drumslap> (x:16 x:12 1:1.5 1:0.5 1:1 1:1):len16,tot15.00,amp0.35
+    <drumtick> (25:0.5 25:0.5 25:3 x:12):len4.0,tot1.00,amp0.35
+    <drumblast> (8:16):len4.0,tot0.00,amp0.25
+    €reverb:a 
+
+
+@experimental:brah amp1,susT0.7,sus4,out10
+
+(c4:8,sus8 f4:4 g4:4):len16,tot12.00
+
+    €delay:a 
+    €reverb:a

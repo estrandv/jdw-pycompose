@@ -1,42 +1,27 @@
 SynthDef.new("experimental",
 {|amp=1,freq=440,gate=1,out=0,pan=0,
-    susT=1, fmod=0, rate=0, attT=0, decT=0, susL=1,relT=0.5,wid=0.5,fxo=0.1,prt=0.2|
-    var osc, env, lfo;
+    susT=1, fmod=0, rate=0, attT=0, decT=0, susL=1,relT=0.5,fxi=0.5,fxii=0.1,prt=0.2|
+    var osc, env, lfo, saw1, saw2;
 
     freq = freq.lag(prt);
     freq = [freq, freq+fmod];
     freq=(freq * [1, 1.005]);
-
-    //amp = amp * lfo;
-
-    //freq = freq * LFPulse.kr(2.00028, 0, width:0.25, mul: 0.5);
-    //amp = amp * LFPulse.kr(440.28, 0, width:0.25, mul: 1);
-
     lfo = SinOsc.ar(1.222, mul: 1.0);
-
-    osc=VarSaw.ar(freq, mul: (amp / 4) * lfo, width: 1) + Saw.ar(freq * 2.0002, mul: amp * fxo, width: wid);
-
-
-	env = Env.adsr(
-		attackTime: attT,
-		decayTime: decT,
-		sustainLevel: susL,
-		releaseTime: relT);
-
-    env=EnvGen.ar(envelope: env, gate: gate, doneAction: Done.freeSelf);
-
-    osc=(osc * env);
+    saw1 = VarSaw.ar(freq, mul: (amp / 4) * lfo, width: 1);
+    saw2 = Saw.ar(freq * 2.0002, mul: amp * fxii, width: fxi);
+    osc= saw1 + saw2; 
+	env = Env.adsr(attT, decT, susL, relT);
+    env = EnvGen.ar(envelope: env, gate: gate, doneAction: Done.freeSelf);
+    osc = (osc * env);
     osc = Mix(osc) * 0.5;
     osc = Pan2.ar(osc, pan);
     Out.ar(out, osc)})
 
 
-
-
 SynthDef.new("eBass",
 {|amp=1,freq=440,gate=1,out=0,pan=0,
     susT=0.2,relT=0.04,
-    cutoff=200,rq=0.5,fmod=1,fxa=1.0,fxf=300,fxs=0.002,fBus=0|
+    cut=200,rq=0.5,fmod=1,fxa=1.0,fxf=300,fxs=0.002,fBus=0|
 
     var osc1, osc2, filter, filter2, env, filterenv, ab;
     amp = amp * 0.2;
@@ -47,7 +32,7 @@ SynthDef.new("eBass",
     osc2 = Mix(Saw.ar(freq * 2) * [fxs, 0.1], osc2);
 
     filterenv = EnvGen.ar(Env.adsr(0.0, 0.5, 0.2, susT), 1, doneAction:Done.none);
-    filter =  RLPF.ar(osc1 + osc2, cutoff * filterenv + 100, rq);
+    filter =  RLPF.ar(osc1 + osc2, cut * filterenv + 100, rq);
     ab = abs(filter);
     filter2 = (filter * (ab + 2) / (filter ** 2 + 1 * ab + 1));
     filter2 = BLowShelf.ar(filter2, fxf, fxa, -12);
@@ -61,23 +46,23 @@ SynthDef.new("eBass",
 
 
 SynthDef.new("FMRhodes", {|amp=1,freq=440,gate=1,out=0,pan=0,
-    attT = 0.001, relT = 1, lfoS = 4.8, lfoD = 0.1
-    inputLevel = 0.2, modIndex = 0.2, mix = 0.2|
+    attT = 0.001, relT = 1, fxi = 4.8, fxii = 0.1
+    amod = 0.2, fxiii = 0.2, fxiv = 0.2|
 
     var env1, env2, env3, env4;
     var osc1, osc2, osc3, osc4, snd;
 
-    env1 = Env.perc(attT, relT * 1.25, inputLevel, curve: \lin).kr;
-    env2 = Env.perc(attT, relT, inputLevel, curve: \lin).kr;
-    env3 = Env.perc(attT, relT * 1.5, inputLevel, curve: \lin).kr;
-    env4 = Env.perc(attT, relT * 1.5, inputLevel, curve: \lin).kr;
+    env1 = Env.perc(attT, relT * 1.25, amod, curve: \lin).kr;
+    env2 = Env.perc(attT, relT, amod, curve: \lin).kr;
+    env3 = Env.perc(attT, relT * 1.5, amod, curve: \lin).kr;
+    env4 = Env.perc(attT, relT * 1.5, amod, curve: \lin).kr;
 
-    osc4 = SinOsc.ar(freq) * 6.7341546494171 * modIndex * env4;
+    osc4 = SinOsc.ar(freq) * 6.7341546494171 * fxiii * env4;
     osc3 = SinOsc.ar(freq * 2, osc4) * env3;
     osc2 = SinOsc.ar(freq * 30) * 0.683729941 * env2;
     osc1 = SinOsc.ar(freq * 2, osc2) * env1;
-    snd = Mix((osc3 * (1 - mix)) + (osc1 * mix));
-  	snd = snd * (SinOsc.ar(lfoS).range((1 - lfoD), 1));
+    snd = Mix((osc3 * (1 - fxiv)) + (osc1 * fxiv));
+  	snd = snd * (SinOsc.ar(fxi).range((1 - fxii), 1));
 
     snd = snd * Env.asr(0, 1, 0.1).kr(gate: gate, doneAction: Done.freeSelf);
     snd = Pan2.ar(snd, pan, amp);
@@ -88,10 +73,10 @@ SynthDef.new("FMRhodes", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 SynthDef.new("organReed", {|amp=1,freq=440,gate=1,out=0,pan=0,
     attT = 0.3, relT = 0.3,
-    //Depth and Rate Controls (pwmDepth and amDepth range from 0 to 1)
-    ranDepth = 0.04, pwmRate = 0.06, pwmDepth = 0.1, amDepth = 0.05, amRate = 5,
+    //Depth and Rate Controls (fxiii and fxiv range from 0 to 1)
+    fxi = 0.04, fxii = 0.06, fxiii = 0.1, fxiv = 0.05, fxv = 5,
     //Other Controls
-    nyquist = 18000, fHarmonic = 0.82, fFreq = 2442, rq = 0.3, hiFreq = 1200, hirs = 1, hidb = 1|
+    fxvi = 18000, fxvii = 0.82, fxviii = 2442, rq = 0.3, fxxi = 1200, fxx = 1, fxxi = 1|
 
     var snd, env;
 
@@ -103,20 +88,20 @@ SynthDef.new("organReed", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
     // pulse with modulating width
     snd = Pulse.ar(
-        freq: TRand.ar(lo: 2.pow(-1 * ranDepth), hi: 2.pow(ranDepth), trig: gate) * freq,
-        width: LFNoise1.kr(freq: pwmRate, mul: pwmDepth).range(0, 1),
+        freq: TRand.ar(lo: 2.pow(-1 * fxi), hi: 2.pow(fxi), trig: gate) * freq,
+        width: LFNoise1.kr(freq: fxii, mul: fxiii).range(0, 1),
         mul: 0.0625);  //Incereasing this lessens the impact of the BPF
 
     // add a little "grit" to the reed
     //original used snd = Disintegrator.ar(snd, 0.5, 0.7);
-    snd = Latch.ar(snd, Impulse.ar(nyquist * 2));
+    snd = Latch.ar(snd, Impulse.ar(fxvi * 2));
 
     // a little ebb and flow in volume
-    snd = snd * LFNoise2.kr(freq: amRate).range((1 - amDepth), 1);
+    snd = snd * LFNoise2.kr(freq: fxv).range((1 - fxiv), 1);
 
     //Filtering (BHiShelf intensifies the buzzing)
-    snd = snd + BPF.ar(in: snd, freq: env.linexp(0, amp, fFreq * fHarmonic, fFreq), rq: rq);
-    snd = BHiShelf.ar(in: snd, freq: hiFreq, rs: hirs, db: hidb);
+    snd = snd + BPF.ar(in: snd, freq: env.linexp(0, amp, fxviii * fxvii, fxviii), rq: rq);
+    snd = BHiShelf.ar(in: snd, freq: fxxi, rs: fxx, db: fxxi);
 
     //Output
     snd = Mix.ar(snd * env);
@@ -154,14 +139,14 @@ SynthDef.new("blip",{|amp=1,freq=440,gate=1,out=0,pan=0,
 	Out.ar(out, osc)})
 
 SynthDef.new("karp",{|amp=1,freq=440,gate=1,out=0,pan=0,
-    susT=1, fmod=0, rate=22, blur=1|
+    susT=1, fmod=0, rate=22, blur=1, fxi=0.666|
     var osc, env;
     susT = susT * blur;
     freq = [freq, freq+fmod];
     amp=(amp * 0.4);
     osc=LFNoise0.ar((400 + (400 * rate)), amp);
     osc=(osc * XLine.ar(1, 1e-06, (susT * 0.1)));
-    freq=((265 / (freq * 0.666)) * 0.005);
+    freq=((265 / (freq * fxi)) * 0.005);
     osc=CombL.ar(osc, delaytime: freq, maxdelaytime: 2);
     env=EnvGen.ar(Env(times: [susT],levels: [(amp * 1), (amp * 1)],curve: 'step'), doneAction: Done.freeSelf);
     osc=(osc * env);
@@ -170,14 +155,14 @@ SynthDef.new("karp",{|amp=1,freq=440,gate=1,out=0,pan=0,
 	Out.ar(out, osc)})
 
 SynthDef.new("arpy",{|amp=1,freq=440,gate=1,out=0,pan=0,
-    susT=1, fmod=0, blur=1|
+    susT=1, fmod=0, blur=1, cut=3000|
     var osc, env;
     susT = susT * blur;
     freq = [freq, freq+fmod];
     freq=(freq / 2);
     amp=(amp * 2);
     freq=(freq + [0, 0.5]);
-    osc=LPF.ar(Impulse.ar(freq), 3000);
+    osc=LPF.ar(Impulse.ar(freq), cut);
     env=EnvGen.ar(Env.perc(attackTime: 0.01, releaseTime: susT * 0.25, level: amp, curve: 0), doneAction: Done.freeSelf);
     osc=(osc * env);
     osc = Mix(osc) * 0.5;
@@ -186,16 +171,16 @@ SynthDef.new("arpy",{|amp=1,freq=440,gate=1,out=0,pan=0,
 
 SynthDef.new("prophet",{|amp=1,freq=440,gate=1,out=0,pan=0,
     susT=0.1,
-	lfoS=1, lfoD=0.5, cutoff=6000, rq=0.4|
+	lfoS=1, lfoD=0.5, cut=6000, fxi=0.4, fxii=1.01|
 
     var lfo, pulse, filter, env;
     amp = amp * 0.1;
 
-    lfo = LFTri.kr(lfoS * [1, 1.01], Rand(0, 2.0)!2);
+    lfo = LFTri.kr(lfoS * [1, fxii], Rand(0, 2.0)!2);
 
-    pulse = Pulse.ar(freq * [1, 1.01], lfo * lfoD + 0.5);
+    pulse = Pulse.ar(freq * [1, fxii], lfo * lfoD + 0.5);
 
-    filter = RLPF.ar(pulse, cutoff, rq);
+    filter = RLPF.ar(pulse, cut, fxi);
 
     filter = BHiPass.ar(filter, 200);
 
@@ -204,22 +189,37 @@ SynthDef.new("prophet",{|amp=1,freq=440,gate=1,out=0,pan=0,
     Out.ar(out, Pan2.ar(Mix(filter) * env * amp * 0.5, pan))})
 
 
+SynthDef.new("jbass",
+{|amp=1, susT=1, pan=0, freq=0, vib=0, fmod=0, rate=0, out=0, 
+blur=1, beat_dur=1, atk=0.01, decay=0.01, rel=0.01, peak=1, level=0.8|
+    var osc, env;
+    susT = susT * blur;
+    freq = [freq, freq+fmod];
+    freq=(freq / 4);
+    amp=(amp * 0.8);
+    osc=LFTri.ar(freq, mul: amp);
+    env=EnvGen.ar(Env([0, peak, level, level, 0], [atk, decay, max((atk + decay + rel), susT - (atk + decay + rel)), rel], curve:\sin), doneAction: 0);
+    osc=(osc * env);
+    osc = Mix(osc) * 0.5;
+    osc = Pan2.ar(osc, pan);
+	Out.ar(out, osc)})
+
 SynthDef.new("ksBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 	relT = 1.5,
     // Parameters for the impulse shape
-	attT = 0.5, susT = 1, impulseDec = 0.5, impulseHold = 1,
+	attT = 0.5, susT = 1, fxi = 0.5, fxii = 1,
 	// Filter and compressor parameters, thresh goes from 0 to 1.
-	filtermin = 250, filtermax = 5000, rq = 0.35, thresh = 0.4, ratio = 2.5|
+	cut = 250, filtermax = 5000, fxiii = 0.35, fxiv = 0.2, fxv = 2.5|
 
 	var total, exciter, snd;
 
 	// Rescale impulse values for the frequency of the note
-	total = (attT + susT + impulseDec + impulseHold) * freq;
+	total = (attT + susT + fxi + fxii) * freq;
 
 	// Initial impulse
 	exciter = Env.new(
 		levels: [0, 1, 1, 0, 0],
-		times: [attT, susT, impulseDec, impulseHold]/total).ar;
+		times: [attT, susT, fxi, fxii]/total).ar;
 
 	// Delay line
 	snd = CombN.ar(
@@ -231,15 +231,15 @@ SynthDef.new("ksBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 	// LPF
 	snd = RLPF.ar(
 		in: snd,
-		freq: LinExp.ar(Amplitude.ar(in: snd), 0, 1, filtermin, filtermax),
-		rq: rq);
+		freq: LinExp.ar(Amplitude.ar(in: snd), 0, 1, cut, filtermax),
+		rq: fxiii);
 
 	// Compressor for fun
 	snd = CompanderD.ar(
 		in: snd,
-		thresh: thresh,
+		thresh: fxiv,
 		slopeBelow: 1,
-		slopeAbove: 1/ratio);
+		slopeAbove: 1/fxv);
 
 	// Output stuff
 	snd = Mix.ar(snd) * amp;
@@ -253,25 +253,95 @@ SynthDef.new("ksBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 
 SynthDef.new("dBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
-	susT=1, fmod=0, rate=0|
+	susT=1, fmod=0, rate=0, fxi=0.02|
 		var osc, env;
-		freq = [freq, freq+fmod] * Line.ar(Rand(0.5,1.5),1,0.02);
+		freq = [freq, freq+fmod] * Line.ar(Rand(0.5,1.5),1,fxi);
 		amp=(amp * 0.1);
 		osc=( VarSaw.ar(freq, width: LFTri.ar((0.5 * rate)/susT, iphase:0.9, add:0.8, mul: 0.2), mul: amp));
-		env=EnvGen.ar(Env([0,1,0.8,0.8,0], [0.02, 0.01, susT/2, susT/2]), doneAction: Done.freeSelf);
+		env=EnvGen.ar(Env([0,1,0.8,0.8,0], [fxi, 0.01, susT/2, susT/2]), doneAction: Done.freeSelf);
 		osc=(osc * env);
 		osc = Mix(osc) * 0.5;
 		osc = Pan2.ar(osc, pan);
 		Out.ar(out, osc)})
 
 
+SynthDef.new("gritBass", {|
+	//Blend goes from 0 to 1
+	out = 0, amp = 0.5, pan = 0, freq = 440, att = 0.001, rel = 1, curve = 8, blend = 0.5|
+
+    var env, in, ina, synca, octa, inb, syncb, octb, octave, snd;
+
+	//A slightly rounded percussive envelope
+	env = Env.perc(att, rel, amp, [curve, -1 * curve]).kr(doneAction: 2);
+
+	/*  Input wave +/- 90 degrees - To use SinOsc.ar, replace:
+	        -"iphase:  0" with "phase: pi/2"
+	        -"iphase:  1" with "phase: 0"
+	        -"iphase: -1" with "phase: pi"   */
+	in = LFPar.ar(freq: freq * 2, iphase: 0);
+	ina = LFPar.ar(freq: freq * 2, iphase: 1);
+	inb = LFPar.ar(freq: freq * 2, iphase: -1);
+
+	//Two square waves exactly out of phase and an octave below the input wave
+	synca = LFPulse.ar(freq: freq, iphase: 0);
+	syncb = LFPulse.ar(freq: freq, iphase: 0.5);
+
+	//This smoothly swaps between outputting the +90 degree wave and -90 degree wave
+	octa = ina * synca;
+	octb = inb * syncb;
+	octave = Mix.ar([octa, octb]);
+
+	//Mixer stage, volume adjustments, envelope, and output
+	snd = Mix.ar([octave * blend, in * (blend - 1)]);
+    snd = LeakDC.ar(snd);
+	snd = Limiter.ar(in: snd, level: 1);
+	snd = snd * env;
+
+
+	Out.ar(out, Pan2.ar(snd, pan));
+})
+
+SynthDef.new("oc2bass", {|
+	//Blend goes from 0 to 1
+	out = 0, amp = 0.5, pan = 0, freq = 440, att = 0.001, rel = 0.15, curve = -8, blend = 0.5|
+
+        var env, in, ina, synca, octa, inb, syncb, octb, octave, snd;
+
+        //A slightly rounded percussive envelope
+        env = Env.perc(att, rel, amp, [curve, -1 * curve]).kr(doneAction: 2);
+
+        //Input wave - To use SinOsc.ar, replace "iphase: 2" with "phase: 3pi/2"
+        in = LFPar.ar(freq: freq * 2, iphase: 2);
+
+        //Mirroring the wave around the x-axis
+        ina = in.range(0, 1);
+        inb = ina * -1;
+
+        //Two square waves exactly out of phase and an octave below the input wave
+        synca = LFPulse.ar(freq: freq, iphase: 0);
+        syncb = LFPulse.ar(freq: freq, iphase: 0.5);
+
+        //This smoothly swaps between outputting the input wave and its mirror
+        octa = ina * synca;
+        octb = inb * syncb;
+        octave = Mix.ar([octa, octb]);
+
+        //Mixer stage, volume adjustments, envelope, and output
+        snd = Mix.ar([octave * blend * 0.5, in * (1 - blend) * 0.25]);
+        snd = LeakDC.ar(snd);
+        snd = Limiter.ar(in: snd, level: 1);
+        snd = snd * env;
+
+        Out.ar(out, Pan2.ar(snd, pan)); 
+})
+
 
 SynthDef.new("feedbackPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
 	// Envelope Controls
 	attT = 3, decT = 1, susL = 1, relT = 5,
-    crv = 0,
+    fxi = 0,
 	// Other Controls (interval is in semitones)
-	sampleRate = 2, notes = 3, interval = 14|
+	fxii = 2, fxiii = 3, fxiv = 14|
 
 	var env, fbIn, snd;
 
@@ -281,15 +351,15 @@ SynthDef.new("feedbackPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
 		decayTime: decT,
 		sustainLevel: susL,
 		releaseTime: relT,
-		curve: crv).ar(gate: gate);
+		curve: fxi).ar(gate: gate);
 
 	// Receive and Sample the feedback
 	fbIn = Latch.ar(
 		in: (LocalIn.ar + 1)/2,
 		trig: Impulse.ar(
-			freq: sampleRate));
-	fbIn = (fbIn * notes.abs * env).round(1);
-	fbIn = (fbIn * interval).midiratio;
+			freq: fxii));
+	fbIn = (fbIn * fxiii.abs * env).round(1);
+	fbIn = (fbIn * fxiv).midiratio;
 
 	// Make The Sound
 	snd = LFTri.ar(
@@ -324,7 +394,7 @@ SynthDef.new("aPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
 	//Standard Values:
 	attT = 0.4, decT = 0.5, susL = 0.8, relT = 1.0,
 	//Other Controls:
-	vibratoRate = 4, vibratoDepth = 0.015, tremoloRate = 5,
+	fxi = 4, fxii = 0.015, fxiii = 5,
 	//These controls go from 0 to 1:
 	tremoloDepth = 0.5|
 
@@ -335,8 +405,8 @@ SynthDef.new("aPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
     amp = amp * 0.1;
 
 	env = Env.adsr(attT, decT, susL, relT).kr(gate: gate);
-	vibrato = SinOsc.kr(vibratoRate).range(freq * (1 - vibratoDepth), freq * (1 + vibratoDepth));
-	tremolo = LFNoise2.kr(1).range(0.2, 1) * SinOsc.kr(tremoloRate).range((1 - tremoloDepth), 1);
+	vibrato = SinOsc.kr(fxi).range(freq * (1 - fxii), freq * (1 + fxii));
+	tremolo = LFNoise2.kr(1).range(0.2, 1) * SinOsc.kr(fxiii).range((1 - fxii), 1);
 
 	snd = SinOsc.ar(freq: [freq, vibrato], mul:(env * tremolo * amp)).distort;
 	snd = Mix.ar([snd]);
@@ -349,7 +419,7 @@ SynthDef.new("aPad", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 SynthDef.new("moogBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
     attT=0.001,decL=0.3,susT=0.9,relT=0.2
-	cutoff=1000, gain=2.0, prt=0.01, chorus=0.7|
+	cut=1000, amod=2.0, prt=0.01, fxi=0.7|
 
 	var osc, filter, env, filterenv, snd, chorusfx;
 
@@ -365,8 +435,8 @@ SynthDef.new("moogBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
 	filter =  MoogFF.ar(
 		in: osc,
-		freq: cutoff * (1.0 + (0.5 * filterenv)),
-		gain: gain);
+		freq: cut * (1.0 + (0.5 * filterenv)),
+		gain: amod);
 
 	env = EnvGen.ar(
 		envelope: Env.adsr(attT, decL, susT, relT, amp),
@@ -388,7 +458,7 @@ SynthDef.new("moogBass", {|amp=1,freq=440,gate=1,out=0,pan=0,
 		)
 	});
 
-	snd = snd + (chorusfx * chorus);
+	snd = snd + (chorusfx * fxi);
 
 	Out.ar(out, Pan2.ar(snd, pan))})
 

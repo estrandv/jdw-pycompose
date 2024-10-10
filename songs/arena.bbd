@@ -1,0 +1,146 @@
+COMMAND /set_bpm 126
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 3
+
+UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_router 12 0
+UPDATE_COMMAND /create_router 14 0
+
+UPDATE_COMMAND /create_router 26 0
+UPDATE_COMMAND /create_router 16 0
+UPDATE_COMMAND /create_router 18 0
+UPDATE_COMMAND /create_router 42 0
+UPDATE_COMMAND /create_router 44 0
+UPDATE_COMMAND /create_router 46 0
+
+
+DEFAULT time0.5,sus0.2,amp1.0
+
+
+# ANNOYANCES
+# - Selection as-permanent-marker is a bit annoying since you have to remove em
+#   - I dunno, maybe it would be better as a vscode plugin or smth? 
+#   - I guess in that case you can just make a quick command for removing all stars in the document
+#   - I guess you can also do a regex findreplace for keyboard octave like this 
+# - KEYBOARD: Not 100% sure that pads and keys have different args 
+# - Synth variance is still not really there. What I miss: 
+#   - WUM WUM WUM bass, should that be an oscillating sine wave? 
+#   - 
+# - It's really nice when things end early sometimes, like only playing the last part as bass as the drums drop off
+#   - This is a bit hard to mod currently, without doing a manual clone track that just has less 
+
+# TODO: separate the kang kang kang kang 
+# TODO: Harmonize dbass and cbass 
+
+
+>>> lab
+
+#>>> drumx drumi gritBass
+#>>> drumx gritBass dbass apad drumi 
+
+#>>> drumx 
+#>>> drumx dbass drumi
+#>>> drumx dbass apad drumi vocverse 
+#>>> drumx dbass apad drumi
+#>>> apad moog blip blipii
+#>>> apad cdrum drumi rat cbass vocbridge 
+#>>> apad cdrum drumi rat cbass
+#>>> apad cdrum drumi cbass chorus vocchorus
+#>>> apad cdrum drumi cbass chorus
+#>>> chorus drumi 
+#>>> drumx dbass apad drumi
+#>>> drumx dbass drumi moog 
+
+
+#>>> gritBass drumx drumi brah moog  
+
+#>>> dbass moog drumi
+#>>> cdrum cbass drumi moog 
+#>>> drumx cbass apad drumi
+
+
+#>>> dbass drum blip
+#>>> drumi drum rhodes pluck blip 
+
+@simpleSaw:lab sus0.1
+
+    g4 d5 c5 d5 a4 bb4 c5 d5
+
+*@gritBass:gritBass rel0.4,att0,curve-2,amp0.2,blend0.8
+
+(d47 (bb4 / c5 / a4 / f4)):1,amp1
+(d7:0.75 d7:0.75 d7:0.5 bb6:1 a6:1 f6:1 d6:1 f6:0.5 a6:0.5 bb6:1 a6:0.75 a6:0.75 a6:0.5 bb6:0.5 a6:0.5 a6:1 f6:0.75 f6:0.75 f6:0.5 d6:2 d7:0.75 d7:0.75 d7:0.5 bb6:1 a6:1 f6:1 a6:1 bb6:0.5 a6:0.5 f6:1 d6:0.75 d6:0.75 d6:0.5 d7:2 a6:0.75 a6:0.75 a6:0.5 bb6:1 a6:1):len32,tot31.00
+
+@experimental:brah amp1,susT0.7,sus0.8
+
+
+(d7:1 c8:0.5 bb7:0.5 a7:1 bb7:0.75 a7:4 d7:1.25 c8:0.5 bb7:0.5 a7:1 bb7:0.75 a7:1 bb7:1 a7:2 d7:1 c8:0.5 bb7:0.5 a7:1 bb7:1 a7:4 d7:1 c8:0.5 bb7:0.5 a7:1 bb7:1 a7:1 bb7:1 c8:1 bb7:1.25):len32,tot30.75
+
+@blip:chorus out46,relT2,amp0.08
+(c6:0.75 f6:0.75 a6:0.5 bb6:0.75 a6:0.75 f6:0.5 a6:0.75 bb6:0.75 a6:0.5 f6:1 c7:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 f6:1 c7:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 f6:2 c6:0.75 f6:0.75 a6:0.5 bb6:0.75 a6:0.75 f6:0.5 a6:0.75 bb6:0.75 a6:0.5 f6:1 bb6:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 bb6:0.75 c7:0.75 c7:0.5 c7:0.75 d7:0.75 c7:0.5 bb6:0 x:2):relT2,out46,len32,tot30.00    
+    
+    €distortion:a 
+    €reverb:b mix0.7,room0.9
+
+
+@SP_EMU_SP12:drumx ofs0,sus10,out42
+
+(16:1,amp0.5 1:1 16:0.5,amp0.5 16:0.5,amp0.43 (2:1 / 2:0.5 1:0.5) ):amp0.15,len4.0,tot3.00
+<cdrum> (16:1,amp0.5 1:0.5 16:1,amp0.5 16:0.5,amp0.43 1:0 x:1):amp0.15,relT1,sus2,len4.0,tot3.00
+<cdrum> 22:1.5,amp0.04 22:0.5,amp0.03 x:2    
+    €reverb:a room0.8,mix0.3
+
+@eBass:dbass amp1,out14,out12
+(d4:0.5 g4:0.5 a4:0.5 bb4:0.5 a4:1 g4:1 d4:0.5 g4:1 eb4:0.5 g4:1 a4:0.5 bb4:1 a4:0.5 bb4:1 a4:0.5 g4:1 a4:0.5 g4:1 eb4:1 d4:1 eb4:0 x:1):amp1,out12,len16,tot15.00
+<cbass> (f4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 a4:0.75 f4:0.75 f4:0.5 bb4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0 x:0.5):amp1,out12,len16,tot15.50
+
+@FMRhodes:rhodesii amp0.15 
+(x:1 c6:1 c6:1 c6:1 g6:5 c6:1 c6:1 c6:1 f6:0 x:4):len16,tot11.00,sus2,fxii0.08,fxiv0.16
+
+@moogBass:moog amp0.05,relT1,sus2
+(bb6:1.5 a6:1 f6:1 eb6:4.5 bb6:1.5 a6:1 f6:1 c7:2 bb6:2.5 a6:1.5 f6:4.5 c7:0.5 bb6:1 a6:0 x:8.5):relT1,len32,tot23.75
+
+@FMRhodes:rat amp0.04,sus0.5,out44
+
+(c7:0.5 bb6:0.5 (a6 / a6 / a6 / d7):0.5 f6:0 x:0.5):,len4.0,tot1.50
+
+    €distortion:b 
+    €reverb:a mix0.6,room0.7
+    
+
+@aPad:apad susT2,amp0.8
+
+(c6:4 d6:2 bb5:2 a5:8 c6:4 d6:2 eb6:2 c6:0 x:8):sus4,susT2,len32,tot24.00
+
+@karp:blip out26
+
+
+(d7:3 eb7:0.5 d7:0.5 c7:1 bb6:1 bb6:0.5 c7:0.5 d7:1 eb7:3 eb7:0.5 d7:0.5 c7:1 c7:1 bb6:0.5 c7:0.5 d7:1 c7:3 eb7:0.5 d7:0.5 c7:1 c7:1 bb6:0.5 c7:1 bb6:0.5 c7:1 d7:0.5 c7:0 x:6.5):,len32,tot25.50
+    €reverb:a room0.8,mix0.6
+
+@karp:blipii out26
+
+(bb7:0.5 a7:0.5 g7:0.5 bb7:1 a7:0.5 g7:0.5 bb7:1 a7:0.5 g7:0.5 f7:1 g7:0.5 a7:1 bb7:0.5 a7:0.5 g7:0.5 f7:1 f7:0.5 g7:0.5 a7:0.5 g7:2 (f7 / x):0 x:2):out26,len16,tot13.75
+
+
+@pluck:pluck
+<vocbridge> (f6:1 f6:1 f6:1 g6:0.5 a6:1.5 a6:1 a6:1 c7:0.5 bb6:1 a6:6.75 f6:0.75 f6:3 g6:0.5 a6:3.5 bb6:0.5 c7:1.5 d7:0.5 c7:5.5):len32,tot26.50,sus4,susT4,amp1
+<vocverse> (bb6:1 a6:0.5 bb6:1 a6:0.5 g6:0.5 f6:2.75 f6:0.5 g6:1.5 bb6:1 a6:0.5 bb6:1 a6:0.5 bb6:0.5 g6:1 g6:1 g6:0.5 g6:0.5 a6:1.5 bb6:1 a6:0.5 bb6:1 a6:0.5 g6:0.5 f6:2 f6:0.5 f6:0.5 g6:0.5 a6:0.5 bb6:1 a6:1 g6:6.25):len32,tot27.75
+<vocchorus> (f7:1.5 f7:1.5 g7:1 a7:1.5 f7:1.5 a7:1 bb7:0.75 a7:0.75 f7:6.5 f7:1.5 f7:1.5 g7:1 a7:1.5 f7:1.25 a7:1.25 c8:0.75 bb7:0.75 a7:0.5 c8:0.75 bb7:0.75 a7:0.5 c8:0.75 bb7:0.75 a7:0.5 f7:2):len32,tot30.00
+
+(a5:1 bb5:0.5 a5:1 bb5:0.5 a5:1 c6:1.5 bb5:1 a5:0.5 g5:1 g5:1 a5:0.5 bb5:0.75 a5:0.75 g5:1 a5:4 a5:1 bb5:0.5 a5:1 bb5:0.5 a5:1 c6:1.75 d6:1.25 c6:1 bb5:1.5 a5:1 g5:0.5 a5:1 g5:0 x:4):amp0.3,len32,tot28.00,sus0.6
+
+@SP_Roland808:drum ofs0,sus10,out18,amp0.7
+    #(56:1.5 56:6.5 56:1.5 56:0 x:6.5):out16,len16,tot9.50,ofs0.03
+    1:1,ofs0.002 4:1
+
+@SP_EMU_SP12:drumi ofs0,sus10,amp0.15,out16
+
+#(x:6.5 7:0.5 7:0.5 7:0 x:0.5):out16,len8,tot7.50
+(x:1 4:1 x:1 4:0.25 4:0.5 4:0.25 4:0 x:0):amp0.1,len4.0,tot4.00
+#(25:0.75 25:0.25 25:0.5 25:1 25:0.5 25:0 x:5):amp0.1,len4.0,tot3.00,ofs0.04
+(x:14.5 28:0.5 28:0.5 28:0 x:0.5):amp0.12,len16,tot15.50
+#(7:1 30:1 7:0.5 7:0.5 30:0.5 (x / 4):0.5):len4.0,tot3.00
+28:16 28:16
+8:32,amp0.02
+    €reverb:a mix0.4,room0.5

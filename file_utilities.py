@@ -85,6 +85,10 @@ def _defsynthdef_get() -> list[str]:
                 full = "SynthDef.new" + cut
                 defs.append(full)
 
+    import compile_scd
+    for s in compile_scd.get_all("/home/estrandv/programming/jdw-pycompose/scd-templating/template_synths.txt"):
+        defs.append(s)
+
     return defs
 
 def get_default_synthdefs() -> list[SynthDefMessage]:

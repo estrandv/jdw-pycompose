@@ -38,11 +38,11 @@ def configure(bdd_path: str):
 def nrt_record(bdd_path: str):
     client = default_client()
 
-    listener = Listener()
     print("LISTENER LIVE")
 
     synthdefs: list[SynthDefMessage] = get_default_synthdefs()
     samples: list[SampleMessage] = get_default_samples()
+    lis = Listener()
 
     with open(bdd_path, 'r') as bdd_file:
 
@@ -57,7 +57,7 @@ def nrt_record(bdd_path: str):
                 client.send(batch)
                 sleep(0.005)
             client.send(nrt_track.main_bundle)
-            listener.wait_for("/nrt_record_finished")
+            lis.wait_for("/nrt_record_finished")
 
 def update_queue(bdd_path: str):
     client = default_client()

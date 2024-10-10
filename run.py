@@ -4,7 +4,7 @@ import sys
 from jdw_billboarding.lib import jdw_osc_utils
 
 BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
-BBD_FILE = "courtRide.bbd"
+BBD_FILE = "arena.bbd"
 
 if "--update" in sys.argv:
     song.configure(BBD_ROOT + BBD_FILE)
@@ -23,5 +23,4 @@ elif "--stop" in sys.argv:
 elif "--nrt" in sys.argv:
     song.nrt_record(BBD_ROOT + BBD_FILE)
 else:
-    song.configure(BBD_ROOT + BBD_FILE)
     song.update_queue(BBD_ROOT + BBD_FILE)

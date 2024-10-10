@@ -1,0 +1,11 @@
+simpleSaw
+args: lfo0.0
+    // TODO: Allow some macro keywords in scd lines like the one-liners
+    // E.g. $adsr(osc), $stereo(osc)
+    saw1 = Saw.ar(freq, mul: amp, width: 1);
+    osc = saw1; 
+    // Oneline adsr 
+    osc = osc * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.freeSelf);
+    // Oneline panstereo
+    osc = Pan2.ar(Mix(osc) * 0.5, pan);
+    Out.ar(out, osc)
