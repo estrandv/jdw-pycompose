@@ -1,11 +1,15 @@
+<macros>
+
+$args = freq440,amp1,gate1,sus1,pan0,attT0,decT0,susL1,relT0.2,out0
+$adsr(gen) = $:gen = $:gen * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.freeSelf)
+$stereo(gen) = $:gen = Pan2.ar(Mix($:gen) * 0.5, pan)
+
+</macros>
+
 simpleSaw
-args: lfo0.0
-    // TODO: Allow some macro keywords in scd lines like the one-liners
-    // E.g. $adsr(osc), $stereo(osc)
+args: $args,lfo0.0
     saw1 = Saw.ar(freq, mul: amp, width: 1);
-    osc = saw1; 
-    // Oneline adsr 
-    osc = osc * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.freeSelf);
-    // Oneline panstereo
-    osc = Pan2.ar(Mix(osc) * 0.5, pan);
+    osc = saw1;
+    $adsr(osc);
+    $stereo(osc);
     Out.ar(out, osc)

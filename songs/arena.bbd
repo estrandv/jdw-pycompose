@@ -33,8 +33,6 @@ DEFAULT time0.5,sus0.2,amp1.0
 # TODO: Harmonize dbass and cbass 
 
 
->>> lab
-
 #>>> drumx drumi gritBass
 #>>> drumx gritBass dbass apad drumi 
 
