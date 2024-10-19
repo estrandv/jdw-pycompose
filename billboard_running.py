@@ -31,6 +31,7 @@ def configure(bdd_path: str):
 
     with open(bdd_path, 'r') as bdd_file:
         all_messages: list[OscMessage] = get_configuration_messages(bdd_file.read())
+        all_messages += [synth.load_msg for synth in get_default_synthdefs()] # TODO: Including synths for easy prototyping
         for msg in all_messages:
             sleep(0.001) # Not 100% sure this is needed anymore but it's nice when configure doesn't drop any packets'
             client.send(msg)

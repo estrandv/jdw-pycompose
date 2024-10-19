@@ -3,13 +3,47 @@
 $args = freq440,amp1,gate1,sus1,pan0,attT0,decT0,susL1,relT0.2,out0
 $adsr(gen) = $:gen = $:gen * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.freeSelf)
 $stereo(gen) = $:gen = Pan2.ar(Mix($:gen) * 0.5, pan)
+$hpf(gen,floor) = $:gen = HPF.ar(in: $:gen, freq: $:floor, mul: 1.0, add: 0.0)
+$lpf(gen,roof) = $:gen = LPF.ar(in: $:gen, freq: $:roof, mul: 1.0, add: 0.0)
 
 </macros>
 
-simpleSaw
+wobble
 args: $args,lfo0.0
-    saw1 = Saw.ar(freq, mul: amp, width: 1);
-    osc = saw1;
+    osc = Pulse.ar(freq, mul: amp / 4, width: 0.5) * LFPar.ar(freq - 2.1864, mul:amp, iphase: 0.2) * SinOsc.ar(freq * 6.0012, mul: amp);
+    osc = osc + SinOsc.ar(freq * 4.012, mul:0.8*amp);
+    $adsr(osc);
+    $lpf(osc, 4800);
+    $stereo(osc);
+    Out.ar(out, osc)
+
+~
+
+hypersaw
+args: $args,decT0.2,susL0.5
+    osc = Mix(Saw.ar(freq * [1.011,2.0034,3.41,1.0001], mul: [amp * 0.25, amp * 0.4, amp * 0.1, amp * 0.5]));
+    osc = osc + VarSaw.ar(freq * 2, mul: amp * 0.5) + SinOsc.ar(freq * 2.022, mul:amp * 0.2);
+    $adsr(osc);
+    $stereo(osc);
+    Out.ar(out, osc)
+
+~
+
+plink
+args: $args,amp0.2,lfo3.999991992,relT2.5,decT0.125,susL0.2
+
+    lfom = LFPar.ar(lfo * freq, mul: amp);
+    osc = Pulse.ar([freq, freq*1.99212], mul: [amp + lfom, amp*0.25]);
+    $adsr(osc);
+    $stereo(osc);
+    Out.ar(out, osc)
+
+~
+
+noise
+args: $args,relT2
+    osc = BrownNoise.ar(mul: amp + LFTri.ar(freq * 0.02002, mul:0.2)) * SinOsc.ar(freq * 2, mul:amp);
+    osc = Ringz.ar(osc, freq * 1.002, 0.25, mul:0.01);
     $adsr(osc);
     $stereo(osc);
     Out.ar(out, osc)

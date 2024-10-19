@@ -1,0 +1,90 @@
+
+DEFAULT time0.5,sus0.2,amp1.0
+COMMAND /set_bpm 108
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 5
+
+UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_router 20 0
+
+>>> bone pat apad  
+>>> btwo pat apadii 
+>>> pat apad reed bone  
+>>> pat apad reed bone stick 
+>>> bdrum bone noise
+>>> bdrum bone apad vfill
+>>> bdrum btwo apadii stickl
+>>> bone cdrum apad pluck rhodes
+>>> bone cdrum apad pluck stick saw  
+>>> bdrum noise apad reed board 
+#>>> pat bone board reed 
+#>>> pat btwo board reed
+#>>> pluck noise
+#>>> bone cdrum apad pluck saw rhodes 
+
+
+# TOOD: Can't really hear this bass without headphones but it's lovely with
+*@wobble:bass sus0.6,relT0.6,attT0,decT0.1,susL0.3
+
+<bone> (§:0 g3:1.5 g3:0.5 g3:1 d3:1 g3:0.5 g3:1 g3:0.5 g3:1 d3:1 \
+g3:1.5 g3:0.5 g3:1 d3:1 g3:0.5 g3:1 g3:0.5 g3:1 a3:1 \
+e3:1.5 e3:0.5 e3:1 b2:1 e3:0.5 e3:1 e3:0.5 e3:1 b2:1 \
+c3:1.5 c3:0.5 c3:1 e3:1 c3:0.5 c3:1 c3:0.5 c3:1 d3:1)
+
+<bchorushp> (§:0 g4:1.5 g4:0.5 g4:1 d4:1 g4:0.5 g4:1 g4:0.5 g4:1 d4:1 \
+g4:1.5 g4:0.5 g4:1 d4:1 g4:0.5 g4:1 g4:0.5 g4:1 a4:1 \
+e4:1.5 e4:0.5 e4:1 b3:1 e4:0.5 e4:1 e4:0.5 e4:1 b3:1 \
+c4:1.5 c4:0.5 c4:1 e4:1 c4:0.5 c4:1 c4:0.5 c4:1 d4:1)
+
+<btwo> (§:0 g3:1.5 g3:0.5 g3:1 d3:1 g3:0.5 g3:1 g3:0.5 g3:1 d3:1 \
+g3:1.5 g3:0.5 g3:1 d3:1 g3:0.5 g3:1 g3:0.5 g3:1 a3:1 \
+e3:1.5 e3:0.5 e3:1 d3:1 c3:1.5 c3:0.5 c3:1 e3:1 \
+g3:1.5 g3:0.5 g3:1 d3:1 g3:1.5 g3:0.5 g3:1 d3:1 \
+e3:1.5 e3:0.5 e3:1 d3:1 c3:1.5 c3:0.5 c3:1 d3:1 \
+g3:1.5 g3:0.5 g3:1 d3:1 g3:1.5 g3:0.5 g3:2):len32,tot30.00
+
+*@SP_EMU_SP12:bdrum sus10,ofs0,amp0.1,out20
+#(4:1 4:2 4:1 4:2 4:1 x:1):len4.0,tot4.00,amp0.2
+#(16:1.5 16:3 16:1.5 16:2):len8,tot6.00
+(16:1 10:2,amp*0.5 10:1,amp*0.5 16:1 10:2,amp*0.5 10:1):len8,tot7.00
+<cdrum> (16:1 2:0.75 2:0.25 16:0.5 16:0.5 2:1 16:1 2:0.75 2:0.25 16:0.5 16:0.5 2:0.5 2:0.5):len8,tot7.50
+<cdrum> 10*8:0.5 28:0
+    €reverb:a room0.7,mix0.5
+
+    <attack> (16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25):len16,tot15.75
+    #<stick> 16:2,amp0.5
+    #<stick> (x:1 4:2 4:2 4:1.5 4:0.5,ofs0.01 4:0.5,amp*1.5 4:0.5):len8,tot7.50
+<stick> (x:24 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02
+<stickl> (x:40 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02
+<board> (24:0.5 24:1 24:0.5 24:2):len4.0,tot2.00,amp*0.5
+
+<pat> 16:1
+
+@noise:noise relT3,sus2,out10,amp0.7
+
+(g6:2 a6:2 g6:4,sus4 b6:1 g6:1 a6:1 g6:1 d6:1 g6:3,sus4 g6:2 a6:2 g6:4,sus4 b6:1 g6:1 a6:1 g6:5,sus4,relT12):len32,tot27.00
+
+    €clamp:a over400,under800
+    €reverb:a
+
+*@aPad:apad sus2,relT2,amp0.1
+(g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 c8:4,sus4 a7:4,sus4):len32,tot31.75
+<apadii> (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 g7:8,sus8 g7:7,sus7 a7:1 g7:8,sus8):len32,tot31.75
+
+
+*@pluck:pluck amp0.2
+(b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 g7:1 g7:1 a7:1 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:1 a7:1 b7:1 b7:1 c8:1):len16,tot15.00
+
+*@hypersaw:saw amp0.2,relT1,sus1,attT0.1
+(x:0 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 c7:1 b6:1):len16,tot15.00
+#(x:0 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 c5:1 b4:1):len16,tot15.00
+@organReed:reed sus0.6,relT4,amp0.1
+#(x:14.5 g6:0.5 a6:0.5 g6:0.5 a6:1,sus*2 b6:15,sus*6):len32,tot17.00
+#(x:30.5 g6:0.5 a6:0.5 g6:0.5 d6:0,sus*6):len32,tot32.00
+(g5:7,sus7 a5:1 g5:7,sus7 a5:1 e5:7,sus7 d5:1 c5:8,sus10):len32,tot23.75,amp*2
+(b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 g6:1 g6:1 a6:1 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:1 a6:1 b6:1 b6:1 c8:1):len16,tot15.00
+
+@FMRhodes:rhodes amp0.2,sus0.8
+(x:0.5 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:6 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:5.5):len16,tot10.50
+
+<vfill> (x:29 a6:1 b6:0.5,sus*0.5 a6:0.5,sus*0.5 a6:1 g6:0,sus*2):len32,tot32.00

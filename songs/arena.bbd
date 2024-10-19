@@ -12,6 +12,7 @@ UPDATE_COMMAND /create_router 18 0
 UPDATE_COMMAND /create_router 42 0
 UPDATE_COMMAND /create_router 44 0
 UPDATE_COMMAND /create_router 46 0
+UPDATE_COMMAND /create_router 86 0
 
 
 DEFAULT time0.5,sus0.2,amp1.0
@@ -19,52 +20,47 @@ DEFAULT time0.5,sus0.2,amp1.0
 
 # ANNOYANCES
 # - Selection as-permanent-marker is a bit annoying since you have to remove em
-#   - I dunno, maybe it would be better as a vscode plugin or smth? 
+#   - I dunno, maybe it would be better as a vscode plugin or smth?
 #   - I guess in that case you can just make a quick command for removing all stars in the document
-#   - I guess you can also do a regex findreplace for keyboard octave like this 
-# - KEYBOARD: Not 100% sure that pads and keys have different args 
-# - Synth variance is still not really there. What I miss: 
-#   - WUM WUM WUM bass, should that be an oscillating sine wave? 
-#   - 
+#   - I guess you can also do a regex findreplace for keyboard octave like this
+# - KEYBOARD: Not 100% sure that pads and keys have different args
+# - Synth variance is still not really there. What I miss:
+#   - WUM WUM WUM bass, should that be an oscillating sine wave?
+#   -
 # - It's really nice when things end early sometimes, like only playing the last part as bass as the drums drop off
-#   - This is a bit hard to mod currently, without doing a manual clone track that just has less 
+#   - This is a bit hard to mod currently, without doing a manual clone track that just has less
 
-# TODO: separate the kang kang kang kang 
-# TODO: Harmonize dbass and cbass 
+# TODO: separate the kang kang kang kang
+# TODO: Harmonize dbass and cbass
 
 
 #>>> drumx drumi gritBass
-#>>> drumx gritBass dbass apad drumi 
+#>>> drumx gritBass dbass apad drumi
 
-#>>> drumx 
+#>>> drumx
 #>>> drumx dbass drumi
-#>>> drumx dbass apad drumi vocverse 
+#>>> drumx dbass apad drumi vocverse
 #>>> drumx dbass apad drumi
 #>>> apad moog blip blipii
-#>>> apad cdrum drumi rat cbass vocbridge 
+#>>> apad cdrum drumi rat cbass vocbridge
 #>>> apad cdrum drumi rat cbass
 #>>> apad cdrum drumi cbass chorus vocchorus
 #>>> apad cdrum drumi cbass chorus
-#>>> chorus drumi 
+#>>> chorus drumi
 #>>> drumx dbass apad drumi
-#>>> drumx dbass drumi moog 
+#>>> drumx dbass drumi moog
 
 
-#>>> gritBass drumx drumi brah moog  
+#>>> gritBass drumx drumi brah moog
 
 #>>> dbass moog drumi
-#>>> cdrum cbass drumi moog 
+#>>> cdrum cbass drumi moog
 #>>> drumx cbass apad drumi
 
 
-#>>> dbass drum blip
-#>>> drumi drum rhodes pluck blip 
+>>> lab
 
-@simpleSaw:lab sus0.1
-
-    g4 d5 c5 d5 a4 bb4 c5 d5
-
-*@gritBass:gritBass rel0.4,att0,curve-2,amp0.2,blend0.8
+@gritBass:gritBass rel0.4,att0,curve-2,amp0.2,blend0.8
 
 (d47 (bb4 / c5 / a4 / f4)):1,amp1
 (d7:0.75 d7:0.75 d7:0.5 bb6:1 a6:1 f6:1 d6:1 f6:0.5 a6:0.5 bb6:1 a6:0.75 a6:0.75 a6:0.5 bb6:0.5 a6:0.5 a6:1 f6:0.75 f6:0.75 f6:0.5 d6:2 d7:0.75 d7:0.75 d7:0.5 bb6:1 a6:1 f6:1 a6:1 bb6:0.5 a6:0.5 f6:1 d6:0.75 d6:0.75 d6:0.5 d7:2 a6:0.75 a6:0.75 a6:0.5 bb6:1 a6:1):len32,tot31.00
@@ -75,9 +71,9 @@ DEFAULT time0.5,sus0.2,amp1.0
 (d7:1 c8:0.5 bb7:0.5 a7:1 bb7:0.75 a7:4 d7:1.25 c8:0.5 bb7:0.5 a7:1 bb7:0.75 a7:1 bb7:1 a7:2 d7:1 c8:0.5 bb7:0.5 a7:1 bb7:1 a7:4 d7:1 c8:0.5 bb7:0.5 a7:1 bb7:1 a7:1 bb7:1 c8:1 bb7:1.25):len32,tot30.75
 
 @blip:chorus out46,relT2,amp0.08
-(c6:0.75 f6:0.75 a6:0.5 bb6:0.75 a6:0.75 f6:0.5 a6:0.75 bb6:0.75 a6:0.5 f6:1 c7:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 f6:1 c7:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 f6:2 c6:0.75 f6:0.75 a6:0.5 bb6:0.75 a6:0.75 f6:0.5 a6:0.75 bb6:0.75 a6:0.5 f6:1 bb6:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 bb6:0.75 c7:0.75 c7:0.5 c7:0.75 d7:0.75 c7:0.5 bb6:0 x:2):relT2,out46,len32,tot30.00    
-    
-    €distortion:a 
+(c6:0.75 f6:0.75 a6:0.5 bb6:0.75 a6:0.75 f6:0.5 a6:0.75 bb6:0.75 a6:0.5 f6:1 c7:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 f6:1 c7:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 f6:2 c6:0.75 f6:0.75 a6:0.5 bb6:0.75 a6:0.75 f6:0.5 a6:0.75 bb6:0.75 a6:0.5 f6:1 bb6:0.5 c7:0.5 c7:0.75 bb6:0.75 a6:0.5 bb6:0.75 c7:0.75 c7:0.5 c7:0.75 d7:0.75 c7:0.5 bb6:0 x:2):relT2,out46,len32,tot30.00
+
+    €distortion:a
     €reverb:b mix0.7,room0.9
 
 
@@ -85,14 +81,14 @@ DEFAULT time0.5,sus0.2,amp1.0
 
 (16:1,amp0.5 1:1 16:0.5,amp0.5 16:0.5,amp0.43 (2:1 / 2:0.5 1:0.5) ):amp0.15,len4.0,tot3.00
 <cdrum> (16:1,amp0.5 1:0.5 16:1,amp0.5 16:0.5,amp0.43 1:0 x:1):amp0.15,relT1,sus2,len4.0,tot3.00
-<cdrum> 22:1.5,amp0.04 22:0.5,amp0.03 x:2    
+<cdrum> 22:1.5,amp0.04 22:0.5,amp0.03 x:2
     €reverb:a room0.8,mix0.3
 
 @eBass:dbass amp1,out14,out12
 (d4:0.5 g4:0.5 a4:0.5 bb4:0.5 a4:1 g4:1 d4:0.5 g4:1 eb4:0.5 g4:1 a4:0.5 bb4:1 a4:0.5 bb4:1 a4:0.5 g4:1 a4:0.5 g4:1 eb4:1 d4:1 eb4:0 x:1):amp1,out12,len16,tot15.00
 <cbass> (f4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 a4:0.75 f4:0.75 f4:0.5 bb4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0.5 g4:0.75 f4:0.75 f4:0 x:0.5):amp1,out12,len16,tot15.50
 
-@FMRhodes:rhodesii amp0.15 
+@FMRhodes:rhodesii amp0.15
 (x:1 c6:1 c6:1 c6:1 g6:5 c6:1 c6:1 c6:1 f6:0 x:4):len16,tot11.00,sus2,fxii0.08,fxiv0.16
 
 @moogBass:moog amp0.05,relT1,sus2
@@ -102,9 +98,9 @@ DEFAULT time0.5,sus0.2,amp1.0
 
 (c7:0.5 bb6:0.5 (a6 / a6 / a6 / d7):0.5 f6:0 x:0.5):,len4.0,tot1.50
 
-    €distortion:b 
+    €distortion:b
     €reverb:a mix0.6,room0.7
-    
+
 
 @aPad:apad susT2,amp0.8
 

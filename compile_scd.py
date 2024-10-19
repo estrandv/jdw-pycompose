@@ -47,7 +47,17 @@ def compile(definition: str) -> str:
             .replace("{:name}", name)
 
 def get_all(path: str) -> list[str]:
-    return [compile(synth) for synth in open(path, 'r').read().split("~") if synth.strip() != ""]
+
+    content = open(path, 'r').read()
+
+    macro_part = re.search("(?<=<macros>)[\\s\\S]*?(?=</macros>)", content).group()
+    non_macro_part = content.split("</macros>")[1]
+
+    import macros
+
+    new_source = compile_macros(macro_part, non_macro_part)
+
+    return [compile(s) for s in new_source.split("~") if s.strip() != ""]
 
 
 # TODO: Incorporate in the actual parsing, wherever the definitions split is first done

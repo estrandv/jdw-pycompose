@@ -9,7 +9,7 @@ SynthDef.new("experimental",
     lfo = SinOsc.ar(1.222, mul: 1.0);
     saw1 = VarSaw.ar(freq, mul: (amp / 4) * lfo, width: 1);
     saw2 = Saw.ar(freq * 2.0002, mul: amp * fxii, width: fxi);
-    osc= saw1 + saw2; 
+    osc= saw1 + saw2;
 	env = Env.adsr(attT, decT, susL, relT);
     env = EnvGen.ar(envelope: env, gate: gate, doneAction: Done.freeSelf);
     osc = (osc * env);
@@ -76,7 +76,7 @@ SynthDef.new("organReed", {|amp=1,freq=440,gate=1,out=0,pan=0,
     //Depth and Rate Controls (fxiii and fxiv range from 0 to 1)
     fxi = 0.04, fxii = 0.06, fxiii = 0.1, fxiv = 0.05, fxv = 5,
     //Other Controls
-    fxvi = 18000, fxvii = 0.82, fxviii = 2442, rq = 0.3, fxxi = 1200, fxx = 1, fxxi = 1|
+    fxvi = 18000, fxvii = 0.82, fxviii = 2442, rq = 0.3, fxxi = 1200, fxx = 1, fxxii = 1|
 
     var snd, env;
 
@@ -101,7 +101,7 @@ SynthDef.new("organReed", {|amp=1,freq=440,gate=1,out=0,pan=0,
 
     //Filtering (BHiShelf intensifies the buzzing)
     snd = snd + BPF.ar(in: snd, freq: env.linexp(0, amp, fxviii * fxvii, fxviii), rq: rq);
-    snd = BHiShelf.ar(in: snd, freq: fxxi, rs: fxx, db: fxxi);
+    snd = BHiShelf.ar(in: snd, freq: fxxi, rs: fxx, db: fxxii);
 
     //Output
     snd = Mix.ar(snd * env);
@@ -190,7 +190,7 @@ SynthDef.new("prophet",{|amp=1,freq=440,gate=1,out=0,pan=0,
 
 
 SynthDef.new("jbass",
-{|amp=1, susT=1, pan=0, freq=0, vib=0, fmod=0, rate=0, out=0, 
+{|amp=1, susT=1, pan=0, freq=0, vib=0, fmod=0, rate=0, out=0,
 blur=1, beat_dur=1, atk=0.01, decay=0.01, rel=0.01, peak=1, level=0.8|
     var osc, env;
     susT = susT * blur;
@@ -332,7 +332,7 @@ SynthDef.new("oc2bass", {|
         snd = Limiter.ar(in: snd, level: 1);
         snd = snd * env;
 
-        Out.ar(out, Pan2.ar(snd, pan)); 
+        Out.ar(out, Pan2.ar(snd, pan));
 })
 
 
