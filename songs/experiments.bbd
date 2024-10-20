@@ -7,53 +7,40 @@ COMMAND /keyboard_octave 5
 UPDATE_COMMAND /create_router 10 0
 UPDATE_COMMAND /create_router 20 0
 
+# Intro 
+>>> noise reedi 
+
 # V1
 >>> bone pat apad  
 >>> btwo pat apadii 
 # Break 
 >>> pat apad reed bone 
->>> pat apad reed bone noise 
 # V2 
->>> bone pat apad vfill  
+>>> cstart bone pat apad vfill  
 >>> btwo pat apadii stickl 
 # TODO: Nice when pat stops before the end 
 # Chorus 1 
->>> bone cdrum apad pluck rhodes
->>> bone cdrum apad pluck rhodes
+>>> bone cdrum apad pluck
+>>> bone cdrum apad pluck rhodes 
 # Break 
->>> bdrum noise apad reed board 
+>>> bdrum noise apad reed board cend 
 # V3 
 >>> bdrum bone apad vfill
 >>> bdrum btwo apadii stickl
 # Chorus 2 
->>> bone cdrum apad pluck rhodes saw 
->>> bone cdrum apad pluck rhodes saw 
+>>> bone cdrum apad pluck saw 
+>>> bone cdrum apad pluck rhodes saw cend 
 # Break 
 >>> rhodes reed noise board 
 # V4
 >>> bone pat apad vfill reedi
 >>> btwo pat apadii stickl reedii
 # Chorus 3
->>> bone cdrum apad pluck rhodes reed  
->>> bone cdrum apad pluck rhodes reed
+# TODO: Somehing is too long in the previous bit, causing a long wait here 
+>>> cstart bone cdrum apad pluck rhodes reed  
+>>> bone cdrum apad pluck rhodes reed saw
 # Outro 
->>> noise stick cstart cymbal 
-
-# TODO: Nice when the pat stops right before the end 
-#>>> pat apad reed bone stick 
-#>>> bdrum bone noise
-#>>> bdrum bone apad vfill
-#>>> bdrum btwo apadii stickl
-#>>> bone cdrum apad pluck rhodes
-#>>> bone cdrum apad pluck stick saw  
-#>>> bdrum noise apad reed board 
-#>>> pat bone board reed
-# TODO: b2 reed  
-#>>> pat btwo board reed
-#>>> rhodes reed noise
-#>>> bone cdrum apad pluck saw rhodes 
-#>>> attack noise board saw reed stick 
-
+#>>> noise stick cstart
 
 # TOOD: Can't really hear this bass without headphones but it's lovely with
 *@wobble:bass sus0.6,relT0.6,attT0,decT0.1,susL0.3
@@ -81,7 +68,7 @@ g3:1.5 g3:0.5 g3:1 d3:1 g3:1.5 g3:0.5 g3:2):len32,tot30.00
 (16:1 10:2,amp*0.5 10:1,amp*0.5 16:1 10:2,amp*0.5 10:1):len8,tot7.00
 <cdrum> (16:1 2:0.75 2:0.25 16:0.5 16:0.5 2:1 16:1 2:0.75 2:0.25 16:0.5 16:0.5 2:0.5 2:0.5):len8,tot7.50
 <cdrum> 10*8:0.5 28:0
-    €reverb:a room0.7,mix0.5
+    €reverb:a room0.3,mix0.5
 
     <attack> (16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25):len16,tot15.75
     #<stick> 16:2,amp0.5
@@ -108,7 +95,9 @@ g3:1.5 g3:0.5 g3:1 d3:1 g3:1.5 g3:0.5 g3:2):len32,tot30.00
 (b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 g7:1 g7:1 a7:1 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:1 a7:1 b7:1 b7:1 c8:1):len16,tot15.00
 
 *@hypersaw:saw amp0.13,relT1,sus1,attT0.1
-(x:0 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 c7:1 b6:1):len16,tot15.00
+(x:0 g5:1 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:1 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:0.5 c6:1 b5:1):len16,tot15.00
+
+#(x:0 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 c7:1 b6:1):len16,tot15.00
 #(x:0 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 c5:1 b4:1):len16,tot15.00
 *@organReed:reed sus0.6,relT4,amp0.1
 #(x:14.5 g6:0.5 a6:0.5 g6:0.5 a6:1,sus*2 b6:15,sus*6):len32,tot17.00
@@ -118,7 +107,7 @@ g3:1.5 g3:0.5 g3:1 d3:1 g3:1.5 g3:0.5 g3:2):len32,tot30.00
 
 <reedi> (g5:7,sus7 a5:1 g5:7,sus7 a5:1 e5:7,sus7 d5:1 c5:8,sus10):len32,tot23.75,amp*2
 
-<reedii> (g5:7,sus7 a5:1 g5:7,sus7 a5:1 b5:4,sus4 a5:4,sus4 g5:6.75,sus7 a5:1 b5:4,sus4 a5:4,sus4 g5:24.25,sus8):len64,tot39.75,amp*2
+<reedii> (g5:7,sus7 a5:1 g5:7,sus7 a5:1 b5:4,sus4 a5:4,sus4 g5:6.75,sus7 a5:1 b5:4,sus4 a5:4,sus4 g5:8.25,sus8):len48,tot39.75,amp*2
 
 @FMRhodes:rhodes amp0.1,sus0.8
 (x:0.5 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:6 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:5.5):len16,tot10.50
