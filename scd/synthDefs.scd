@@ -528,8 +528,15 @@ SynthDef.new("analogTape", {|out=0|
     snd = In.ar(out,2);
 
     //snd = VarSaw.ar(440.0, width: 0.5);
-    snd = AnalogTape.ar(snd, bias: 0.2, saturation: 0.5, drive: 0.8, oversample: 4, mode: 0);
+    snd = AnalogTape.ar(snd, bias: 0.2, saturation: 0.5, drive: 0.8, oversample: 32, mode: 0);
 
+    ReplaceOut.ar(out, snd)})
+
+SynthDef.new("decimator", {|out=0,rate=44100,bits=24,mul=1.0|
+    var snd;
+    snd = In.ar(out,2);
+    snd = Decimator.ar(snd, rate: rate, bits: bits, mul: mul, add: 0);
+    
     ReplaceOut.ar(out, snd)})
 
 

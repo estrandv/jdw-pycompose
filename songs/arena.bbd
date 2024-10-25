@@ -37,15 +37,15 @@ DEFAULT time0.5,sus0.2,amp1.0
 #>>> drumx drumi gritBass
 #>>> drumx gritBass dbass apad drumi
 
-#>>> drumx
-#>>> drumx dbass drumi
-#>>> drumx dbass apad drumi vocverse
-#>>> drumx dbass apad drumi
-#>>> apad moog blip blipii
-#>>> apad cdrum drumi rat cbass vocbridge
+>>> drumx
+>>> drumx dbass drumi
+>>> drumx dbass apad drumi vocverse
+>>> drumx dbass apad drumi
+>>> apad moog blip blipii
+>>> apad cdrum drumi rat cbass vocbridge
 #>>> apad cdrum drumi rat cbass
-#>>> apad cdrum drumi cbass chorus vocchorus
-#>>> apad cdrum drumi cbass chorus
+>>> apad cdrum drumi cbass chorus vocchorus
+>>> apad cdrum drumi cbass chorus
 #>>> chorus drumi
 #>>> drumx dbass apad drumi
 #>>> drumx dbass drumi moog
@@ -58,7 +58,7 @@ DEFAULT time0.5,sus0.2,amp1.0
 #>>> drumx cbass apad drumi
 
 
->>> lab
+#>>> lab
 
 @gritBass:gritBass rel0.4,att0,curve-2,amp0.2,blend0.8
 
