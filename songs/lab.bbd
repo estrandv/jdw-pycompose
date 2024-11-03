@@ -1,0 +1,32 @@
+COMMAND /set_bpm 126
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 3
+
+UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_router 12 0
+UPDATE_COMMAND /create_router 14 0
+
+UPDATE_COMMAND /create_router 26 0
+UPDATE_COMMAND /create_router 16 0
+UPDATE_COMMAND /create_router 18 0
+UPDATE_COMMAND /create_router 42 0
+UPDATE_COMMAND /create_router 44 0
+UPDATE_COMMAND /create_router 46 0
+UPDATE_COMMAND /create_router 86 0
+
+DEFAULT time0.5,sus0.2,amp2.0
+
+@eighties:sub 
+
+    (g4 d4 g4 eb4 d4 c4 eb4 c4):amp1
+    
+    #(x:0 g5:1 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:1 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:0.5 c6:1 b5:1):len16,tot15.00
+
+@noise:hyp amp1,relT2 
+    #(g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 c8:4,sus4 a7:4,sus4):len32,tot31.75
+
+    (c6:0,amp*0.4 g5 eb5 c5 d5):4,sus4
+
+@SP_EMU_SP12:sp sus10,ofs0,amp0.5
+
+    16:1 2:1,amp*0.2 16:0.5,rate1.1 16:0.5 2:1,amp*0.22

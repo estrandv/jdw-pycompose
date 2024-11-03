@@ -23,12 +23,23 @@ UPDATE_COMMAND /create_router 80 0
 # cymbal 
 UPDATE_COMMAND /create_router 90 0
 
+# TODO: After testing vocals
+# cdrum is a bit overdone, no snares really needed 
+# rhodes beep in chorus is gold
+# All hypersaws are a bit hard to blend - maybe which much less volume
+# Sounds good without apad, too - I think's it's way too loud 
+# Bass really comes out with vocals if you strip the other stuff 
+# "board" is way too loud, should just be a vague hint of a blip 
+# Noise-sections are also less-is-more, although hypersaw has that really neat BING that would be nice to be able to include
+# Don't rebounce until project is adjusted - would be nice to keep vocals etc 
+# Chorus toms are great! Especially with nothing else. 
+# The mid-verse break is nice but feels out of place - maybe blend with effects or use different key? 
 
 
 #>>> apad vfill  
 
 # Intro 
-#>>> noise 
+>>> noise 
 
 # V1
 >>> bone pat apad  
@@ -40,20 +51,20 @@ UPDATE_COMMAND /create_router 90 0
 >>> btwo bdrum apadii stickl 
 # TODO: Nice when pat stops before the end 
 # Chorus 1 
->>> bone cdrum pluck reedi bdrum toms 
->>> bone cdrum bdrum rhodes pluck apad reedi 
+>>> bone pluck reedi bdrum toms 
+>>> bone bdrum rhodes pluck apad reedi toms
 # Break 
->>> bdrum noise apad reed board cend 
+>>> cstart bdrum noise apad reed board cend 
 # V3 
 >>> bdrum bone apad vfill
 >>> bdrum btwo apadii stickl
 # Chorus 2 
-#>>> cstart bone cdrum bdrum pluck rhodes reedi 
-#>>> bone cdrum bdrum pluck rhodes reedi saw cend 
+>>> cstart bone cdrum bdrum pluck rhodes reedi 
+>>> bone cdrum bdrum pluck rhodes reedi saw cend 
 # V4
-#>>> bone pat apad vfill reedi patstick 
-#>>> btwo pat apadii reedii patstick cend 
-#>>> bdrum noise apad reed board cend 
+>>> bone pat apad vfill reedi patstick 
+>>> btwo pat apadii reedii patstick cend 
+>>> bdrum noise apad reed board cend 
 
 
 # TOOD: Can't really hear this bass without headphones but it's lovely with
@@ -96,29 +107,29 @@ UPDATE_COMMAND /create_router 90 0
 
     <attack> (16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25):len16,tot15.75
     #<stick> 16:2,amp0.5
-    <patstick> (x:1 4:2 4:2 4:1.5 4:0.5,ofs0.01 4:0.5,amp*1.5 4:0.5):len8,tot7.50,amp*0.4
+    <patstick> (x:1 4:2 4:2 4:1.5 4:0.5,ofs0.01 4:0.5,amp*1.5 4:0.5):len8,tot7.50,amp*0.2
     
-    <stick> (x:24 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02,amp*0.8
-    <stickl> (x:40 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02,amp*0.8
-    <board> (24:0.5 24:1 24:0.5 24:2):len4.0,tot2.00,amp*0.15
+    <stick> (x:24 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02,amp*0.6
+    <stickl> (x:40 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02,amp*0.6
+    <board> (24:0.5 24:1 24:0.5 24:2):len4.0,tot2.00,amp*0.05
 
     <pat> (16:1,amp*1.1,rate0.95 16*3:1):amp*0.6
 
-@noise:noise relT3,sus2,out10,amp0.6
+@noise:noise relT3,sus2,out10,amp0.4
 
     (g6:2 a6:2 g6:4,sus4 b6:1 g6:1 a6:1 g6:1 d6:1 g6:3,sus4 g6:2 a6:2 g6:4,sus4 b6:1 g6:1 a6:1 g6:5,sus4,relT12):len32,tot27.00
 
     €clamp:a over400,under800
     €reverb:a
 
-*@aPad:apad sus2,relT2,amp0.08,out50,fxi0.02,fxii0.018,fxiii4,tremoloDepth0.1
+*@aPad:apad sus2,relT2,amp0.03,out50,fxi0.02,fxii0.018,fxiii4,tremoloDepth0.1
     (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 c8:4,sus4 a7:4,sus4):len32,tot31.75
     (g6 d6 g6 c6):8,sus4,relT16,attT2,fxi0.01,fxii0.003
     <apadii> (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 g7:8,sus8 g7:7,sus7 a7:1 g7:8,sus8):len32,tot31.75
 
     €clamp:c under8200
 
-*@pluck:pluck amp0.1,out70
+*@pluck:pluck amp0.03,out70
     (b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 g7:1 g7:1 a7:1 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:1 a7:1 b7:1 b7:1 c8:1):len16,tot15.00
 
     €clamp:a under8000,over400
@@ -132,7 +143,7 @@ UPDATE_COMMAND /create_router 90 0
 
 #(x:0 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 c7:1 b6:1):len16,tot15.00
 #(x:0 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 c5:1 b4:1):len16,tot15.00
-*@hypersaw:reed sus0.6,relT4,amp0.15,out60
+*@hypersaw:reed sus0.6,relT4,amp0.05,out60
     #(x:14.5 g6:0.5 a6:0.5 g6:0.5 a6:1,sus*2 b6:15,sus*6):len32,tot17.00
     #(x:30.5 g6:0.5 a6:0.5 g6:0.5 d6:0,sus*6):len32,tot32.00
     (g5:7,sus7 a5:1 g5:7,sus7 a5:1 e5:7,sus7 d5:1 c5:8,sus10):len32,tot23.75,amp*2
@@ -146,17 +157,17 @@ UPDATE_COMMAND /create_router 90 0
     €clamp:a under2200,over200
     €reverb:r room0.6,mix0.6
 
-@FMRhodes:rhodes amp0.2,sus0.8,out40
+@FMRhodes:rhodes amp0.1,sus0.8,out40
     (x:0.5 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:6 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:5.5):len16,tot10.50
     #(x:0.5 g6:0.5 c6:0.5 g6:0.5 b6:0.5 g6:6 g6:0.5 c6:0.5 g6:0.5 b6:0.5 g6:5.5):len16,tot10.50
 
-    <vfill> (x:29 a5:1 b5:0.5,sus*0.5 a5:0.5,sus*0.5 a5:1 g5:0,sus*4):len32,tot32.00,pan0.2
-    #<vfill> (x:29 a6:1 b6:0.5,sus*0.5 a6:0.5,sus*0.5 a6:1 g6:0,sus*4):len32,tot32.00
+    #<vfill> (x:29 a5:1 b5:0.5,sus*0.5 a5:0.5,sus*0.5 a5:1 g5:0,sus*4):len32,tot32.00,pan0.2
+    <vfill> (x:29 a6:1 b6:0.5,sus*0.5 a6:0.5,sus*0.5 a6:1 g6:0,sus*4):len32,tot32.00,relT2
 
     €distortion:d drive0.02
     €reverb:r mix0.6,room0.5
 
-@SP_Roland808:cymbal amp0.2,ofs0,sus10,out90
+@SP_Roland808:cymbal amp0.1,ofs0,sus10,out90
 
     <cend> x:31 45:1 
     <cstart> 45:32
