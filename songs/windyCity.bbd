@@ -39,32 +39,32 @@ UPDATE_COMMAND /create_router 90 0
 #>>> apad vfill  
 
 # Intro 
->>> noise 
+#>>> noise 
 
 # V1
->>> bone pat apad  
->>> btwo pat apadii 
+#>>> bone pat apad  
+#>>> btwo pat apadii 
 # Break 
 >>> pat apad reed bone 
 # V2 
->>> cstart bone bdrum apad vfill  
->>> btwo bdrum apadii stickl 
+#>>> cstart bone bdrum apad vfill  
+#>>> btwo bdrum apadii stickl 
 # TODO: Nice when pat stops before the end 
 # Chorus 1 
->>> bone pluck reedi bdrum toms 
->>> bone bdrum rhodes pluck apad reedi toms
+#>>> bone pluck reedi bdrum toms 
+#>>> bone bdrum rhodes pluck apad reedi toms
 # Break 
->>> cstart bdrum noise apad reed board cend 
+#>>> cstart bdrum noise apad reed board cend 
 # V3 
->>> bdrum bone apad vfill
->>> bdrum btwo apadii stickl
+#>>> bdrum bone apad vfill
+#>>> bdrum btwo apadii stickl
 # Chorus 2 
->>> cstart bone cdrum bdrum pluck rhodes reedi 
->>> bone cdrum bdrum pluck rhodes reedi saw cend 
+#>>> cstart bone cdrum bdrum pluck rhodes reedi 
+#>>> bone cdrum bdrum pluck rhodes reedi saw cend 
 # V4
->>> bone pat apad vfill reedi patstick 
->>> btwo pat apadii reedii patstick cend 
->>> bdrum noise apad reed board cend 
+#>>> bone pat apad vfill reedi patstick 
+#>>> btwo pat apadii reedii patstick cend 
+#>>> bdrum noise apad reed board cend 
 
 
 # TOOD: Can't really hear this bass without headphones but it's lovely with
@@ -126,6 +126,8 @@ UPDATE_COMMAND /create_router 90 0
     (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 c8:4,sus4 a7:4,sus4):len32,tot31.75
     (g6 d6 g6 c6):8,sus4,relT16,attT2,fxi0.01,fxii0.003
     <apadii> (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 g7:8,sus8 g7:7,sus7 a7:1 g7:8,sus8):len32,tot31.75
+
+    €degrade:d fx10
 
     €clamp:c under8200
 

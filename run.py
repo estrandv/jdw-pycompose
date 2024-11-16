@@ -4,7 +4,7 @@ import sys
 from jdw_billboarding.lib import jdw_osc_utils
 
 BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
-BBD_FILE = "lab.bbd"
+BBD_FILE = "windyCity.bbd"
 
 if "--update" in sys.argv:
     song.configure(BBD_ROOT + BBD_FILE)

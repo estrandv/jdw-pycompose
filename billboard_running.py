@@ -12,6 +12,20 @@ from jdw_billboarding import get_configuration_messages, NrtData, get_nrt_data, 
 
 from listener import Listener
 
+import macros
+import re
+
+def resolve_macros(file_path: str) -> str:
+    content = open(file_path, 'r').read()
+
+    macro_part_pre = re.search("(?<=<macros>)[\\s\\S]*?(?=</macros>)", content)
+
+    macro_part = macro_part_pre.group() if macro_part_pre else ""
+
+    non_macro_part = content.split("</macros>")[1] if "</macros>" in content else content
+
+    return macros.compile_macros(macro_part, non_macro_part)
+
 def default_client() -> SimpleUDPClient:
     return SimpleUDPClient("127.0.0.1", 13339) # Router
 
@@ -29,12 +43,12 @@ def setup(_bdd_path: str):
 def configure(bdd_path: str):
     client = default_client()
 
-    with open(bdd_path, 'r') as bdd_file:
-        all_messages: list[OscMessage] = get_configuration_messages(bdd_file.read())
-        all_messages += [synth.load_msg for synth in get_default_synthdefs()] # TODO: Including synths for easy prototyping
-        for msg in all_messages:
-            sleep(0.001) # Not 100% sure this is needed anymore but it's nice when configure doesn't drop any packets'
-            client.send(msg)
+    bdd_file = resolve_macros(bdd_path)
+    all_messages: list[OscMessage] = get_configuration_messages(bdd_file)
+    all_messages += [synth.load_msg for synth in get_default_synthdefs()] # TODO: Including synths for easy prototyping
+    for msg in all_messages:
+        sleep(0.001) # Not 100% sure this is needed anymore but it's nice when configure doesn't drop any packets'
+        client.send(msg)
 
 def nrt_record(bdd_path: str):
     client = default_client()
@@ -45,27 +59,27 @@ def nrt_record(bdd_path: str):
     samples: list[SampleMessage] = get_default_samples()
     lis = Listener()
 
-    with open(bdd_path, 'r') as bdd_file:
+    bdd_file = resolve_macros(bdd_path)
 
-        nrt_data: list[NrtData] = get_nrt_data(bdd_file.read(), synthdefs, samples)
+    nrt_data: list[NrtData] = get_nrt_data(bdd_file, synthdefs, samples)
 
-        for nrt_track in nrt_data:
-            for preload in nrt_track.preload_messages:
-                # TODO: We can batch this too, ya know
-                client.send(preload)
-                sleep(0.005) # Arbitrary "that should do it" wait time to avoid dropping packets
-            for batch in nrt_track.preload_bundle_batches:
-                client.send(batch)
-                sleep(0.005)
-            client.send(nrt_track.main_bundle)
-            lis.wait_for("/nrt_record_finished")
+    for nrt_track in nrt_data:
+        for preload in nrt_track.preload_messages:
+            # TODO: We can batch this too, ya know
+            client.send(preload)
+            sleep(0.005) # Arbitrary "that should do it" wait time to avoid dropping packets
+        for batch in nrt_track.preload_bundle_batches:
+            client.send(batch)
+            sleep(0.005)
+        client.send(nrt_track.main_bundle)
+        lis.wait_for("/nrt_record_finished")
 
 def update_queue(bdd_path: str):
     client = default_client()
 
-    with open(bdd_path, 'r') as bdd_file:
+    bdd_file = resolve_macros(bdd_path)
 
-        packets: list[OscMessage | OscBundle] = get_queue_update_packets(bdd_file.read())
-        for p in packets:
-            sleep(0.005) # Seems to be needed to prevent dropped messages
-            client.send(p)
+    packets: list[OscMessage | OscBundle] = get_queue_update_packets(bdd_file)
+    for p in packets:
+        sleep(0.005) # Seems to be needed to prevent dropped messages
+        client.send(p)

@@ -8,18 +8,58 @@ $lpf(gen,roof) = $:gen = LPF.ar(in: $:gen, freq: $:roof, mul: 1.0, add: 0.0)
 
 </macros>
 
+degrade
+args: out0,fx8
+    // Effect taken from "supercollider lofi tutorial"
+
+    osc = In.ar(out, 2);
+    shrate = 22050 / fx; 
+
+    // Use latch to "bitcrush"     
+    trig = Impulse.ar(shrate);
+    osc = Latch.ar(osc, trig) * 0.5;
+    ReplaceOut.ar(out, osc)
+
+~
+
+cheapPiano
+args: $args,tone0.25,hollowness0
+	env = Env.perc(attT, relT, amp * 4, -1).ar(doneAction: 2);
+
+	// Delay line times: freq, freq - 4 cents, freq + 3 cents. In the original this was done by converting freq to midi.
+	delay = (1 / (freq * [2.pow(-0.04/12), 1, 2.pow(0.03/12)]));
+	tonefreq = tone.linlin(0, 1, 1000, 5000);
+
+	hammer = Decay2.ar(
+		in: Impulse.ar(0.001),
+		attackTime: 0.008,
+		decayTime: 0.04,
+		mul: LFNoise2.ar(freq: amp.linlin(0, 1, tonefreq, 2 * tonefreq), mul: 0.25)
+	); //Try LFNoise1, LFNoise0, or even LFClipNoise above for a slightly grainier sound.
+
+	snd = CombL.ar(hammer, delay, delay, 50 * amp);
+	snd = HPF.ar(snd, hollowness.linlin(0, 1, 50, 1000));
+	snd = snd * env;
+	snd = Limiter.ar(snd);
+	Out.ar(out, Pan2.ar(snd, pan))
+
+~
+
 eighties
 args: $args,boo0.2
 
-    amp = amp * 12;
+    amp = amp * 14;
 
     lfo = LFPar.ar(freq * 0.5, mul: amp / 2);
     // Second saw freq * 1.0054 gives a nice resonance but might detune too hard  
-    osc = Saw.ar(freq + lfo, mul: amp / 2) + Saw.ar(freq + lfo * 1.0054, mul: amp * 0.5);
-    env = EnvGen.ar(envelope: Env.perc(0.01, 0.7, 0.3, curve: -5.0), gate: gate, doneAction: Done.freeSelf);
+    osc = VarSaw.ar(freq + lfo, mul: amp) + Saw.ar(freq + lfo * 1.0054, mul: amp * 0.5);
+
+    ev = Env.perc(0.002, 0.7, 0.3, curve: -6);
+    env = EnvGen.ar(envelope: ev, gate: gate, doneAction: Done.freeSelf);
 
     osc = osc * env; 
     osc = LPF.ar(in: osc, freq: env * freq + 300, mul: 1, add: 0.0);
+    osc = HPF.ar(in: osc, freq: 180, add: 0.0);
 
     $stereo(osc);
     Out.ar(out, osc)
