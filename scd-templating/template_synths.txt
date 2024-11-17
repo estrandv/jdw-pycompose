@@ -100,10 +100,13 @@ args: $args,att0.001,rel1,curve8,blend0.5
 
 wobble
 args: $args,lfo0.0
+    
+    amp = amp * 3; 
     osc = Pulse.ar(freq, mul: amp / 4, width: 0.5) * LFPar.ar(freq - 2.1864, mul:amp, iphase: 0.2) * SinOsc.ar(freq * 6.0012, mul: amp);
     osc = osc + SinOsc.ar(freq * 4.012, mul:0.8*amp);
     $adsr(osc);
-    $lpf(osc, 4800);
+    $lpf(osc, 500);
+    $hpf(osc, 300);
     $stereo(osc);
     Out.ar(out, osc)
 
