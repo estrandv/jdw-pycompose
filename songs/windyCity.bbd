@@ -55,7 +55,7 @@ UPDATE_COMMAND /create_router 90 0
 >>> bcdrive reedi bdrum toms 
 >>> bcdrive bdrum rhodes apad reedi toms pluck 
 # Break 
->>> cstart bdrum noise apad board cend 
+>>> cstart bdrum noise board cend 
 # V3 
 >>> bdrum bone apad vfill
 >>> bdrum btwo apadii stickl
@@ -63,21 +63,20 @@ UPDATE_COMMAND /create_router 90 0
 >>> bcdrive reedi bdrum toms 
 >>> bcdrive bdrum rhodes apad reedi toms pluck cend
 # V4
->>> pat apad vfill reedi patstick 
->>> pat apadii reedii patstick cend 
->>> bdrum noise apad reed board cend 
+#>>> pat apad vfill reedi patstick 
+#>>> pat apadii reedii patstick cend 
+#>>> bdrum noise apad reed board cend 
 
 
 
-# TOOD: Can't really hear this bass without headphones but it's lovely with
-*@moogBass:bass sus0.8,relT0.6,attT0.02,decT0.1,susL0.3,amp1.0,out80,fxi0.0,cut600
+*@wobble:bass sus0.8,relT0.6,attT0.02,decT0.1,susL0.3,amp0.1,out80
 
     <bone> (§:0 g3:1.5 g3:0.5 g3:1 d3:1 g3:0.5 g3:1 g3:0.5 g3:1 d3:1 \
     g3:1.5 g3:0.5 g3:1 d3:1 g3:0.5 g3:1 g3:0.5 g3:1 a3:1 \
     e3:1.5 e3:0.5 e3:1 b2:1 e3:0.5 e3:1 e3:0.5 e3:1 b2:1 \
     c3:1.5 c3:0.5 c3:1 e3:1 c3:0.5 c3:1 c3:0.5 c3:1 d3:1)
 
-    <bcdrive> (g3*15 d3:amp*1.2 g3*15 a3:amp*1.2 e3*15 b2:amp*1.2 c3*15 d3:amp*1.2):fxi0.2,attT0.01,reT0.2  
+    <bcdrive> (g3*15 d3:amp*1.2 g3*15 a3:amp*1.2 e3*15 b2:amp*1.2 c3*15 d3:amp*1.2):attT0.01,reT0.8
 
     <bchorushp> (§:0 g4:1.5 g4:0.5 g4:1 d4:1 g4:0.5 g4:1 g4:0.5 g4:1 d4:1 \
     g4:1.5 g4:0.5 g4:1 d4:1 g4:0.5 g4:1 g4:0.5 g4:1 a4:1 \
@@ -91,8 +90,10 @@ UPDATE_COMMAND /create_router 90 0
     e3:1.5 e3:0.5 e3:1 d3:1 c3:1.5 c3:0.5 c3:1 d3:1 \
     g3:1.5 g3:0.5 g3:1 d3:1 g3:1.5 g3:0.5 g3:2):len32,tot30.00
 
+    €clamp:a under800,over120
 
-*@SP_EMU_SP12:bdrum sus10,ofs0,amp0.8,out20
+
+*@SP_EMU_SP12:bdrum sus10,ofs0.0,amp1,out20
     #(4:1 4:2 4:1 4:2 4:1 x:1):len4.0,tot4.00,amp0.2
     #(16:1.5 16:3 16:1.5 16:2):len8,tot6.00
     <bdrum> (16:1,rate1.1,amp*1.1 10:2,amp*0.75,rate1.2 10:1,amp*0.5 16:0.5 16:0.5,rate1.1,amp*1.1 10:2,amp*0.5 10:1):len8,tot7.00
@@ -105,9 +106,9 @@ UPDATE_COMMAND /create_router 90 0
 
     #<cdrum> (16:1 2:0.75 2:0.25 16:0.5 16:0.5 2:1 16:1 2:0.75 2:0.25 16:0.5 16:0.5 2:0.5 2:0.5):len8,tot7.50
     <cdrum> (10*8:0.5 28:0,amp*0.5):amp*0.2
-    #€degrade:d fx1
-    €clamp:b over100,under3000
-    €reverb:a room0.2,mix0.5
+    €degrade:d fx4
+    €clamp:b over20,under1400
+    #€reverb:a room0.2,mix0.5
 
     <attack> (16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:1 16:0.75 16:0.25 2:0.5 16:1 16:0.5 2:0.5 16:0.25 2:0.25):len16,tot15.75
     #<stick> 16:2,amp0.5
@@ -117,7 +118,8 @@ UPDATE_COMMAND /create_router 90 0
     <stickl> (x:40 x:1 x:2 x:2 x:1.5 2:0.5 2:0.25 2:0.25 2:0.25 x:0.25):len8,tot6.75,ofs0.02,amp*0.3
     <board> (24:0.5 24:1 24:0.5 24:2):len4.0,tot2.00,amp*0.05
 
-    <pat> (16:1,amp*1.1,rate0.95 16*3:1,amp*0.5):amp*0.6
+    #<pat> (16:1,amp*1.1,rate0.95 16*3:1,amp*0.5):amp*0.6
+    <pat> (16:2, 16:2,rate1.1):amp*0.8
 
 @noise:noise relT3,sus2,out10,amp1
 
@@ -126,19 +128,22 @@ UPDATE_COMMAND /create_router 90 0
     €clamp:a over400,under800
     €reverb:a
 
-*@aPad:apad sus2,relT2,amp0.1,out50,fxi0.02,fxii0.018,fxiii4,tremoloDepth0.1
-    (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 c8:4,sus4 a7:4,sus4):len32,tot31.75
-    (g6 d6 g6 c6):8,sus4,relT16,attT2,fxi0.01,fxii0.003
+*@aPad:apad sus2,relT2,amp0.15,out50,fxi0.02,fxii0.018,fxiii4,tremoloDepth0.1
+    #(g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 c8:4,sus4 a7:4,sus4):len32,tot31.75
+    (g6:7,sus7 a6:1 g6:7,sus7 a6:1 b6:8,sus8 c7:4,sus4 a6:4,sus4):len32,tot31.75
+    #(g5 d5 g5 c5):8,sus4,relT16,attT2,fxi0.01,fxii0.003
     <apadii> (g7:7,sus7 a7:1 g7:7,sus7 a7:1 b7:8,sus8 g7:8,sus8 g7:7,sus7 a7:1 g7:8,sus8):len32,tot31.75
 
-    #€degrade:d fx4
+    €degrade:d fx4
 
-    €clamp:c under8200
+    €clamp:c under1200,over400
 
-*@pluck:pluck amp0.1,out70
+*@pluck:pluck amp0.3,out70
     (b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 g7:1 g7:1 a7:1 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:0.5 a7:0.5 b7:1 a7:1 b7:1 b7:1 c8:1):len16,tot15.00
+    #(b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 g6:1 g6:1 a6:1 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:1 a6:1 b6:1 b6:1 c8:1):len16,tot15.00
 
     €clamp:a under8000,over400
+    €reverb:r mix0.6,room0.7
 
 *@hypersaw:saw amp0.8,relT2,sus1,attT0,out30
     (x:0 g5:1 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:1 a5:1 b5:1 g5:0.5 a5:1 b5:1 g5:0.5 c6:1 b5:1):len16,tot15.00
@@ -150,29 +155,31 @@ UPDATE_COMMAND /create_router 90 0
 
 #(x:0 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:1 a6:1 b6:1 g6:0.5 a6:1 b6:1 g6:0.5 c7:1 b6:1):len16,tot15.00
 #(x:0 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:1 a4:1 b4:1 g4:0.5 a4:1 b4:1 g4:0.5 c5:1 b4:1):len16,tot15.00
-*@hypersaw:reed sus0.6,relT4,amp0.5,out60
+*@hypersaw:reed sus0.6,relT4,amp0.3,out60
     #(x:14.5 g6:0.5 a6:0.5 g6:0.5 a6:1,sus*2 b6:15,sus*6):len32,tot17.00
     #(x:30.5 g6:0.5 a6:0.5 g6:0.5 d6:0,sus*6):len32,tot32.00
-    (g5:7,sus7 a5:1 g5:7,sus7 a5:1 e5:7,sus7 d5:1 c5:8,sus10):len32,tot23.75,amp*2
-    (b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 g6:1 g6:1 a6:1 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:1 a6:1 b6:1 b6:1 c8:1):len16,tot15.00,amp*0.6
+#    (b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 g6:1 g6:1 a6:1 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:0.5 a6:0.5 b6:1 a6:1 b6:1 b6:1 c8:1):len16,tot15.00,amp*0.6
+    (b5:0.5 a5:0.5 b5:0.5 a5:0.5 b5:0.5 a5:0.5 b5:0.5 a5:0.5 b5:0.5 a5:0.5 g5:1 g5:1 a5:1 b5:0.5 a5:0.5 b5:0.5 a5:0.5 b5:0.5 a5:0.5 b5:1 a5:1 b5:1 b5:1 c8:1):len16,tot15.00,amp*0.8,attT0.05
 
-    <reedi> (g5:7,sus7 a5:1 g5:7,sus7 a5:1 e5:7,sus7 d5:1 c5:8,sus10):len32,tot23.75,amp*2
+    <reedi> (g4:7,sus7 a4:1 g4:7,sus7 a4:1 e4:7,sus7 d4:1 c4:8,sus10):len32,tot23.75,amp*2
 
-    <reedii> (g5:7,sus7 a5:1 g5:7,sus7 a5:1 b5:4,sus4 a5:4,sus4 g5:7,sus7 a5:1 b5:4,sus4 a5:4,sus4 g5:8,sus8):len48,tot39.75,amp*2
+    <reedii> (g4:7,sus7 a4:1 g4:7,sus7 a4:1 b4:4,sus4 a4:4,sus4 g4:7,sus7 a4:1 b4:4,sus4 a4:4,sus4 g4:8,sus8):len48,tot39.75,amp*2
 
 
-    €clamp:a under2200,over200
-    €reverb:r room0.6,mix0.6
+    €clamp:a under2200,over100
+    €reverb:r room0.2,mix0.4
 
-@FMRhodes:rhodes amp0.7,sus0.8,out40
-    (x:0.5 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:6 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:5.5):len16,tot10.50
+@FMRhodes:rhodes amp0.8,sus0.8,out40
+    (x:0.5 g4:0.5 c5:0.5 g4:0.5 b4:0.5 g4:6 g4:0.5 c5:0.5 g4:0.5 b4:0.5 g4:5.5):len16,tot10.50
+    #(x:0.5 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:6 g5:0.5 c6:0.5 g5:0.5 b5:0.5 g5:5.5):len16,tot10.50
     #(x:0.5 g6:0.5 c6:0.5 g6:0.5 b6:0.5 g6:6 g6:0.5 c6:0.5 g6:0.5 b6:0.5 g6:5.5):len16,tot10.50
 
-    #<vfill> (x:29 a5:1 b5:0.5,sus*0.5 a5:0.5,sus*0.5 a5:1 g5:0,sus*4):len32,tot32.00,pan0.2
-    <vfill> (x:29 a6:1 b6:0.5,sus*0.5 a6:0.5,sus*0.5 a6:1 g6:0,sus*4):len32,tot32.00,relT2
+    <vfill> (x:29 a5:1 b5:0.5,sus*0.5 a5:0.5,sus*0.5 a5:1 g5:0,sus*4):len32,tot32.00,pan0.2
+    #<vfill> (x:29 a6:1 b6:0.5,sus*0.5 a6:0.5,sus*0.5 a6:1 g6:0,sus*4):len32,tot32.00,relT2
 
-    €distortion:d drive0.02
-    €reverb:r mix0.6,room0.5
+    #€distortion:d drive0.02
+    €clamp:c under6000,over300
+    €reverb:r mix0.8,room0.5
 
 @SP_Roland808:cymbal amp0.6,ofs0,sus10,out90
 
