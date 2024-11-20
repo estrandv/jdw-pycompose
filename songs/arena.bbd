@@ -39,8 +39,8 @@ DEFAULT time0.5,sus0.2,amp1.0
 
 >>> drumx
 >>> drumx dbass drumi
->>> drumx dbass apad drumi vocverse
->>> drumx dbass apad drumi
+#>>> drumx dbass apad drumi vocverse
+#>>> drumx dbass apad drumi
 >>> apad moog blip blipii
 >>> apad cdrum drumi rat cbass vocbridge
 #>>> apad cdrum drumi rat cbass

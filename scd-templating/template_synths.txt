@@ -106,7 +106,7 @@ args: $args,lfo0.0
     osc = osc + SinOsc.ar(freq * 4.012, mul:0.8*amp);
     $adsr(osc);
     $lpf(osc, 500);
-    $hpf(osc, 300);
+    $hpf(osc, 30);
     $stereo(osc);
     Out.ar(out, osc)
 
