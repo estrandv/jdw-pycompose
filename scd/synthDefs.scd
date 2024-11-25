@@ -514,6 +514,30 @@ SynthDef.new("controlMod", {|value=0, out=0, prt=0|
     Out.kr(out, value)})
 
 
+SynthDef.new("compressor", {|out=0, drive=0.5, mul=1, add=0, thr=0.5, slp=1, att=0.01,rel=0.1|
+    var osc;
+    osc = In.ar(out, 2);
+
+    osc = Compander.ar(
+        in: osc, 
+        control: osc, 
+        thresh: thr, 
+        slopeBelow: 1.0, 
+        slopeAbove: 1.0 / slp, 
+        clampTime: att, 
+        relaxTime: rel, 
+        mul: mul, 
+        add: add);
+
+    ReplaceOut.ar(out, osc)})
+
+
+SynthDef.new("tube", {|out=0, drive=0.5|
+    var osc;
+    osc = In.ar(out, 2);
+    // TODO 
+    //osc = TwoTube.ar(input: osc, k: 0.01, loss: 1.0, d1length: 100, d2length: 100, mul: 1.0, add: 0.0);
+    ReplaceOut.ar(out, osc)})
 
 SynthDef.new("distortion", {|out=0, drive=0.5|
     var osc;
@@ -523,12 +547,12 @@ SynthDef.new("distortion", {|out=0, drive=0.5|
 
 
 
-SynthDef.new("analogTape", {|out=0|
+SynthDef.new("analogTape", {|out=0,bias=0.8,sat=0.8,drive=0.2,ovr=1|
     var snd;
     snd = In.ar(out,2);
 
     //snd = VarSaw.ar(440.0, width: 0.5);
-    snd = AnalogTape.ar(snd, bias: 0.8, saturation: 0.8, drive: 0.2, oversample: 1, mode: 0);
+    snd = AnalogTape.ar(snd, bias: bias, saturation: sat, drive: drive, oversample: ovr, mode: 0);
 
     ReplaceOut.ar(out, snd)})
 

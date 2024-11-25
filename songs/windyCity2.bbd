@@ -1,0 +1,126 @@
+
+DEFAULT time0.5,sus0.2,amp1.0
+COMMAND /set_bpm 108
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 5
+COMMAND /transpose -2
+
+# noise 
+UPDATE_COMMAND /create_router 10 0
+# bdrum 
+UPDATE_COMMAND /create_router 20 0
+# Saw 
+UPDATE_COMMAND /create_router 30 0
+# Rhodes 
+UPDATE_COMMAND /create_router 40 0
+#apad 
+UPDATE_COMMAND /create_router 50 0
+# reed 
+UPDATE_COMMAND /create_router 60 0
+# pluck
+UPDATE_COMMAND /create_router 70 0
+# bass 
+UPDATE_COMMAND /create_router 80 0
+# cymbal 
+UPDATE_COMMAND /create_router 90 0
+
+#>>> bassa apad bassdrum cheap 
+>>> bassa apad bassdrum 
+>>> bassb apadb bassdrum 
+>>> bassc apad reed pluck bdrum toms stick
+>>> cstart bassa apad bassdrum help
+>>> bassa bdrum apad
+>>> bassb apadb bdrum 
+>>> bassc apad reed pluck bdrum toms cling stick 
+>>> bassc apad reed pluck bdrum toms cling stick cheap  
+#>>> cstart apad help stick cling pluck drums 
+
+*@eighties:bass attT0.02,fxi0.7,relT0.8,amp0.7,out80,sus0.6 
+
+<bassc> (c4 c4 x c4)*8 (a4 a4 x a4)*4 (f4 f4 x f4)*4
+
+<bassa> ((c4:1.5 c4:0.5)*3 c4:1.5 (g4 / g4):0.5) \
+((a4:1.5 a4:0.5)*3 a4:1.5 e4:0.5) ((f4:1.5 f4:0.5)*3 f4:1.5 e4:0.5)
+
+<bassb> ((c4:1.5 c4:0.5)*3 (c4:1.5 / c4:1) (g4:0.5 / g4:1)) \
+(((a4:1.5 a4:0.5) a4:1.5 e4:0.5) ((f4:1.5 f4:0.5) f4:1.5 e4:0.5) (c4:1.5 c4:0.5)*3 c4:1.5 (g4 / c4):0.5)
+
+    # Just trying really hard to get some saturation for the laptop speakers 
+    €clamp:c under90,over40,mul1
+    €analogTape:t ovr1,sat4,drive2,bias2
+    €compressor:co thr0.29,mul1.2,att0.01
+
+@aPad:apad sus2,relT2,amp0.4,out50,fxi0.02,fxii0.018,fxiii4,tremoloDepth0.1
+    (g5:7,sus7 a5:1 g5:7,sus7 a5:1 e5:8,sus8 f5:4,sus4 b4:4,sus4):len32,tot31.75,amp*3
+
+#<apadb> (g5:7,sus7 a5:1 g5:7,sus7 a5:1 b5:8,sus8 g5:8,sus8 g5:7,sus7 a5:1 g5:8,sus8):len32,tot31.75
+<apadb>(g5:7,sus7 a5:1 g5:7,sus7 a5:1 d5:4,sus4 a5:4,sus4 g5:7,sus7 a5:1 d5:4,sus4 a5:4,sus4 g5:8,sus8):len48,tot39.75
+    #€degrade:d fx4
+    €compressor:co thr0.1,mul1.3,att0.2,rel0.1
+
+*@FMRhodes:karp sus0.8,relT0.4
+(g4:0.5000 e4:1.0000 g4:0.5000 e4:1.0000 g4:0.5000 e4:1.0000 g4:0.5000 e4:1.0000 g4:1.0000 e4:1.0000 g4:0.5000 e4:1.0000 g4:0.5000 e4:1.0000 g4:0.5000 e4:0.7500 e4:0.2500 g4:0.5000 e4:1.0000 g4:1.0000 e4:1.0000 a4:0.5000 e4:1.0000 a4:0.5000 e4:1.0000 a4:0.5000 e4:1.0000 a4:0.5000 e4:1.0000 a4:1.0000 e4:1.0000 f4:0.5000 e4:1.0000 f4:0.5000 e4:1.0000 f4:0.5000 e4:1.0000 f4:0.5000 e4:1.0000 f4:1.0000 e4:1.0000):len32,tot31.00
+#(g5:0.5000 e5:1.0000 g5:0.5000 e5:1.0000 g5:0.5000 e5:1.0000 g5:0.5000 e5:1.0000 g5:1.0000 e5:1.0000 g5:0.5000 e5:1.0000 g5:0.5000 e5:1.0000 g5:0.5000 e5:0.7500 e5:0.2500 g5:0.5000 e5:1.0000 g5:1.0000 e5:1.0000 a5:0.5000 e5:1.0000 a5:0.5000 e5:1.0000 a5:0.5000 e5:1.0000 a5:0.5000 e5:1.0000 a5:1.0000 e5:1.0000 f5:0.5000 e5:1.0000 f5:0.5000 e5:1.0000 f5:0.5000 e5:1.0000 f5:0.5000 e5:1.0000 f5:1.0000 e5:1.0000):len32,tot31.00
+
+
+*@blip:hypr amp0.2,sus1
+(c5:1.0000 e5:0.5000 c5:1.0000 f5:1.0000 e5:0.5000 f5:1.0000 g5:1.0000 f5:0.5000 e5:1.5000 e5:1.0000 f5:0.5000 g5:1.0000 f5:1.0000 g5:0.5000 a5:1.0000 f5:1.0000 g5:0.5000 f5:1.5000 d5:1.0000 f5:0.5000 d5:1.0000 f5:1.0000 g5:0.5000 f5:1.0000 d5:1.0000 d5:1.0000 c5:1.0000 d5:1.0000 e5:0.5000 d5:1.0000 f5:1.0000 g5:0.5000 a5:1.0000 f5:1.0000 e5:2.0000):len32,tot30.00
+
+*@hypersaw:pluck amp0.03,relT2,attT0.02 
+(e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 c7:1.0000 c7:1.0000 d7:1.0000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:1.0000 e7:1.0000 e7:1.0000 f7:1.0000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 c7:1.0000 c7:1.0000 d7:1.0000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:0.5000 d7:0.5000 e7:1.0000 e7:1.0000 e7:1.0000 f7:1.0000):len32,tot31.00
+
+*@moogBass:reed amp0.05,fxi0.0,relT8
+(c7:7.0000,sus2 d7:0.5000,sus1,relT4 b6:0.5000,sus1,relT4):len8,tot8.00
+c6*8:1,sus1,relT2,amp*2
+
+*@SP_Acetone:drums ofs0,amp0.7,sus5,out20,ofs0.02
+(7:0.5 7:0.5 6:0.5 7:1 7:0.5 6:1 7:0.5 7:0.5 6:0.5 7:1 7:0.5 6:1 \
+7:1 6:0.5 7:1 7:0.5 6:0.5 7:0.5 7:1 6:0.5 7:1 7:0.5 6:0.5 6:0.5 \
+):len8,tot7.00
+<bassdrum> x:1 (7:rate1.2 / 7:rate1.3):1
+    €clamp:f under400,over80,mul1.4
+    €compressor:co thr0.1,mul1.3,slp4
+
+*@moogBass:help relT4,amp0.5,fxi0,sus0.1,out30 
+
+(c5:5.0000 f5:1.0000 c5:1.0000 e5:1.0000 c5:5.0000 f5:1.0000 c5:1.0000 e5:1.0000 c5:5.0000 f5:1.0000 c5:1.0000 e5:1.0000 d5:2.0000 c5:6.0000):len32,tot26.00,attT0.1
+(c7:8 c7:8 e7:8 d7:8):sus4,fxi0.1,amp*0.05,relT10,attT0.2
+
+    €clamp:c under8899,over200,mul0.9
+    €compressor:cos thr0.6,mul1.4,slp8,att0.01,rel2.1
+
+#(4:1.5000 4:2.5000 4:1.5000 4:2.5000):len8,tot5.50
+
+*@blip:bip amp0.2
+
+(d8:0.5000 d8:1.0000 g7:0.5000 c8:1.0000 b7:0.5000 c8:3.0000 d8:0.5000 d8:0.5000 d8:0.5000 d8:1.0000 c8:1.0000 b7:0.5000 c8:1.0000 d8:1.0000 e8:1.0000 e8:1.0000 c8:1.0000 b7:0.5000 c8:1.0000 g7:1.0000 g7:1.0000 b7:0.5000 c8:1.0000 b7:1.0000 b7:1.0000 g7:1.0000 g7:0.5000 g7:1.0000 f7:1.0000 f7:1.0000 e7:0.5000 e7:4.5000):len32,tot27.50
+
+*@karp:cheap amp0.7,out10,relT0.4,attT0.1 
+(g7:0.5000 c8:1.0000 b7:0.5000 c8:1.0000 d8:0.5000 c8:1.0000 b7:0.5000 c8:1.0000 g7:1.0000 a7:1.0000 b7:0.5000 c8:1.0000 b7:0.5000 c8:1.0000 d8:0.5000 c8:1.0000 b7:0.5000 c8:1.0000 d8:1.0000 c8:1.0000 g7:0.5000 a7:1.0000 g7:0.5000 a7:1.0000 b7:0.5000 c8:1.0000 b7:0.5000 a7:1.0000 a7:1.0000 g7:1.0000 g7:0.5000 a7:1.0000 g7:0.5000 a7:1.0000 b7:0.5000 c8:1.0000 d8:0.5000 c8:1.0000 c8:1.0000 d8:1.0000):len32,tot31.00
+    
+    €degrade:d fx4
+    €clamp:c under1800,over600
+
+
+*@SP_EMU_SP12:drumsi ofs0,amp0.2,sus5
+#<drumsb> x:1 (16:rate1.2 / 16:rate1.3):1
+    <toms> (x:0.5 7:0.5,amp*0.5 7:1,rate1.1 x:0.5 7:1.5,rate0.9 7:0.5 7:1 7:0.5 7:2):len8,tot6.00,pan-0.1,amp*0.4
+    <stick> (x:9 x:1 x:1 x:2 x:1.5 4:0.5,ofs0.01 4:0.5,amp*1.5 4:0.5):len8,tot7.50,amp*0.4
+    <bdrum> (17:1,rate1.1,amp*1.1 10:2,amp*0.75,rate1.2 10:1,amp*0.5 17:0.5 17:0.5,rate1.1,amp*1.1 10:2,amp*0.5 10:1):len8,tot7.00,amp*0.5
+
+*@SP_X17:drim ofs0,sus5,amp0.6,ofs0.0,out90
+
+<cslam> (154:1.0000 34:1.0000 154:0.5000 154:0.5000 34:1.0000 154:1.0000 34:1.0000 154:0.5000 154:0.5000 34:0.5000 34:0.5000):len8,amp*0.5
+
+<cling> x:7.5 (0:rate1.4 / 0:rate1.2):0.5
+
+(x:1 310:0.5000 310:1.0000 x:0.5 310:1.5000 x:0.5000 310:1,rate*1.1 (310:1,rate0.9 / 310*2:0.5) 310:1,rate*1.1 x:0.0000):len8,tot6.00
+    €reverb:r mix0.5,room0.4,mul0.4
+    €clamp:c under2200,over120
+    €compressor:co thr0.9,mul1.2,slp4,rel0.5,att0.01
+
+
+@SP_Roland808:cymbal amp0.14,ofs0,sus10
+
+    <cend> x:31 45:1 
+    <cstart> 45:32
