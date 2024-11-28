@@ -113,7 +113,9 @@ args: $args,lfo0.0
 ~
 
 hypersaw
-args: $args,decT0.2,susL0.5
+args: $args,decT0.2,susL0.5,prt0
+    freq = freq.lag(prt);
+    amp = amp.lag(prt);
     osc = Mix(Saw.ar(freq * [1.011,2.0034,3.41,1.0001], mul: [amp * 0.25, amp * 0.4, amp * 0.1, amp * 0.5]));
     osc = osc + VarSaw.ar(freq * 2, mul: amp * 0.5) + SinOsc.ar(freq * 2.022, mul:amp * 0.2);
     $adsr(osc);
@@ -140,3 +142,46 @@ args: $args,relT2
     $adsr(osc);
     $stereo(osc);
     Out.ar(out, osc)
+
+
+~
+
+dcompressor
+args: out0,rat4,thr40,att0.1,rel100.1,mku0.5
+
+    thr = thr * -1;
+
+    osc = In.ar(out, 2);
+
+    osc = DCompressor.ar(
+        osc, 
+        sidechainIn: 0, 
+        sidechain: 0, 
+        ratio: rat, 
+        threshold: thr, 
+        attack: att, 
+        release: rel, 
+        makeup: mku, 
+        automakeup: 1
+    );
+
+    ReplaceOut.ar(out, osc)
+
+~
+
+resonator
+args: out0,dmp0.2,brg0.2
+    osc = In.ar(out, 2);
+
+    osc = Resonator.ar(
+        input: osc, 
+        freq: 440, 
+        position: 0.001, 
+        resolution: 14, 
+        structure: 0.5, 
+        brightness: brg, 
+        damping: dmp
+    );
+
+    ReplaceOut.ar(out, osc)
+
