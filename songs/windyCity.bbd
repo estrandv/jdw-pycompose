@@ -46,26 +46,26 @@ UPDATE_COMMAND /create_router 90 0
 >>> pat bone apad
 >>> pat btwo apadii 
 # Break 
-#>>> pat patstick apad reed bone 
+>>> pat patstick apad reed bone 
 # V2 
-#>>> cstart bone bdrum apad vfill  
-#>>> btwo bdrum apadii stickl 
+>>> cstart bone bdrum apad vfill  
+>>> btwo bdrum apadii stickl 
 # TODO: Nice when pat stops before the end 
 # Chorus 1 
-#>>> bcdrive reedi bdrum toms 
-#>>> bcdrive bdrum rhodes apad reedi toms pluck 
+>>> bcdrive reedi bdrum toms 
+>>> bcdrive bdrum rhodes apad reedi toms pluck 
 # Break 
-#>>> cstart bdrum noise board cend 
+>>> cstart bdrum noise board cend 
 # V3 
 #>>> bdrum bone apad vfill
 #>>> bdrum btwo apadii stickl
 # Chorus 2 
 #>>> bcdrive reedi bdrum toms 
-#>>> bcdrive bdrum rhodes apad reedi toms pluck cend
+>>> bcdrive bdrum rhodes apad reedi toms pluck cend
 # V4
 #>>> pat apad vfill reedi patstick 
-#>>> pat apadii reedii patstick cend 
-#>>> bdrum noise apad reed board cend 
+>>> pat apadii reedii patstick cend 
+>>> bdrum noise apad reed board cend 
 
 
 

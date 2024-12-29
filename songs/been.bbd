@@ -17,11 +17,11 @@ UPDATE_COMMAND /create_router 46 0
 DEFAULT time0.5,sus0.2,amp1.0
 
 >>> brah drum
->>> brah drum drumsnare drumslap apad  
+#>>> brah drum drumsnare drumslap apad  
 #>>> brah drum drumsnare drumslam sitarlow apad vocverse 
->>> brah drum drumsnare drumslam sitarlow apad 
->>> drumblast brah drum drumsnare drumslam drumslap sitarhigh 
->>> drumblast brah drum drumsnare drumslam drumslap sitarhigh vocchorus
+#>>> brah drum drumsnare drumslam sitarlow apad 
+#>>> drumblast brah drum drumsnare drumslam drumslap sitarhigh 
+#>>> drumblast brah drum drumsnare drumslam drumslap sitarhigh vocchorus
 #>>> brah drum drumsnare drumslam apad drumblast basss 
 #>>> brah drum basss drumsnare sitarlow 
 #>>> brah drum drumsnare drumslam apad outro
