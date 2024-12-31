@@ -1,4 +1,3 @@
-<macros>
 
 $args = freq440,amp1,gate1,sus1,pan0,attT0,decT0,susL1,relT0.2,out0
 $adsr(gen) = $:gen = $:gen * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.freeSelf)
@@ -6,16 +5,14 @@ $stereo(gen) = $:gen = Pan2.ar(Mix($:gen) * 0.5, pan)
 $hpf(gen,floor) = $:gen = HPF.ar(in: $:gen, freq: $:floor, mul: 1.0, add: 0.0)
 $lpf(gen,roof) = $:gen = LPF.ar(in: $:gen, freq: $:roof, mul: 1.0, add: 0.0)
 
-</macros>
-
 degrade
 args: out0,fx8
     // Effect taken from "supercollider lofi tutorial"
 
     osc = In.ar(out, 2);
-    shrate = 22050 / fx; 
+    shrate = 22050 / fx;
 
-    // Use latch to "bitcrush"     
+    // Use latch to "bitcrush"
     trig = Impulse.ar(shrate);
     osc = Latch.ar(osc, trig) * 0.5;
     ReplaceOut.ar(out, osc)
@@ -51,13 +48,13 @@ args: $args,boo0.2
     amp = amp * 14;
 
     lfo = LFPar.ar(freq * 0.5, mul: amp / 2);
-    // Second saw freq * 1.0054 gives a nice resonance but might detune too hard  
+    // Second saw freq * 1.0054 gives a nice resonance but might detune too hard
     osc = VarSaw.ar(freq + lfo, mul: amp) + Saw.ar(freq + lfo * 1.0054, mul: amp * 0.5);
 
     ev = Env.perc(0.002, 0.7, 0.3, curve: -6);
     env = EnvGen.ar(envelope: ev, gate: gate, doneAction: Done.freeSelf);
 
-    osc = osc * env; 
+    osc = osc * env;
     osc = LPF.ar(in: osc, freq: env * freq + 300, mul: 1, add: 0.0);
     osc = HPF.ar(in: osc, freq: 180, add: 0.0);
 
@@ -100,8 +97,8 @@ args: $args,att0.001,rel1,curve8,blend0.5
 
 wobble
 args: $args,lfo0.0
-    
-    amp = amp * 3; 
+
+    amp = amp * 3;
     osc = Pulse.ar(freq, mul: amp / 4, width: 0.5) * LFPar.ar(freq - 2.1864, mul:amp, iphase: 0.2) * SinOsc.ar(freq * 6.0012, mul: amp);
     osc = osc + SinOsc.ar(freq * 4.012, mul:0.8*amp);
     $adsr(osc);
@@ -154,14 +151,14 @@ args: out0,rat4,thr40,att0.1,rel100.1,mku0.5
     osc = In.ar(out, 2);
 
     osc = DCompressor.ar(
-        osc, 
-        sidechainIn: 0, 
-        sidechain: 0, 
-        ratio: rat, 
-        threshold: thr, 
-        attack: att, 
-        release: rel, 
-        makeup: mku, 
+        osc,
+        sidechainIn: 0,
+        sidechain: 0,
+        ratio: rat,
+        threshold: thr,
+        attack: att,
+        release: rel,
+        makeup: mku,
         automakeup: 1
     );
 
@@ -174,14 +171,13 @@ args: out0,dmp0.2,brg0.2
     osc = In.ar(out, 2);
 
     osc = Resonator.ar(
-        input: osc, 
-        freq: 440, 
-        position: 0.001, 
-        resolution: 14, 
-        structure: 0.5, 
-        brightness: brg, 
+        input: osc,
+        freq: 440,
+        position: 0.001,
+        resolution: 14,
+        structure: 0.5,
+        brightness: brg,
         damping: dmp
     );
 
     ReplaceOut.ar(out, osc)
-

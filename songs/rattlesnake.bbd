@@ -20,20 +20,29 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 >>> bdrum hdrum bass cymbal bassi 
 >>> moog bdrum hdrum bass cymbal 
 >>> sass bass bassi cymbal pads
-#>>> bdrum hdrum bass cymbal bassi ex 
-#>>> bass bdrum moog sdrum 
-#>>> pads bdrum hdrum bass cymbal bassi blip 
-#>>> pads bdrum hdrum bass cymbal bassi raw 
-#>>> ex bassi pads raw 
->>> moog bdrum hdrum bass cymbal bassi blip raw
+>>> bdrum hdrum bass cymbal bassi ex 
+>>> bass bdrum moog sdrum 
+>>> pads bdrum hdrum bass cymbal bassi blip 
+>>> pads bdrum hdrum bass cymbal bassi raw 
+>>> ex bassi pads raw 
+>>> moog bdrum hdrum bass cymbal bassi blip
 
-*@SP_EMU_SP12:hdrum sus5 
+# Lesson: start1000 can really tighten up the samples 
+>>> di ebone 
+#>>> di ebone ebto do
+#>>> dt esaw ereed ds 
+#>>> dt esaw ebto ereed  
+#>>> di ebone ds  
+>>> di dt ebone ebto esaw ds 
+
+
+*@SP_EMU_SP12:hdrum sus5,start300 
     (x:1 7:2.0000 7:2.0000 7:2.0000 (7:0.5000 7:0.5000 / 7*4:0.25)):len8,tot6.50,amp*0.75
     (4:0.5000 4:0.5000 4:0.5000 4:0.2500 4:0.5000 4:0.5000 4:0.2500 4:0.5000 4:0.5000):len4.0,tot3.50,amp*0.25
 
-*@SP_EMU_SP12:bdrum sus5 
+*@SP_EMU_SP12:bdrum sus5,start200 
     16:2 (16:1 / 16*2:0.5) 16:1
-*@SP_EMU_SP12:sdrum sus5,amp0.4
+*@SP_EMU_SP12:sdrum sus5,amp0.4,start500
 
     (x:1.0000 1:0.5000 x:1.0000 1:1.0000 x:0.5000):len4.0,tot3.50
     (21:1.0000 21:0.5000 21:1.0000 21:1.0000 21:1.0000 21:0.5000 21:1.0000 21:1.0000 21:1.0000 x:8):len8,tot7.00,sus0.1
@@ -90,3 +99,21 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 *@SP_Roland808:blip sus10,ofs0
 
 (x:0.5000 x:0.5000 x:0.5000 x:1.0000 x:4.0000 56:0.2500 56:0.2500 56:0.5000 56:2.7500 x:0.5000 x:1.0000 x:1.0000 x:3.2500):len16,tot12.75
+
+*@SP_curated:simpledrum sus10,ofs0
+<do> (8:0.5,sus*0.5 8:0.5,sus*0.5 8:3,sus*3 x:28):len4.0,tot1.00,start1000,ofs0
+<ds> 3:32,start1000,ofs0
+<di> (1:1,sus*1 7:0.5,sus*0.5 1:0.5,sus*0.5 1:1,sus*1 7:1,sus*1 1:1,sus*1 7:0.5,sus*0.5 1:0.5,sus*0.5 1:0.5,sus*0.5 7:0.5,sus*0.5 7:0.5,sus*0.5 7:0.5,sus*0.5):len8,tot7.50,start1000,rate0.9,ofs0.00
+<dt> (7:1,sus*1 7:0.5,sus*0.5 7:1,sus*1 7:1,sus*1 7:1,sus*1 7:0.5,sus*0.5 7:0.5,sus*0.5 7:0.5,sus*0.5 7:1,sus*1 7:1,sus*1):len8,tot7.00,start1000,ofs0.02,rate4
+*@moogBass:eigh fxi0,sus1
+<ebone> (a4:1,sus*1 f4:1,sus*1 eb4:0.5,sus*0.5 f4:0.5,sus*0.5 eb4:1,sus*1 f4:1.5,sus*1.5 bb4:1,sus*1 a4:1,sus*1 f4:0.5,sus*0.5 eb4:1,sus*1 f4:1,sus*1 a4:0.5,sus*0.5 f4:0.5,sus*0.5 a4:1,sus*1 (bb4 / f4):4,sus*4):len16,tot12.00
+<ebto> (a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 c6:2.5,sus*2.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:2.5,sus*2.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:6.5,sus*6.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 c6:2.5,sus*2.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:2.5,sus*2.5 c6:1,sus*1 a5:0.5,sus*0.5 bb5:1,sus*1 a5:0.5,sus*0.5 bb5:1,sus*1 a5:1.5,sus*1.5 f5:2.5,sus*2.5):len32,tot29.50,amp*0.5
+#(bb4:0.5,sus*0.5 a4:0.5,sus*0.5 f4:0.75,sus*0.75 eb4:2.5,sus*2.5 bb4:0.5,sus*0.5 a4:0.75,sus*0.75 f4:0.5,sus*0.5 eb4:2.5,sus*2.5 bb4:0.5,sus*0.5 a4:0.5,sus*0.5 f4:0.5,sus*0.5 eb4:1,sus*1 f4:1,sus*1 eb4:1,sus*1 f4:1,sus*1 eb4:2,sus*2):len16,tot14.00
+
+*@moogBass:esaw sus0.1,fxi0.8,fxii0.05,relT0.5
+
+(c9:0.5,sus*0.5 bb8:0.5,sus*0.5 a8:0.5,sus*0.5 bb8:0.5,sus*0.5 f8:0.5,sus*0.5 a8:0.5,sus*0.5 bb8:0.5,sus*0.5 eb8:0.5,sus*0.5 a8:0.5,sus*0.5 f8:0.5,sus*0.5 bb8:0.5,sus*0.5 c9:2.5,sus*2.5 c9:0.5,sus*0.5 bb8:0.5,sus*0.5 a8:0.5,sus*0.5 f8:0.5,sus*0.5 bb8:0.5,sus*0.5 a8:0.5,sus*0.5 eb8:0.5,sus*0.5 f8:0.5,sus*0.5 a8:0.5,sus*0.5 bb8:0.5,sus*0.5 a8:0.5,sus*0.5 f8:2.5,sus*2.5):len16,tot13.50,amp*0.4
+
+*@organReed:ereed sus1,relT0.5
+
+(f6:2,sus*2 eb6:2,sus*2 f6:2,sus*2 a6:2,sus*2 f6:2,sus*2 eb6:2,sus*2 f6:2,sus*2 c6:2,sus*2):len16,tot14.00

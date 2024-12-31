@@ -18,13 +18,7 @@ import re
 def resolve_macros(file_path: str) -> str:
     content = open(file_path, 'r').read()
 
-    macro_part_pre = re.search("(?<=<macros>)[\\s\\S]*?(?=</macros>)", content)
-
-    macro_part = macro_part_pre.group() if macro_part_pre else ""
-
-    non_macro_part = content.split("</macros>")[1] if "</macros>" in content else content
-
-    return macros.compile_macros(macro_part, non_macro_part)
+    return macros.compile_macros(content)
 
 def default_client() -> SimpleUDPClient:
     return SimpleUDPClient("127.0.0.1", 13339) # Router

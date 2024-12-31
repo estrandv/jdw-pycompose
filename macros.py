@@ -43,6 +43,7 @@ def find_macro_calls(source: str) -> list[str]:
 def parse_macro_def(source_line: str) -> MacroDefinition:
     assert len(regex_find(MACRO_DEFINITION, source_line)) > 0
 
+    # e.g. $fish(head) = abcd:$head
     func_def = source_line.split("=")[0].strip()
     content_def = "=".join(source_line.split("=")[1:]).strip()
     args: list[str] = regex_find(WITHIN_PARENTHESES, func_def)[0].split(",") if "(" in func_def else []
@@ -74,12 +75,17 @@ def resolve_macro(call: MacroCall, definitions: list[MacroDefinition]) -> str:
 def regex_find(regex: str, source: str) -> list[str]:
     return [s.group() for s in re.finditer(regex, source)]
 
+def compile_macros(text: str) -> str:
 
-def compile_macros(macro_definition_text: str, call_containing_text: str) -> str:
-    definitions = [parse_macro_def(s) for s in find_macro_defs(macro_definition_text)]
-    calls = [parse_macro_call(call) for call in find_macro_calls(call_containing_text)]
+    definition_lines = find_macro_defs(text)
+    definitions_removed = text
+    for d in definition_lines:
+        definitions_removed = definitions_removed.replace(d, "")
 
-    end_text = call_containing_text
+    definitions = [parse_macro_def(s) for s in definition_lines]
+    calls = [parse_macro_call(call) for call in find_macro_calls(definitions_removed)]
+
+    end_text = definitions_removed
     for c in calls:
         end_text = end_text.replace(c.source, resolve_macro(c, definitions))
 
@@ -90,16 +96,13 @@ if __name__ == "__main__":
 
     test_source = """
 
-        $fish = Sometimes I dream of fish
+                        $fish = Sometimes I dream of fish
         $more_than(times) = more than $:times times
 
-        ---
-
-        $fish $more_than(6)
+$fish $more_than(6)
 
     """
 
-    sections = test_source.split("---")
-    end_text = compile_macros(sections[0], sections[1])
+    end_text = compile_macros(test_source)
 
     print(end_text)
