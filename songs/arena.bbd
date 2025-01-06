@@ -37,7 +37,7 @@ DEFAULT time0.5,sus0.2,amp1.0
 #>>> drumx drumi gritBass
 #>>> drumx gritBass dbass apad drumi
 
-#>>> drumx
+>>> drumx
 >>> drumx dbass drumi
 #>>> drumx dbass apad drumi vocverse
 >>> drumx dbass apad drumi
@@ -46,7 +46,7 @@ DEFAULT time0.5,sus0.2,amp1.0
 >>> apad cdrum drumi rat cbass
 #>>> apad cdrum drumi cbass chorus vocchorus
 >>> apad cdrum drumi cbass chorus
-#>>> chorus drumi
+>>> chorus drumi
 >>> drumx dbass apad drumi
 >>> drumx dbass drumi moog
 

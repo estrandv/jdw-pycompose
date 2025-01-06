@@ -14,11 +14,17 @@ from listener import Listener
 
 import macros
 import re
+import os
 
 def resolve_macros(file_path: str) -> str:
     content = open(file_path, 'r').read()
-
-    return macros.compile_macros(content)
+    common_content = open(os.path.dirname(file_path) + "/common_macros.txt", 'r').read()
+    #print("COMMON CONTENT", common_content)
+    common_defs = macros.find_macro_defs(common_content)
+    print("DEFS", common_defs)
+    common_macros = [macros.parse_macro_def(d) for d in common_defs]
+    print("COMMON", common_macros)
+    return macros.compile_macros(content, common_defs)
 
 def default_client() -> SimpleUDPClient:
     return SimpleUDPClient("127.0.0.1", 13339) # Router

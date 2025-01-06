@@ -44,32 +44,32 @@ UPDATE_COMMAND /create_router 90 0
 
 # V1
 >>> pat bone apad
->>> pat btwo apadii 
+#>>> pat btwo apadii 
 # Break 
->>> pat patstick apad reed bone 
+#>>> pat patstick apad reed bone 
 # V2 
 >>> cstart bone bdrum apad vfill  
 >>> btwo bdrum apadii stickl 
 # TODO: Nice when pat stops before the end 
 # Chorus 1 
->>> bcdrive reedi bdrum toms 
->>> bcdrive bdrum rhodes apad reedi toms pluck 
+#>>> bcdrive reedi bdrum toms 
+#>>> bcdrive bdrum rhodes apad reedi toms pluck 
 # Break 
->>> cstart bdrum noise board cend 
+#>>> cstart bdrum noise board cend 
 # V3 
 #>>> bdrum bone apad vfill
 #>>> bdrum btwo apadii stickl
 # Chorus 2 
 #>>> bcdrive reedi bdrum toms 
->>> bcdrive bdrum rhodes apad reedi toms pluck cend
+#>>> bcdrive bdrum rhodes apad reedi toms pluck cend
 # V4
 #>>> pat apad vfill reedi patstick 
->>> pat apadii reedii patstick cend 
->>> bdrum noise apad reed board cend 
+#>>> pat apadii reedii patstick cend 
+#>>> bdrum noise apad reed board cend 
 
 
 
-*@eighties:bass sus0.8,relT1.6,attT0.0,decT0.1,susL0.3,amp0.6,out80
+*@moogBass:bass sus0.8,relT1.6,attT0.0,decT0.1,susL0.3,amp0.6,out80,fxi0
 
     <bone> (§:0 g3:1.5 g3:0.5 g3:1 x:1 g3:0.5 g3:1 g3:0.5 g3:1 x:1 \
     g3:1.5 g3:0.5 g3:1 x:1 g3:0.5 g3:1 g3:0.5 g3:1 x:1 \

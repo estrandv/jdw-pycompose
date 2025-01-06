@@ -8,39 +8,39 @@ UPDATE_COMMAND /create_router 14 0
 
 DEFAULT time0.5,sus0.2,amp1.0,ofs0
 
-#>>> bdrum bass pads cymbal 
-#>>> cymbal bdrum pads bass moog  
+#>>> bdrum bass pads cymbal
+#>>> cymbal bdrum pads bass moog
 #>>> bass moog cymbal bdrum cymbal
-#>>> pads bass cymbal sass 
-#>>> bdrum ex moog cymbal 
+#>>> pads bass cymbal sass
+#>>> bdrum ex moog cymbal
 #>>> cymbal
 
->>> bdrum pads 
+>>> bdrum pads
 >>> bdrum hdrum bass cymbal
->>> bdrum hdrum bass cymbal bassi 
->>> moog bdrum hdrum bass cymbal 
->>> sass bass bassi cymbal pads
->>> bdrum hdrum bass cymbal bassi ex 
->>> bass bdrum moog sdrum 
->>> pads bdrum hdrum bass cymbal bassi blip 
->>> pads bdrum hdrum bass cymbal bassi raw 
->>> ex bassi pads raw 
->>> moog bdrum hdrum bass cymbal bassi blip
+#>>> bdrum hdrum bass cymbal bassi
+#>>> moog bdrum hdrum bass cymbal
+# This is long
+#>>> sass bass bassi cymbal pads
+#>>> bdrum hdrum bass cymbal bassi ex
+#>>> bass bdrum moog sdrum
+>>> pads bdrum hdrum bass cymbal bassi
+#>>> bassi pads raw
+#>>> moog bdrum hdrum bass cymbal bassi blip
 
-# Lesson: start1000 can really tighten up the samples 
->>> di ebone 
-#>>> di ebone ebto do
-#>>> dt esaw ereed ds 
-#>>> dt esaw ebto ereed  
-#>>> di ebone ds  
->>> di dt ebone ebto esaw ds 
+# Lesson: start1000 can really tighten up the samples
+>>> di ebone
+>>> di ebone ebto
+>>> dt esaw ereed ds
+>>> dt esaw ebto ereed
+>>> di ebone ds
+>>> di dt ebone ebto esaw ds
 
 
-*@SP_EMU_SP12:hdrum sus5,start300 
+*@SP_EMU_SP12:hdrum sus5,start300
     (x:1 7:2.0000 7:2.0000 7:2.0000 (7:0.5000 7:0.5000 / 7*4:0.25)):len8,tot6.50,amp*0.75
     (4:0.5000 4:0.5000 4:0.5000 4:0.2500 4:0.5000 4:0.5000 4:0.2500 4:0.5000 4:0.5000):len4.0,tot3.50,amp*0.25
 
-*@SP_EMU_SP12:bdrum sus5,start200 
+*@SP_EMU_SP12:bdrum sus5,start200
     16:2 (16:1 / 16*2:0.5) 16:1
 *@SP_EMU_SP12:sdrum sus5,amp0.4,start500
 
@@ -48,11 +48,11 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
     (21:1.0000 21:0.5000 21:1.0000 21:1.0000 21:1.0000 21:0.5000 21:1.0000 21:1.0000 21:1.0000 x:8):len8,tot7.00,sus0.1
     (28:1.0000 28:1.5000 28:0.5000 28:1.0000 28:0.5000 28:1.0000 28:2.5000):len8,tot5.50,amp*0.5,rate*2
 
-*@FMRhodes:ex sus0.1,relT0.5 
+*@FMRhodes:ex sus0.1,relT0.5
 
 (bb6:0.5000 a6:0.5000 f6:0.5000 g6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 g6:0.5000 f6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 g6:2.0000 g6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 g6:0.5000 a6:0.5000 g6:4.0000):len16,tot12.00
 
-*@noise:ex 
+*@noise:ex
 
 (bb6:1.0000 f6:2.0000 a6:2.0000 g6:3.0000 e6:1.0000 f6:2.0000 g6:2.0000 f6:2.0000 e6:2.0000 bb6:2.0000 a6:2.0000 g6:0.5000 a6:0.5000 g6:2.0000 f6:1.0000 g6:7.0000):len32,tot25.00
 
@@ -64,13 +64,13 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 (g5:1.0000 bb5:1.0000 a5:1.0000 g5:1.0000 f5:1.0000 g5:0.5000 bb5:1.0000 a5:0.5000 g5:1.0000 f5:1.0000 g5:1.0000 f5:1.0000 a5:1.0000 g5:1.0000 f5:0.5000 g5:2.5000):len16,tot13.50,amp*0.5
 
 
-*@moogBass:pads relT4,sus1,fxi0.8,amp0.5 
+*@moogBass:pads relT4,sus1,fxi0.8,amp0.5
 
 (bb5:6.500 f5:1.500 g5:6.0000 a5:2.500 bb5:5.500 g5:2.0000 a5:4.0000 f5:4.0000):len32,tot28.00
 
 *@karp:sazz sus0.1,out14
 
-    €delay:d echo0.015,echt0.5 
+    €delay:d echo0.015,echt0.5
 
     (bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 g6:1.0000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 g6:1.0000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 bb6:0.5000 a6:0.5000 bb6:1.0000 c7:1.0000 bb6:0.5000 a6:0.5000 g6:1.0000):len16,tot15.00
 
@@ -92,7 +92,7 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 (c6:1,sus*1 bb6:1,sus*1 a6:1,sus*1 bb6:1,sus*1 a6:1,sus*1 f6:3,sus*3):len8,tot5.00
 #(d6:3.7500 g5:2.0000 a5:0.5000 g5:1.0000 bb5:0.5000 d6:1.0000 a5:0.5000 d6:1.0000 bb5:0.5000 a5:1.0000 bb5:0.5000 a5:3.5000 d6:3.7500 g5:2.0000 d6:0.5000 g5:1.0000 d6:0.5000 bb5:1.0000 a5:0.5000 bb5:1.0000 a5:0.5000 g5:1.2500 a5:4.2500):len32,tot27.75
 #(bb6:6.0000 g6:2.0000 f6:7.500 g6:1.0000 bb6:3.500 c7:1.500 d7:2.500 bb6:7.5000):len32,tot24.50,sus4
-    
+
     €distortion:d drive0.05
     €reverb:r mix0.8,room0.8
 

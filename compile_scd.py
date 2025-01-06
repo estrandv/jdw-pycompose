@@ -1,6 +1,7 @@
 import re
 
-from macros import compile_macros
+from macros import compile_macros, find_macro_defs
+import os
 
 # Build proper scd synthdefs from templates
 # Useful to avoid annoying scd boilerplate conventions
@@ -50,12 +51,9 @@ def get_all(path: str) -> list[str]:
 
     content = open(path, 'r').read()
 
-    macro_part = re.search("(?<=<macros>)[\\s\\S]*?(?=</macros>)", content).group()
-    non_macro_part = content.split("</macros>")[1]
+    common_macros = find_macro_defs(open("/home/estrandv/programming/jdw-pycompose/songs" + "/common_macros.txt", 'r').read())
 
-    import macros
-
-    new_source = compile_macros(macro_part, non_macro_part)
+    new_source = compile_macros(content, common_macros)
 
     return [compile(s) for s in new_source.split("~") if s.strip() != ""]
 
@@ -64,10 +62,5 @@ def get_all(path: str) -> list[str]:
 if __name__ == "__main__":
 
     synth_file = open("scd-templating/template_synths.txt", 'r').read()
-    macro_part = re.search("(?<=<macros>)[\\s\\S]*?(?=</macros>)", synth_file).group()
 
-    non_macro_part = synth_file.split("</macros>")[1]
-
-    import macros
-
-    print(compile_macros(macro_part, non_macro_part))
+    print(compile_macros(synth_file))

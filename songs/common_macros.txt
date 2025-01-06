@@ -1,0 +1,12 @@
+# STANDARD ARPS
+$cminarp(octave) = c$:octave eb$:octave c$:octave g$:octave bb$:octave c$:octave g$:octave eb$:octave
+$cmajarp(octave) = c$:octave e$:octave c$:octave g$:octave a$:octave c$:octave g$:octave e$:octave
+$gmajarp(octave) = g$:octave e$:octave g$:octave b$:octave a$:octave g$:octave f#$:octave a$:octave
+
+# Chords
+$cmin(octave) = c$:octave:0 eb$:octave:0 g$:octave
+$emin(octave) = e$:octave:0 g$:octave:0 b$:octave
+
+$gmaj(octave) = g$:octave:0 b$:octave:0 d$:octave
+$dmaj(octave) = d$:octave:0 f#$:octave:0 a$:octave
+$cmaj(octave) = c$:octave:0 e$:octave:0 g$:octave

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import re
 
 # $ + lowercase letter or '_' + optional parenthesis
-MACRO_CALL = "\\$[a-z|_]+(\\(.*\\))?"
+MACRO_CALL = "\\$[a-z|_]+(\\([1-9a-zA-Z,]+\\))?"
 # Include '=', with or without whitespace separation, and the rest of the line
 MACRO_DEFINITION = MACRO_CALL + "\\s+?=\\s+?(.*)"
 WITHIN_PARENTHESES = "(?<=\\()(.*)(?=\\))"
@@ -68,6 +68,7 @@ def resolve_macro(call: MacroCall, definitions: list[MacroDefinition]) -> str:
     for i in range(0, len(call.args)):
         template = template.replace("$:" + definition.args[i], call.args[i])
 
+    print("MACRO RESOLVED", template)
     return template
 
 
@@ -75,15 +76,17 @@ def resolve_macro(call: MacroCall, definitions: list[MacroDefinition]) -> str:
 def regex_find(regex: str, source: str) -> list[str]:
     return [s.group() for s in re.finditer(regex, source)]
 
-def compile_macros(text: str) -> str:
+def compile_macros(text: str, supplied_defs: list[str] = []) -> str:
 
-    definition_lines = find_macro_defs(text)
+
+    definition_lines = find_macro_defs(text) + supplied_defs
     definitions_removed = text
     for d in definition_lines:
         definitions_removed = definitions_removed.replace(d, "")
 
     definitions = [parse_macro_def(s) for s in definition_lines]
     calls = [parse_macro_call(call) for call in find_macro_calls(definitions_removed)]
+    print("CALLS", calls)
 
     end_text = definitions_removed
     for c in calls:
