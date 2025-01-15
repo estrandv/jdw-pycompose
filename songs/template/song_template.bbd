@@ -1,0 +1,67 @@
+UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_router 12 0
+UPDATE_COMMAND /create_router 14 0
+UPDATE_COMMAND /create_router 16 0
+UPDATE_COMMAND /create_router 18 0
+UPDATE_COMMAND /create_router 20 0
+UPDATE_COMMAND /create_router 22 0
+UPDATE_COMMAND /create_router 24 0
+UPDATE_COMMAND /create_router 26 0
+UPDATE_COMMAND /create_router 28 0
+UPDATE_COMMAND /create_router 30 0
+UPDATE_COMMAND /create_router 32 0
+UPDATE_COMMAND /create_router 34 0
+UPDATE_COMMAND /create_router 36 0
+UPDATE_COMMAND /create_router 38 0
+UPDATE_COMMAND /create_router 40 0
+UPDATE_COMMAND /create_router 42 0
+UPDATE_COMMAND /create_router 44 0
+UPDATE_COMMAND /create_router 46 0
+
+COMMAND /set_bpm 116
+
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 5
+
+DEFAULT time0.5,sus1.0,amp1.0,ofs0
+
+@SP_EMU_SP12:emu sus10,out10
+
+@SP_Roland808:roland sus10,out12
+
+    <cymbal_start> x:31 45:1 
+    <cymbal_end> 45:32
+
+@cheapPiano:cheap_piano out14
+
+@moogBass:moog out16
+
+@eighties:eigties out18
+
+@FMRhodes:rhodes out20
+
+@hypersaw:hypersaw out22
+
+@wobble:wobble out24
+
+@subBass:sub_bass out26
+
+@plink:plink out28
+
+@aPad:apad out30 
+
+@gritBass:grit_bass out32
+
+@dBass:dbass out34
+
+@prophet:prophet out36
+
+@blip:blip out38
+
+@karp:karp out40
+
+@pluck:pluck out42
+
+@organReed:reed out44
+
+@DR_hypersaw_drone:hyper_drone out46

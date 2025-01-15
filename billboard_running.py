@@ -5,10 +5,12 @@ from jdw_billboarding.lib.external_data_classes import SampleMessage, SynthDefMe
 from pythonosc.osc_bundle import OscBundle
 from pythonosc.osc_message import OscMessage
 from pythonosc.udp_client import SimpleUDPClient
+from jdw_billboarding.lib import jdw_osc_utils
+
 
 from file_utilities import get_default_samples, get_default_synthdefs
 
-from jdw_billboarding import get_configuration_messages, NrtData, get_nrt_data, get_queue_update_packets
+from jdw_billboarding import get_configuration_messages, NrtData, get_nrt_data, get_queue_update_packets, get_silence_drones
 
 from listener import Listener
 
@@ -39,6 +41,24 @@ def setup(_bdd_path: str):
     for msg in all_messages:
         sleep(0.005) # Seems to be needed to prevent dropped messages. This is a tested minimum for 100% configure.
         client.send(msg)
+
+def quiet(bdd_path: str):
+    default_client().send(jdw_osc_utils.create_msg("/hard_stop", []))
+    # Note that this kills any existing drones with freeSelf, which will have to be manually recreated
+    default_client().send_message("/note_modify", [
+        "^(?!effect_).*$",
+        0,
+        "gate",
+        0.0
+    ])
+    bdd_file = resolve_macros(bdd_path)
+    for m in get_silence_drones(bdd_file):
+        default_client().send(m)
+
+
+    #beep()
+    # TODO: Modify above modify to ignore effects and drones and only target notes
+    # TODO: Include all_drones_silence call here
 
 def configure(bdd_path: str):
     client = default_client()

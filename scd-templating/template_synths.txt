@@ -1,6 +1,7 @@
 
 $args = freq440,amp1,gate1,sus1,pan0,attT0,decT0,susL1,relT0.2,out0
 $adsr(gen) = $:gen = $:gen * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.freeSelf)
+$adsrd(gen) = $:gen = $:gen * EnvGen.ar(envelope: Env.adsr(attT, decT, susL, relT), gate: gate, doneAction: Done.none)
 $stereo(gen) = $:gen = Pan2.ar(Mix($:gen) * 0.5, pan)
 $hpf(gen,floor) = $:gen = HPF.ar(in: $:gen, freq: $:floor, mul: 1.0, add: 0.0)
 $lpf(gen,roof) = $:gen = LPF.ar(in: $:gen, freq: $:roof, mul: 1.0, add: 0.0)
@@ -116,6 +117,18 @@ args: $args,decT0.2,susL0.5,prt0
     osc = Mix(Saw.ar(freq * [1.011,2.0034,3.41,1.0001], mul: [amp * 0.25, amp * 0.4, amp * 0.1, amp * 0.5]));
     osc = osc + VarSaw.ar(freq * 2, mul: amp * 0.5) + SinOsc.ar(freq * 2.022, mul:amp * 0.2);
     $adsr(osc);
+    $stereo(osc);
+    Out.ar(out, osc)
+
+~
+
+hypersaw_drone
+args: $args,decT0.2,susL0.5,prt0
+    freq = freq.lag(prt);
+    amp = amp.lag(prt);
+    osc = Mix(Saw.ar(freq * [1.011,2.0034,3.41,1.0001], mul: [amp * 0.25, amp * 0.4, amp * 0.1, amp * 0.5]));
+    osc = osc + VarSaw.ar(freq * 2, mul: amp * 0.5) + SinOsc.ar(freq * 2.022, mul:amp * 0.2);
+    $adsrd(osc);
     $stereo(osc);
     Out.ar(out, osc)
 

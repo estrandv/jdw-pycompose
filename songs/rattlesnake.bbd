@@ -32,7 +32,7 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 >>> di ebone ebto
 >>> dt esaw ereed ds
 >>> dt esaw ebto ereed
->>> di ebone ds
+#>>> di ebone ds
 >>> di dt ebone ebto esaw ds
 
 

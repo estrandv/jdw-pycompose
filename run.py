@@ -25,18 +25,10 @@ def beep():
 
 if "--update" in sys.argv:
     song.configure(BBD_ROOT + BBD_FILE)
-    beep()
+    #beep()
 
 elif "--stop" in sys.argv:
-    song.default_client().send(jdw_osc_utils.create_msg("/hard_stop", []))
-    # Note that this kills any existing drones, which will have to be manually recreated
-    song.default_client().send_message("/note_modify", [
-        "(.*)",
-        0,
-        "gate",
-        0.0
-    ])
-    beep()
+    song.quiet(BBD_ROOT + BBD_FILE)
 
 elif "--setup" in sys.argv:
     song.setup(BBD_ROOT + BBD_FILE)

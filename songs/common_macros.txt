@@ -1,12 +1,24 @@
 # STANDARD ARPS
-$cminarp(octave) = c$:octave eb$:octave c$:octave g$:octave bb$:octave c$:octave g$:octave eb$:octave
+
+# ARP FORMULA: 0 1 0 2 3 0 2 1
+
 $cmajarp(octave) = c$:octave e$:octave c$:octave g$:octave a$:octave c$:octave g$:octave e$:octave
 $gmajarp(octave) = g$:octave e$:octave g$:octave b$:octave a$:octave g$:octave f#$:octave a$:octave
+$dmajarp(octave) = d$:octave f#$:octave d$:octave f#$:octave a$:octave d$:octave a$:octave f#$:octave
+
+$eminarp(octave) = e$:octave g$:octave e$:octave b$:octave e$:octave b$:octave g$:octave b$:octave
+$cminarp(octave) = c$:octave eb$:octave c$:octave g$:octave bb$:octave c$:octave g$:octave eb$:octave
 
 # Chords
 $cmin(octave) = c$:octave:0 eb$:octave:0 g$:octave
 $emin(octave) = e$:octave:0 g$:octave:0 b$:octave
 
 $gmaj(octave) = g$:octave:0 b$:octave:0 d$:octave
+$gmajs(octave) = g$:octave:0 b$:octave:0 f#$:octave:0,amp*1.1 d$:octave 
 $dmaj(octave) = d$:octave:0 f#$:octave:0 a$:octave
 $cmaj(octave) = c$:octave:0 e$:octave:0 g$:octave
+
+
+# Drum patterns 
+
+$chug(note) = $:note*3:0.5,sus*0.5 $:note:0.25,sus*0.25 $:note*2:0.5,sus*0.5 $:note:0.25,sus*0.25 $:note*2:0.5,sus*0.5
