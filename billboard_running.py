@@ -53,6 +53,7 @@ def quiet(bdd_path: str):
     ])
     bdd_file = resolve_macros(bdd_path)
     for m in get_silence_drones(bdd_file):
+        sleep(0.005)
         default_client().send(m)
 
 

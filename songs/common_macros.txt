@@ -9,6 +9,10 @@ $dmajarp(octave) = d$:octave f#$:octave d$:octave f#$:octave a$:octave d$:octave
 $eminarp(octave) = e$:octave g$:octave e$:octave b$:octave e$:octave b$:octave g$:octave b$:octave
 $cminarp(octave) = c$:octave eb$:octave c$:octave g$:octave bb$:octave c$:octave g$:octave eb$:octave
 
+$arp = 0 1 0 2 3 0 2 1
+$aarp = 0 1 0 2 0 3 0 4
+
+
 # Chords
 $cmin(octave) = c$:octave:0 eb$:octave:0 g$:octave
 $emin(octave) = e$:octave:0 g$:octave:0 b$:octave

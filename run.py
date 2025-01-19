@@ -10,6 +10,7 @@ BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
 #BBD_FILE = "windyCity.bbd"
 #BBD_FILE = "larp.bbd"
 BBD_FILE = "lab.bbd"
+#BBD_FILE = "vidya.bbd"
 
 def beep():
     song.default_client().send(jdw_osc_utils.create_msg("/note_on_timed", [
