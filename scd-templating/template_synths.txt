@@ -122,6 +122,60 @@ args: $args,decT0.2,susL0.5,prt0
 
 ~
 
+dguitar 
+args: $args,dbamp1,snd0,relT2
+
+    //amp = amp * -12;
+    string = { |sfreq|
+    Pluck.ar(
+        SinOsc.ar(Line.ar(1000, 50, 0.01)) 
+        * 
+        Env.perc(0.001, 0.1).ar, 
+        Impulse.ar(0.01), sfreq.reciprocal, sfreq.reciprocal, 5, 0.5)
+    };
+    snd = string.(freq) + string.(freq * 1.5) + string.(freq * 2);
+    snd = (snd * 32.dbamp).tanh;
+    snd = RLPF.ar(snd, 3000, 0.5);
+    snd = (snd * 32.dbamp).tanh;
+    snd = RLPF.ar(snd, 500, 0.5);
+    snd = (snd * 32.dbamp).tanh;
+    snd = LeakDC.ar(snd);
+    snd = DelayC.ar(snd, 0.1, SinOsc.kr(2, [0, 1pi]).range(0, 1e-4));
+    $adsr(snd);
+    // uncomment for reverb 3.10
+    // snd = snd + (NHHall.ar(snd, 1) * -5.dbamp);
+    snd * -20.dbamp;
+    Out.ar(out, Pan2.ar(snd, pan));
+
+~
+
+looper_bass
+args: $args,cutoff1000,rq0.2,pan0.0,drive2.0,filtertime1,susL0.2
+
+	osc = Saw.ar(freq);
+	oschiend = Mix(Saw.ar(freq*[0.25,1,1.5],[0.5,0.4,0.1]));
+
+	filterenv = EnvGen.ar(Env.adsr(attT,decT,susL,relT),gate, timeScale: filtertime,doneAction:Done.freeSelf);
+	filter =  RLPF.ar(osc,cutoff*filterenv+100,rq);
+
+	filterhiend =  RLPF.ar(oschiend,cutoff*filterenv+100,rq);
+	ab = abs(filterhiend);
+	filterhiend = (filterhiend*(ab + drive)/(filterhiend ** 2 + (drive - 1) * ab + 1));
+	//remove low end
+	filterhiend = BLowShelf.ar(filterhiend,300,1.0,-12);
+	//dip at 1600Hz
+	filterhiend = BPeakEQ.ar(filterhiend,1600,1.0,-6);
+
+	env = EnvGen.ar(Env.adsr(0.01,0.0,0.9,0.05),gate,doneAction:2);
+
+	sig = filter*env*amp*2;
+	sighiend = filterhiend*env*amp*2;
+
+	Out.ar(out,Pan2.ar(filter*env*amp*2,pan))
+
+~
+
+
 hypersaw_drone
 args: $args,decT0.2,susL0.5,prt0
     freq = freq.lag(prt);

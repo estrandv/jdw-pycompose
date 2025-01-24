@@ -32,8 +32,12 @@ def compile(definition: str) -> str:
 
     lines = [line for line in definition.split("\n") if line != ""]
     name = lines[0].strip()
-    argline = [line for line in lines if "args: " in line][0]
-    rep_args = parse_args(argline.split("args: ")[1])
+    arglines = [line for line in lines if "args: " in line]
+    assert len(arglines) > 0, definition + "::: does not contain an arg line"
+    argline = arglines[0]
+    arg_line_stripped = argline.split("args: ")
+    assert len(arg_line_stripped) > 1, argline + "::: is not a valid arg line"
+    rep_args = parse_args(arg_line_stripped[1])
     args = rep_args
     scd_lines = lines[lines.index(argline)+1:]
     dec_args = [find_variable(scd_line) for scd_line in scd_lines]

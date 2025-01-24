@@ -26,3 +26,5 @@ $cmaj(octave) = c$:octave:0 e$:octave:0 g$:octave
 # Drum patterns 
 
 $chug(note) = $:note*3:0.5,sus*0.5 $:note:0.25,sus*0.25 $:note*2:0.5,sus*0.5 $:note:0.25,sus*0.25 $:note*2:0.5,sus*0.5
+$lofi_bdrum(a) = $:a:1.5 $:a:0.5 x:1.5 x:0.5 $:a:0.5 $:a:1 $:a:0.5 x:1 x:1
+$lofi_sdrum(b) = x:1.5 x:0.5 $:b:1.5 $:b:0.5 x:0.5 x:1 x:0.5 $:b:1 $:b:1
