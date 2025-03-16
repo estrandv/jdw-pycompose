@@ -16,18 +16,19 @@ UPDATE_COMMAND /create_router 86 0
 
 DEFAULT time0.5,sus0.2,amp2.0
 
-#>>> drumsold pianoarp pianoc 
-#>>> cstart drumsold pianoc sawold 
+>>> drumsold pianoarp pianoc 
+>>> cstart drumsold pianoc sawold 
 
 # TODO: drone synth not detected in nrt for some reason 
 >>> drums karp 
 >>> drums karp rhodes 
+#>>> drums rhodes
 >>> karp drums rhodes saw cstart
->>> karp drums wob cstart ldrone 
->>> cstart saw karp hdrone 
->>> drums karp  
+#>>> karp drums wob cstart ldrone 
+#>>> cstart saw karp hdrone 
+#>>> drums karp  
 >>> saw wob drumsold hdrone 
->>> drumsold 
+#>>> drumsold 
 
 *@SP_EMU_SP12:drumsold start200,ofs0,sus10,out10
     16:1 (2:1 / 2:0.75 2:0.25 / 2:1 / 2*2:0.25 x:0.5):amp*0.2,rate0.8
@@ -62,6 +63,8 @@ DEFAULT time0.5,sus0.2,amp2.0
 
 
 @eighties:karp sus0.1
+
+
 
 #(d5:0.5,sus*0.5 g5:0.5,sus*0.5 d5:0.5,sus*0.5 g5:0.5,sus*0.5 d5:0.5,sus*0.5 g5:0.5,sus*0.5 a5:0.5,sus*0.5 b5:0.5,sus*0.5 c6:0.5,sus*0.5 b5:0.5,sus*0.5 a5:0.5,sus*0.5 g5:0.5,sus*0.5 a5:0.5,sus*0.5 g5:0.5,sus*0.5 a5:0.5,sus*0.5 g5:0.5,sus*0.5):len8,tot7.50
     $chug(c6)

@@ -8,31 +8,31 @@ UPDATE_COMMAND /create_router 14 0
 
 DEFAULT time0.5,sus0.2,amp1.0,ofs0
 
-#>>> bdrum bass pads cymbal
-#>>> cymbal bdrum pads bass moog
-#>>> bass moog cymbal bdrum cymbal
-#>>> pads bass cymbal sass
+>>> bdrum bass pads cymbal
+>>> cymbal bdrum pads bass moog
+>>> bass moog cymbal bdrum cymbal
+>>> pads bass cymbal sass
 #>>> bdrum ex moog cymbal
 #>>> cymbal
 
 >>> bdrum pads
->>> bdrum hdrum bass cymbal
-#>>> bdrum hdrum bass cymbal bassi
-#>>> moog bdrum hdrum bass cymbal
+#>>> bdrum hdrum bass cymbal
+>>> bdrum hdrum bass cymbal bassi
+>>> moog bdrum hdrum bass cymbal
 # This is long
-#>>> sass bass bassi cymbal pads
-#>>> bdrum hdrum bass cymbal bassi ex
-#>>> bass bdrum moog sdrum
+>>> sass bass bassi cymbal pads
+>>> bdrum hdrum bass cymbal bassi ex
+>>> bass bdrum moog sdrum
 >>> pads bdrum hdrum bass cymbal bassi
-#>>> bassi pads raw
-#>>> moog bdrum hdrum bass cymbal bassi blip
+>>> bassi pads raw
+>>> moog bdrum hdrum bass cymbal bassi blip
 
 # Lesson: start1000 can really tighten up the samples
 >>> di ebone
 >>> di ebone ebto
 >>> dt esaw ereed ds
 >>> dt esaw ebto ereed
-#>>> di ebone ds
+>>> di ebone ds
 >>> di dt ebone ebto esaw ds
 
 

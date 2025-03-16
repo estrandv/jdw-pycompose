@@ -33,19 +33,19 @@ UPDATE_COMMAND /create_router 98 0
 
 #>>> bassa
 
-#>>> bassa bassdrum
-#>>> bassa apad bassdrum 
-#>>> bassb apadb bassdrum stickbreak
-#>>> cstart bassa apad bassdrum help cling 
-#>>> cstart bassa apad bassdrum 
-#>>> bassb apadb bassdrum stickbreak
-#>>> cstart bassc apad reed bdrum toms clift 
-#>>> cstart bassc apad reed bdrum toms clift pluck  
+>>> bassa bassdrum
+>>> bassa apad bassdrum 
+>>> bassb apadb bassdrum stickbreak
+>>> cstart bassa apad bassdrum help cling 
+>>> cstart bassa apad bassdrum 
+>>> bassb apadb bassdrum stickbreak
+>>> cstart bassc apad reed bdrum toms clift 
+>>> cstart bassc apad reed bdrum toms clift pluck  
 #>>> cstart bassc apad bassdrum help  
 #>>> cstart bassa bdrum apad 
 #>>> bassb apadb bdrum stickbreak  
 #>>> bassc apad reed bdrum toms cling stick 
-#>>> cstart bassc apad reed bdrum toms cling stick cheap  
+>>> cstart bassc apad reed bdrum toms cling stick cheap  
 #>>> cstart bassa asikk apad 
 #>>> bassb asikkb apadb
 
