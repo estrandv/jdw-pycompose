@@ -20,6 +20,19 @@ args: out0,fx8
 
 ~
 
+trumpet
+args: $args,attT0.001,decT0.2,susL0.3,relT0.2
+	num = 16;
+	harms = Array.series(num, 1, 1) * Array.exprand(num, 0.995, 1.001);
+	snd = SinOsc.ar(freq * SinOsc.kr(Rand(2.0,5.0),0,Rand(0.001, 0.01),1) * harms, mul:Array.geom(num, 1, 0.63));
+	snd = Splay.ar(snd);
+	snd = BBandPass.ar(snd, freq * XLine.kr(0.1,4,0.01), 2);
+	snd = snd * amp;
+	$adsr(snd);
+	Out.ar(out, snd!2)
+
+~
+
 cheapPiano
 args: $args,tone0.25,hollowness0
 	env = Env.perc(attT, relT, amp * 4, -1).ar(doneAction: 2);
@@ -122,15 +135,15 @@ args: $args,decT0.2,susL0.5,prt0
 
 ~
 
-dguitar 
+dguitar
 args: $args,dbamp1,snd0,relT2
 
     //amp = amp * -12;
     string = { |sfreq|
     Pluck.ar(
-        SinOsc.ar(Line.ar(1000, 50, 0.01)) 
-        * 
-        Env.perc(0.001, 0.1).ar, 
+        SinOsc.ar(Line.ar(1000, 50, 0.01))
+        *
+        Env.perc(0.001, 0.1).ar,
         Impulse.ar(0.01), sfreq.reciprocal, sfreq.reciprocal, 5, 0.5)
     };
     snd = string.(freq) + string.(freq * 1.5) + string.(freq * 2);

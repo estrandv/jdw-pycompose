@@ -4,15 +4,16 @@ import sys
 from jdw_billboarding.lib import jdw_osc_utils
 
 BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
-BBD_FILE = "rattlesnake.bbd"
+#BBD_FILE = "rattlesnake.bbd"
 #BBD_FILE = "courtRide.bbd"
 #BBD_FILE = "arena.bbd"
 #BBD_FILE = "been.bbd"
 #BBD_FILE = "windyCity2.bbd"
 #BBD_FILE = "larp.bbd"
-#BBD_FILE = "lab.bbd"
+BBD_FILE = "lab.bbd"
 #BBD_FILE = "vidya.bbd"
-BBD_FILE = "lighthouse.bbd"
+#BBD_FILE = "lighthouse.bbd"
+#BBD_FILE = "gong.bbd"
 
 def beep():
     song.default_client().send(jdw_osc_utils.create_msg("/note_on_timed", [
