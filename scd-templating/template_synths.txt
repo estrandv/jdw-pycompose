@@ -20,6 +20,26 @@ args: out0,fx8
 
 ~
 
+dangerBass
+args: $args,drive0.8,resF0.5,relT0.5,attT0.01
+    
+    // Use a Saw wave oscillator with a subtle detune to give it a fuller sound
+    osc = (Saw.ar(freq, 0.5) + Saw.ar(freq + 2, 0.5)) * 0.5;
+    
+    // Apply a bit of distortion to add grit (like in Danger Zone)
+
+    driveEffect = osc + (osc * (drive * 50)).clip(0,0.2).fold2(2);
+    
+    // Filter - A low-pass filter to emphasize the low end with some resonance
+    filt = RLPF.ar(driveEffect, freq * 2, resF); // Resonant low-pass filter
+    
+    // Envelope for percussive pluck
+    env = EnvGen.ar(Env.perc(attT, relT), doneAction: 2);
+    
+    // Apply envelope and amplitude, then pan the sound
+    Out.ar(0, Pan2.ar(filt * env * amp, pan))
+~
+
 trumpet
 args: $args,attT0.001,decT0.2,susL0.3,relT0.2
 	num = 16;
