@@ -11,6 +11,7 @@ $cminarp(octave) = c$:octave eb$:octave c$:octave g$:octave bb$:octave c$:octave
 
 $arp = 0 1 0 2 3 0 2 1
 $aarp = 0 1 0 2 0 3 0 4
+$aaarp = 0 1 2 0 3 1 0 4
 
 
 # Chords

@@ -23,7 +23,7 @@ DEFAULT time0.5,sus0.2,amp1.0
 #>>> drumblast brah drum drumsnare drumslam drumslap sitarhigh vocchorus
 >>> drumblast brah drum drumsnare drumslam drumslap sitarhigh 
 #>>> brah drum drumsnare drumslam apad drumblast basss 
->>> brah drum drumsnare sitarlow 
+#>>> brah drum drumsnare sitarlow 
 >>> brah drum drumsnare drumslam apad outro
 #>>> brah drum drumsnare drumslam apad outro vocoutro
 

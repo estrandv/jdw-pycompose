@@ -23,11 +23,11 @@ DEFAULT time0.5,sus0.2,amp2.0
 >>> drums karp
 >>> drums karp rhodes
 #>>> drums rhodes
->>> karp drums rhodes saw cstart
->>> karp drums wob cstart ldrone
->>> cstart saw karp hdrone
+#>>> karp drums rhodes saw cstart
+#>>> karp drums wob cstart ldrone
+#>>> cstart saw karp hdrone
 #>>> drums karp
-#>>> saw wob drumsold hdrone
+>>> saw wob drumsold hdrone
 #>>> drumsold
 
 *@SP_EMU_SP12:drumsold start200,ofs0,sus10,out10

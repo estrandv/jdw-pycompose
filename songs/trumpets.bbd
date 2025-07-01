@@ -1,0 +1,166 @@
+UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_router 12 0
+UPDATE_COMMAND /create_router 14 0
+UPDATE_COMMAND /create_router 16 0
+UPDATE_COMMAND /create_router 18 0
+UPDATE_COMMAND /create_router 20 0
+UPDATE_COMMAND /create_router 22 0
+UPDATE_COMMAND /create_router 24 0
+UPDATE_COMMAND /create_router 26 0
+UPDATE_COMMAND /create_router 28 0
+UPDATE_COMMAND /create_router 30 0
+UPDATE_COMMAND /create_router 32 0
+UPDATE_COMMAND /create_router 34 0
+UPDATE_COMMAND /create_router 36 0
+UPDATE_COMMAND /create_router 38 0
+UPDATE_COMMAND /create_router 40 0
+UPDATE_COMMAND /create_router 42 0
+UPDATE_COMMAND /create_router 44 0
+UPDATE_COMMAND /create_router 46 0
+UPDATE_COMMAND /create_router 48 0
+
+COMMAND /set_bpm 116
+COMMAND /set_scale g min 4
+
+COMMAND /keyboard_quantization 0.25
+COMMAND /keyboard_octave 5
+
+# TODO: These don't carry over to keyboard
+DEFAULT time0.5,sus1.0,amp1.0,ofs0
+
+#>>> drum_hard drum_tick wild_bass end_clap plinker
+#>>> karper drum_step pads chug_bass pluck_follow
+#>>> cymbal_start solo drum_hard drum_tick
+#>>> drum_step drum_tick pads chug_bass karper
+#>>> drum_hard wild_bass solo pads
+#>>> drum_step pads solo wild_bass plinker reed_blast
+#>>> pluck_wild pluck_follow drum_tick drum_hard karper end_clap
+
+#>>> drum_hard
+#>>> drum_hard end_clap wild_bass
+#>>> drum_hard end_clap wild_bass pluck_follow
+
+>>> drum_step pads reed_blast cymbal_end drum_tick
+>>> drum_hard end_clap chug_bass pads
+>>> cymbal_end drum_hard end_clap chug_bass pads solo trumpet
+
+>>> drum_hard end_clap chug_bass
+>>> drum_fast drum_tick chorus_bass trumpet_grow pads
+
+>>> drum_hard reed_blast solo end_clap drum_tick
+>>> drum_hard drum_tick chug_bass trumpet_jam
+>>> cymbal_end drum_step end_clap chug_bass pads  solo trumpet_slash
+>>> reed_blast pads karper
+>>> drum_step march pads pluck_wild cymbal_end trumpet_slash
+>>> drum_step trumpet_jam march pads cymbal_end pluck_wild danger
+
+>>> drum_step march danger
+>>> drum_step march danger pads end_clap
+>>> cymbal_end chug_bass karper 
+>>> cymbal_end drum_fast drum_hard chug_bass end_clap trumpet 
+>>> cymbal_end drum_fast trumpet_slash pads
+>>> drum_step march cymbal_end trumpet_grow pads chug_bass
+
+@SP_EMU_SP12:emu sus10,out10
+
+*@SP_Roland808:roland sus10,out12,ofs0.02
+    <drum_hard> (§:0 8:0.75 8:0.25 8:0.5 8:1 8:0.5 8:1):len4.0,tot3.00
+    #<drum_fast> (8:0.75 8:0.75 8:1 9:0.5 9:0.5 9:0.5):len4.0,tot3.50,rate1.4
+    #<drum_fast> 12:1,rate4 28:1,rate1.2,amp*0.4
+    <drum_fast> (8:0.75 8:0.25 28:0.5,amp*0.3 8:0.5 8:1 28:1,amp*0.3):len4.0,tot2.75,rate0.9
+    <drum_step> 8:2 112:2,amp*0.6,rate0.6
+    #<drum_fast> 8:1 (112 / 112*2:0.5):1,amp*0.6,rate0.6
+    <march> (99:1 99:1 99:0.25 99:0.25 99:0.5 99:1 . 99:1 99:0.75 99:0.25 99:0.5 99:0.5 99:1):len8,tot7.00,amp*0.7
+    <march> ($chug(99)):rate0.8,amp*0.7
+    # TODO: queue oneshot syntax - maybe a special hotkey that queues a special group
+    <drum_tick> (x:1.5 26:1 26:1 26:0.5):len4.0,tot3.50,start3000 (x:0.25 26:0.75 26:0.75 26:1.25 26:1):len4.0,tot1.75,start3000
+        <cymbal_start> x:31 45:1
+        <cymbal_end> 45:32,ofs0.05,amp0.3
+
+    <end_clap> (x:12 x:2.5 28:0.5 28:1 . 28:0):len4.0,tot4.00,amp*0.25
+
+
+    €reverb:r mix0.3,room0.2
+@cheapPiano:cheap_piano out14
+
+*@moogBass:moog out16,fxi0,attT0.1
+    <wild_bass> (f3:1.5,sus*1.5 (b3 / c4):1,sus*1 f3:1,sus*1 d3:0.5,sus*0.5 . f3:1.5,sus*1.5 g3:1,sus*1 f3:1,sus*1 d3:0.5,sus*0.5 . f3:1.5,sus*1.5 g3:1,sus*1 f3:1,sus*1 d3:0.5,sus*0.5 . (f3 / c4):4,sus*4):len16,tot12.00
+
+    <chug_bass> $chug(f3)
+
+
+
+@eighties:eighties out18
+    <chorus_bass> (bb4:0.75,sus*0.75 a4:0.75,sus*0.75 f4:0.5,sus*0.5 bb4:0.75,sus*0.75 a4:0.75,sus*0.75 f4:0.5,sus*0.5 bb4:0.75,sus*0.75 a4:0.75,sus*0.75 f4:0.5,sus*0.5 c4:0.75,sus*0.75 f4:0.75,sus*0.75 a4:0.5,sus*0.5 bb4:0.75,sus*0.75 c5:0.75,sus*0.75 d5:0.5,sus*0.5 c5:0.75,sus*0.75 bb4:0.75,sus*0.75 a4:0.5,sus*0.5 bb4:0.75,sus*0.75 c5:0.75,sus*0.75 d5:0.5,sus*0.5 c5:0.75,sus*0.75 bb4:0.75,sus*0.75 a4:0.5,sus*0.5):len16,tot15.50,fxi0.0
+
+@FMRhodes:rhodes out20,relT1,fxi0.12,amp0.5
+    <solo> (c6:0.5,sus*0.5 f5:0.5,sus*0.5 c6:0.5,sus*0.5 f5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 . f5:0.5,sus*0.5 bb5:0.5,sus*0.5 f5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 . bb5:0.5,sus*0.5 f5:0.5,sus*0.5 bb5:0.5,sus*0.5 f5:0.5,sus*0.5 bb5:0.5,sus*0.5 c6:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 . bb5:0.5,sus*0.5 c6:0.5,sus*0.5 bb5:0.5,sus*0.5 c6:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 a5:0.5,sus*0.5 . f5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 . bb5:0.5,sus*0.5 c6:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 . f5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 a5:0.5,sus*0.5 f5:0.5,sus*0.5 bb5:0.5,sus*0.5 f5:0.5,sus*0.5 a5:0.5,sus*0.5 . f5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 c6:0.5,sus*0.5 bb5:0,sus*0 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 bb5:0.5,sus*0.5 a5:0.5,sus*0.5 .):len32,tot32.00
+
+    €distortion:di drive0.02
+    €degrade:d
+
+@hypersaw:hypersaw out22,relT1,amp0.3
+
+@wobble:wobble out24
+
+@subBass:sub_bass out26
+
+@plink:plink out28,amp0.08,attT0.02
+
+    <plinker> (bb6:0.5,sus*0.5 c7:0.5,sus*0.5 bb6:1,sus*1 f6:5,sus*5 bb6:1,sus*1 c7:1,sus*1 bb6:1,sus*1 a6:2,sus*2 f6:4,sus*4):len16,tot12.00
+
+@aPad:apad out30,sus4,relT1
+    #<pads> (bb5:4,sus*4 . x:4 . f5:4,sus*4 . x:4 . c6:4,sus*4 . x:4 . a5:4,sus*4 . x:4):len32,tot28.00
+    <pads> f5:8,sus8 c6:0,sus8 f5:8,sus8 bb5:0,sus8
+    #<pads> (bb5:8,sus*8 c6:8,sus*8 f5:8,sus*8 c5:8,sus*8):len32,tot24.00
+    €distortion:d drive0.02
+
+@gritBass:grit_bass out32
+
+@dBass:dbass out34
+
+@prophet:prophet out36,susT0.4,relT2
+
+@blip:blip out38
+@karp:karp out40
+    <karper> (c7:0.5,sus*0.5 bb6:0.5,sus*0.5 c7:0.5,sus*0.5 bb6:1,sus*1 a6:1,sus*1 f6:0.5,sus*0.5 . a6:0.5,sus*0.5 bb6:0.5,sus*0.5 a6:0.5,sus*0.5 bb6:1,sus*1 a6:1,sus*1 f6:0.5,sus*0.5 . bb6:1,sus*1 a6:1,sus*1 bb6:0.5,sus*0.5 a6:1.5,sus*1.5 . f6:4,sus*4 . c7:0.5,sus*0.5 bb6:0.5,sus*0.5 c7:0.5,sus*0.5 bb6:1,sus*1 a6:1,sus*1 f6:0.5,sus*0.5 . a6:0.5,sus*0.5 f6:0.5,sus*0.5 a6:0.5,sus*0.5 bb6:1,sus*1 a6:1,sus*1 bb6:0.5,sus*0.5 . a6:1,sus*1 c7:0.5,sus*0.5 bb6:0.5,sus*0.5 a6:1,sus*1 f6:0.5,sus*0.5 a6:0.5,sus*0.5 . x:0.5 bb6:0.5,sus*0.5 a6:1,sus*1 f6:2,sus*2):len32,tot30.00
+
+€reverb:r mix0.6,room0.8
+
+
+@pluck:pluck out42,attT0.1,fxi0.3
+    <pluck_follow> (x:2 bb5:0.5,sus*0.5 bb5:1,sus*1 bb5:0.5,sus*0.5 . x:0.5 a5:1,sus*1 f5:2.5,sus*2.5 . x:2 bb5:0.5,sus*0.5 bb5:1,sus*1 bb5:0.5,sus*0.5 . ((x:0.5 c6:0.5,sus*0.5 a5:1,sus*1 bb5:2,sus*2):out42 / x:4)):len16,tot14.00
+    <pluck_wild> (bb6:0.25,sus*0.25 a6:0.25,sus*0.25 bb6:1,sus*1 c7:0.5,sus*0.5 bb6:1,sus*1 a6:1,sus*1 . bb6:1,sus*1 a6:1,sus*1 bb6:1,sus*1 c7:0.5,sus*0.5 bb6:1,sus*1 . bb6:0.25,sus*0.25 a6:0.25,sus*0.25 bb6:1,sus*1 c7:0.5,sus*0.5 bb6:1,sus*1 a6:0.5,sus*0.5 bb6:0.5,sus*0.5 . x:0.5 a6:3,sus*3):len16,tot13.00
+
+    €reverb:r mix0.7,room0.8
+
+
+@organReed:reed out44,amp0.7
+    <reed_blast> (bb5:1,sus*1 c6:1,sus*1 bb5:2,sus*2 c6:4,sus*4 d6:1,sus*1 bb5:1,sus*1 c6:2,sus*2 d6:1,sus*1 bb5:1,sus*1 c6:2,sus*2 d6:1,sus*1 bb5:1,sus*1 f5:2,sus*2 c6:4,sus*4 bb5:1,sus*1 f5:1,sus*1 bb5:2,sus*2 f5:4,sus*4 d6:1,sus*1 bb5:1,sus*1 c6:2,sus*2 d6:1,sus*1 bb5:1,sus*1 c6:2,sus*2 d6:1,sus*1 bb5:1,sus*1 c6:2,sus*2 f5:4,sus*4 bb5:1,sus*1 f5:1,sus*1 bb5:2,sus*2 c6:4,sus*4 bb5:1,sus*1 c6:1,sus*1 bb5:2,sus*2 f5:4,sus*4):len64,tot60.00
+    €distortion:d drive0.15
+    €clamp:c under320
+
+
+@DR_hypersaw_drone:hyper_drone out46
+
+
+# TODO: Would it be possible to make referential args, e.g. sus=time?
+# TODO: Keyboard could ignore printing time explicitly if time is same as default
+@trumpet:rumpet out48,attT0.03,susL0.3,relT0.2,decT0.2,amp0.7
+    <trumpet> (x:16 x:12 x:0.5 a6:0.5,sus*0.5 bb6*2:0.25,sus*0.5 c7:0.5,sus*0.5 d7:2,sus*2):len4.0,tot2.00
+    <trumpet_solo> (bb6:0.25,sus*0.25 a6:0.25,sus*0.25 bb6:1,sus*1 d7:0.5,sus*0.5 d7:1,sus*1 bb6:1,sus*1 . bb6:1,sus*1 c7:1,sus*1 c7:2,sus*2 . bb6:0.5,sus*0.5 a6:1.25,sus*1.25 bb6:0.5,sus*0.5 a6:1,sus*1 f6:0.5,sus*0.5 bb6:0.5,sus*0.5 . a6:1,sus*1 f6:1,sus*1 c7:0.25,sus*0.25 bb6:0.25,sus*0.25 a6:1.25,sus*1.25 bb6:0.5,sus*0.5 . a6:1,sus*1 bb6:0.5,sus*0.5 a6:0.5,sus*0.5 bb6:1,sus*1 c7:1,sus*1 . d7:1,sus*1 bb6:1,sus*1 a6:1,sus*1 f6:0.25,sus*0.25 bb6:0.25,sus*0.25 a6:0.5,sus*0.5 . x:0.75 a6:0.75,sus*0.75 a6:0.5,sus*0.5 a6:0.75,sus*0.75 c7:0.75,sus*0.75 a6:0.5,sus*0.5 . x:0.5 bb6:1,sus*1 a6:0.5,sus*0.5 a6:0.75,sus*0.75 f6:0.75,sus*0.75):len32,tot31.25
+    <trumpet_jam> (d7:0.25,sus*0.25 c7:0.25,sus*0.25 d7:1,sus*1 bb6:0.5,sus*0.5 a6:1,sus*1 f6:0.5,sus*0.5 a6:0.5,sus*0.5 . x:0.5 f6:1,sus*1 a6:1,sus*1 bb6:0.5,sus*0.5 a6:1,sus*1 . f6:2.5,sus*2.75 d7:1,sus*1 c7:0.5,sus*0.5 . x:4 . d7:0.25,sus*0.25 c7:0.25,sus*0.25 d7:1,sus*1 bb6:0.5,sus*0.5 a6:1,sus*1 f6:0.5,sus*0.5 a6:0.5,sus*0.5 . x:0.5 f6:1,sus*1 a6:1,sus*1 bb6:1,sus*1 a6:0.5,sus*0.5 . x:1.5 a6:1.5,sus*1.25 f6:0.5,sus*0.5 f6:0.5,sus*0.5 . x:4):len32,tot28.25
+    #<trumpet_slash_off> (c6:0.25,sus*0.25 d6:0.25,sus*0.25 f6:1.5,sus*1.5 g6:1,sus*1 f6:5,sus*5 c6:0.25,sus*0.25 d6:0.25,sus*0.25 f6:1.75,sus*1.75 g6:1,sus*1 a6:3,sus*3 bb6:0.5,sus*0.5 a6:1,sus*1 g6:0.5,sus*0.5 f6:5.25,sus*5.25 g6:1,sus*1 f6:1.25,sus*1.25 f6:8.25,sus*8.25):len32,tot23.75
+    <trumpet_slash> (c6:0.25,sus*0.25 d6:0.25,sus*0.25 f6:1.5,sus*1.5 g6:1,sus*1 f6:5,sus*5 c6:0.25,sus*0.25 d6:0.25,sus*0.25 f6:1.5,sus*1.75 g6:1,sus*1 a6:3,sus*3 bb6:0.5,sus*0.5 a6:1,sus*1 g6:0.5,sus*0.5 f6:5.5,sus*5.25 g6:1,sus*1 f6:1.25,sus*1.25 f6:8.25,sus*8.25):len32,tot23.75
+    <trumpet_grow> (f7:0.75,sus*0.75 f7:0.75,sus*0.75 f7:0.5,sus*0.5 f7:0.75,sus*0.75 c7:0.75,sus*0.75 c7:0.5,sus*0.5 . f7:0.75,sus*0.75 f7:0.75,sus*0.75 f7:0.5,sus*0.5 g7:0.75,sus*0.75 a7:0.75,sus*0.75 g7:0.5,sus*0.5 . f7:0.75,sus*0.75 f7:0.75,sus*0.75 f7:0.5,sus*0.5 f7:0.75,sus*0.75 c7:0.75,sus*0.75 c7:0.5,sus*0.5 . c7:0.75,sus*0.75 d7:0.75,sus*0.75 d7:0.5,sus*0.5 d7:0.75,sus*0.75 c7:0.75,sus*0.75 c7:0.5,sus*0.5):len16,tot15.50,amp*0.4
+
+    €reverb:rar mix0.6,room0.9
+
+
+*@dangerBass:danger relT0.8
+    (d4:0.5,sus*0.5 f4:0.5,sus*0.5 a4:1,sus*1 bb4:1,sus*1 f4:0.5,sus*0.5 a4:0.5,sus*0.5 bb4:0.5,sus*0.5 \
+    a4:0.5,sus*0.5 f4:1,sus*1 d4:0.5,sus*0.5 f4:0.5,sus*0.5 a4:0.5,sus*0.5 bb4:0.5,sus*0.5 a4:1,sus*1\
+    f4:0.5,sus*0.5 a4:0.5,sus*0.5 bb4:0.5,sus*0.5 a4:0.5,sus*0.5 f4:1,sus*1 d4:0.5,sus*0.5 f4:0.5,sus*0.5\
+    a4:0.5,sus*0.5 bb4:0.5,sus*0.5 a4:2,sus*2):len16,tot14.00
+
+*@SP_Roland707Demo:roland707 rate1,ofs0.01,start0
