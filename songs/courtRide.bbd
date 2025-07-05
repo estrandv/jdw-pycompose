@@ -55,22 +55,22 @@ UPDATE_COMMAND /create_router 54 0
 DEFAULT time0.5,sus0.2,amp1.0
 
 >>> drum hdrum keys bass reed cymbal
->>> drum hdrum keys bass cele cymbal
->>> drum hdrum bass prophet cymbal boom hreed
+#>>> drum hdrum keys bass cele cymbal
+#>>> drum hdrum bass prophet cymbal boom hreed
 
->>> drum hdrum keys cymbal prophet cymbal experiment
->>> drum hdrum keys bass rails cymbal boom
->>> drum hdrum keys bass rails cymbal boom
 #>>> drum hdrum keys cymbal prophet cymbal experiment
+#>>> drum hdrum keys bass rails cymbal boom
+#>>> drum hdrum keys bass rails cymbal boom
+>>> drum hdrum keys cymbal prophet cymbal experiment
 
->>> drum hdrum keys bass cymbal cele cymbal
+#>>> drum hdrum keys bass cymbal cele cymbal
 #>>> drum hdrum bass cymbal reed hreed boom cymbal
 #>>> drum hdrum keys cymbal prophet cymbal experiment
-#>>> drum hdrum keys bass rails cymbal boom reed
+>>> drum hdrum keys bass rails cymbal boom reed
 #>>> drum hdrum keys bass rails cymbal boom reed
 
 #>>> keys reed prophet insanity cymbal
->>> drum hdrum bass keys reed hreed prophet insanity boom
+#>>> drum hdrum bass keys reed hreed prophet insanity boom
 
 # NOTE: detectsilence can mess up drones that go out of arrangement - never quiet such a drone to amp 0 after starting.
 # Sadly, this means ctrl+k can mess things up.
