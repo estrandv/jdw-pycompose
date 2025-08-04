@@ -8,8 +8,8 @@ UPDATE_COMMAND /create_router 14 0
 
 DEFAULT time0.5,sus0.2,amp1.0,ofs0
 
-#>>> bdrum bass pads cymbal
-#>>> cymbal bdrum pads bass moog
+>>> bdrum bass pads cymbal
+>>> cymbal bdrum pads bass moog
 >>> bass moog cymbal bdrum cymbal
 #>>> pads bass cymbal sass
 #>>> bdrum ex moog cymbal
@@ -17,7 +17,7 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 
 #>>> bdrum pads
 #>>> bdrum hdrum bass cymbal
-#>>> bdrum hdrum bass cymbal bassi
+>>> bdrum hdrum bass cymbal bassi
 #>>> moog bdrum hdrum bass cymbal
 # This is long
 #>>> sass bass bassi cymbal pads
@@ -25,15 +25,15 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 #>>> bass bdrum moog sdrum
 #>>> pads bdrum hdrum bass cymbal bassi
 #>>> bassi pads raw
-#>>> moog bdrum hdrum bass cymbal bassi blip
+>>> moog bdrum hdrum bass cymbal bassi blip
 
 # Lesson: start1000 can really tighten up the samples
-#>>> di ebone
-#>>> di ebone ebto
-#>>> dt esaw ereed ds
-#>>> dt esaw ebto ereed
-#>>> di ebone ds
-#>>> di dt ebone ebto esaw ds
+>>> di ebone
+>>> di ebone ebto
+>>> dt esaw ereed ds
+>>> dt esaw ebto ereed
+>>> di ebone ds
+>>> di dt ebone ebto esaw ds
 
 
 *@SP_EMU_SP12:hdrum sus5,start300

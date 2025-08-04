@@ -45,18 +45,10 @@ def read_sample_packs(path_string: str, allowed_extensions: list[str] = [".wav"]
 
             for file in files:
 
-                # TODO: No autocat support today, but leaving it somewhat readied for later support
-                category = ""
+                category = _get_category(file)
 
-                # uncategorized index is just the order index of the file by name
-                # categorized indices are by-category and start from 0 again
                 new_tone_index = tone_index
-                if category != "":
-                    if category not in categorized_samples:
-                        categorized_samples[category] = []
-                    new_tone_index = len(categorized_samples[category])
-                else:
-                    tone_index += 1
+                tone_index += 1
 
                 samples.append(Sample(
                     pack_path + file,
@@ -68,10 +60,27 @@ def read_sample_packs(path_string: str, allowed_extensions: list[str] = [".wav"]
 
                 buffer_index += 1
 
-                if category != "":
-                    categorized_samples[category].append(samples[-1])
-
     return samples
+
+def _get_category(file_name) -> str:
+    matchers: dict[str, list[str]] = {
+        "bd": ["bd"],
+        "hh": ["hh", "hat", "ride"],
+        "cy": ["cy", "crash", "cr"],
+        "sn": ["sn", "sd"],
+        "be": ["cb", "bell"],
+        "to": ["lt", "ht", "tom", "mc", "lb", "to"],
+        "sh": ["mc", "ma", "sh"],
+        "fx": ["fx"],
+        "st": ["st"]
+    }
+
+    for category in matchers:
+        for keyword in matchers[category]:
+            if keyword in file_name.lower():
+                return category
+
+    return ""
 
 
 def _defsynthdef_get() -> list[str]:

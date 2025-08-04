@@ -3,6 +3,7 @@ COMMAND /keyboard_quantization 0.25
 COMMAND /keyboard_octave 5
 
 UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_effect vverb master_reverb mix0.55,room0.6,amp1,decay0.2,out0
 UPDATE_COMMAND /create_router 12 0
 UPDATE_COMMAND /create_router 14 0
 
@@ -20,14 +21,14 @@ DEFAULT time0.5,sus0.2,amp2.0
 >>> cstart drumsold pianoc sawold
 
 # TODO: drone synth not detected in nrt for some reason
->>> drums karp
->>> drums karp rhodes
+#>>> drums karp
+#>>> drums karp rhodes
 #>>> drums rhodes
 #>>> karp drums rhodes saw cstart
 #>>> karp drums wob cstart ldrone
 #>>> cstart saw karp hdrone
 #>>> drums karp
->>> saw wob drumsold hdrone
+#>>> saw wob drumsold hdrone
 #>>> drumsold
 
 *@SP_EMU_SP12:drumsold start200,ofs0,sus10,out10

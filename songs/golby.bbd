@@ -22,43 +22,35 @@ UPDATE_COMMAND /create_router 48 0
 UPDATE_COMMAND /create_router 50 0
 
 COMMAND /set_bpm 116
-COMMAND /set_scale g min 4
+COMMAND /set_scale c maj 4
 
 COMMAND /keyboard_quantization 0.5
 COMMAND /keyboard_octave 5
 
 DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
-@SP_EMU_SP12:emu sus10,out10
+@SP_EMU_SP12:emu sus10,out10,amp0.2,pfx1,rate1.8pfx
 
-    
+    bd0:2 to2:2 bd0:2 to2:1 to3:1
+
 
 @SP_Roland808:roland sus10,out12
 
-    #<cymbal_start> x:31 45:1
+    
+
+#    <cymbal_start> x:31 45:1
     #<cymbal_end> 45:32
 
-    $dr_human(bd0,sn7,be0) 
-    bd23:4,rate0.8
+@cheapPiano:cheap_piano out14,amp0.02,relT0.5
 
-    #bd22 sn3 be0 sn4
+@moogBass:moog out16
 
+@eighties:eighties out18,sus2,relT0,decT0.7,susL0.3,attT0.03
 
-@cheapPiano:cheap_piano out14
+    $aarp
 
-@moogBass:moog out16,sus0.1,relT0.2,amp0.2
+@FMRhodes:rhodes out20,osc0.28,oscmix1,sus1time,relT0.2time,chime0.2,tension1.2,amod0.5
 
-    $arp_a $arp_c
-
-@eighties:eighties out18,amp0.4
-
-    12 14 16 18 . 14 16 18 18 . 12 13 14 16
-
-
-    €vverb:v room0.7,mix0.6
-
-@FMRhodes:rhodes out20
-   x:2 4*8:0.25,amp0.3 x:4
 
 @hypersaw:hypersaw out22
 
@@ -66,9 +58,13 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 @subBass:sub_bass out26
 
-@plink:plink out28
+@plink:plink out28,amp0.2,relT0.2
+
+
+€clamp:c under1200,over600
 
 @aPad:apad out30
+
 
 @gritBass:grit_bass out32
 
@@ -80,14 +76,22 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 @karp:karp out40
 
+
+
 @pluck:pluck out42
 
 @organReed:reed out44
 
-@DR_hypersaw_drone:hyper_drone out46
+@DR_hypersaw_drone:hyper_drone out46,amp0.2
 
-@trumpet:trumpet out48,attT0.03,susL0.3,relT0.2,decT0.2,amp0.8
+@trumpet:trumpet out48,attT0.3,susL0.5time,relT0.7,decT0.2,amp0.2
 
-*@dangerBass:dangerBass out50
 
-(a5:0.5 bb5:0.5 a5:0.5 f5:1 c5:1 c5:0.5 f5:0.5 a5:0.5 bb5:1 (a5 / c6):2):len8,tot6.0
+€reverb:r mix0.6,room0.6
+
+€clamp:c over200,under2800
+
+€degrade:d 
+
+@dangerBass:dangerBass out50
+

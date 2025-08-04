@@ -45,29 +45,6 @@ SynthDef.new("eBass",
 
 
 
-SynthDef.new("FMRhodes", {|amp=1,freq=440,gate=1,out=0,pan=0,
-    attT = 0.001, relT = 1, fxi = 4.8, fxii = 0.1
-    amod = 0.2, fxiii = 0.2, fxiv = 0.2|
-
-    var env1, env2, env3, env4;
-    var osc1, osc2, osc3, osc4, snd;
-
-    env1 = Env.perc(attT, relT * 1.25, amod, curve: \lin).kr;
-    env2 = Env.perc(attT, relT, amod, curve: \lin).kr;
-    env3 = Env.perc(attT, relT * 1.5, amod, curve: \lin).kr;
-    env4 = Env.perc(attT, relT * 1.5, amod, curve: \lin).kr;
-
-    osc4 = SinOsc.ar(freq) * 6.7341546494171 * fxiii * env4;
-    osc3 = SinOsc.ar(freq * 2, osc4) * env3;
-    osc2 = SinOsc.ar(freq * 30) * 0.683729941 * env2;
-    osc1 = SinOsc.ar(freq * 2, osc2) * env1;
-    snd = Mix((osc3 * (1 - fxiv)) + (osc1 * fxiv));
-  	snd = snd * (SinOsc.ar(fxi).range((1 - fxii), 1));
-
-    snd = snd * Env.asr(0, 1, 0.1).kr(gate: gate, doneAction: Done.freeSelf);
-    snd = Pan2.ar(snd, pan, amp);
-
-    Out.ar(out, snd)})
 
 
 
@@ -574,3 +551,35 @@ SynthDef.new("reverb",
     snd = In.ar(out,2);
     snd = FreeVerb.ar(snd, mix: mix, room: room, damp: damp, mul: mul, add: add);
     ReplaceOut.ar(out,snd)})
+
+SynthDef.new("vverb", {
+    |in=0, out=0, amp=1, room=0.9, mix=0.35, modDepth=0.02, modRate=0.2, preDelay=0.03, decay=4.0|
+
+    var snd, dry, wet, modSig, delayed, diffused, reverbTail, final;
+
+    // Read stereo input
+    snd = In.ar(in, 2);
+    dry = snd;
+
+    // Optional pre-delay
+    delayed = DelayN.ar(snd, 0.1, preDelay); // max 100ms, default 30ms
+
+    // Modulated diffusion network to simulate chorusing (adds 80s lushness)
+    modSig = SinOsc.kr(modRate, 0, modDepth, 1); // slow modulation
+    diffused = AllpassN.ar(delayed, 0.1, modSig * 0.05, 1); // early reflections w/ mod
+
+    // Multi-stage allpass & comb filters (approximating early reflections & tail)
+    diffused = AllpassN.ar(diffused, 0.05, { Rand(0.01, 0.05) } ! 4, decay).mean;
+
+    // Simulate stereo widening & slight movement
+    diffused = LeakDC.ar(diffused);
+    diffused = Splay.ar(diffused, center: 0.5);
+
+    // Soft saturation to warm the sound
+    wet = tanh(diffused * amp);
+
+    // Mix dry and wet
+    final = XFade2.ar(dry, wet, mix * 2 - 1); // mix from dry (-1) to wet (1)
+
+    // Send to output
+    ReplaceOut.ar(out, final)})

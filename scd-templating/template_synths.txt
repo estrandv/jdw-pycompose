@@ -77,7 +77,7 @@ args: $args,tone0.25,hollowness0
 ~
 
 eighties
-args: $args,boo0.2
+args: $args,decT0.7,susL0.3,attT0.002
 
     amp = amp * 14;
 
@@ -85,7 +85,7 @@ args: $args,boo0.2
     // Second saw freq * 1.0054 gives a nice resonance but might detune too hard
     osc = VarSaw.ar(freq + lfo, mul: amp) + Saw.ar(freq + lfo * 1.0054, mul: amp * 0.5);
 
-    ev = Env.perc(0.002, 0.7, 0.3, curve: -6);
+    ev = Env.perc(attT, decT, susL, curve: -6);
     env = EnvGen.ar(envelope: ev, gate: gate, doneAction: Done.freeSelf);
 
     osc = osc * env;
@@ -94,6 +94,29 @@ args: $args,boo0.2
 
     $stereo(osc);
     Out.ar(out, osc)
+~
+
+
+FMRhodes
+args: $args,osc4.8,oscmix0.1,amod0.2,tension0.2,chime0.2
+
+    env1 = Env.perc(attT, relT * 1.25, amod, curve: \lin).kr;
+    env2 = Env.perc(attT, relT, amod, curve: \lin).kr;
+    env3 = Env.perc(attT, relT * 1.5, amod, curve: \lin).kr;
+    env4 = Env.perc(attT, relT * 1.5, amod, curve: \lin).kr;
+
+    osc4 = SinOsc.ar(freq) * 6.7341546494171 * tension * env4;
+    osc3 = SinOsc.ar(freq * 2, osc4) * env3;
+    osc2 = SinOsc.ar(freq * 30) * 0.683729941 * env2;
+    osc1 = SinOsc.ar(freq * 2, osc2) * env1;
+    snd = Mix((osc3 * (1 - chime)) + (osc1 * chime));
+  	snd = snd * (SinOsc.ar(osc).range((1 - oscmix), 1));
+
+    snd = snd * Env.asr(0, 1, 0.1).kr(gate: gate, doneAction: Done.freeSelf);
+    snd = Pan2.ar(snd, pan, amp);
+
+    Out.ar(out, snd)
+
 ~
 
 subBass

@@ -15,7 +15,7 @@ from dataclasses import dataclass
 import re
 
 # $ + lowercase letter or '_' + optional parenthesis
-MACRO_CALL = "\\$[a-z|_]+(\\([1-9a-zA-Z,]+\\))?"
+MACRO_CALL = "\\$[a-z|_]+(\\([0-9a-zA-Z,]+\\))?"
 # Include '=', with or without whitespace separation, and the rest of the line
 MACRO_DEFINITION = MACRO_CALL + "\\s+?=\\s+?(.*)"
 WITHIN_PARENTHESES = "(?<=\\()(.*)(?=\\))"

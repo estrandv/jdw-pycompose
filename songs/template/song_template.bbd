@@ -1,4 +1,5 @@
 UPDATE_COMMAND /create_router 10 0
+UPDATE_COMMAND /create_effect reverb master_reverb mix0.35,room0.3,out0
 UPDATE_COMMAND /create_router 12 0
 UPDATE_COMMAND /create_router 14 0
 UPDATE_COMMAND /create_router 16 0
@@ -35,13 +36,13 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
     <cymbal_start> x:31 45:1
     <cymbal_end> 45:32
 
-@cheapPiano:cheap_piano out14
+@cheapPiano:cheap_piano out14,tone0.25,hollowness0
 
 @moogBass:moog out16
 
 @eighties:eighties out18
 
-@FMRhodes:rhodes out20
+@FMRhodes:rhodes out20,osc4.8,oscmix0.1,amod0.2,tension0.2,chime0.2
 
 @hypersaw:hypersaw out22
 
@@ -71,4 +72,4 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 @trumpet:trumpet out48,attT0.03,susL0.3,relT0.2,decT0.2,amp0.8
 
-@dangerBass:dangerBass out50
+@dangerBass:dangerBass out50,drive0.8,resF0.5,relT0.5,attT0.01

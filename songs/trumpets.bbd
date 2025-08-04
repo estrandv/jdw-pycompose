@@ -1,4 +1,6 @@
 UPDATE_COMMAND /create_router 10 0
+# OPTIONAL, TESTING
+UPDATE_COMMAND /create_effect vverb master_reverb mix0.55,room0.6,amp1,decay0.2,out0
 UPDATE_COMMAND /create_router 12 0
 UPDATE_COMMAND /create_router 14 0
 UPDATE_COMMAND /create_router 16 0
@@ -40,9 +42,13 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 #>>> drum_hard end_clap wild_bass
 #>>> drum_hard end_clap wild_bass pluck_follow
 
+
 >>> drum_step pads reed_blast cymbal_end drum_tick
 >>> drum_hard end_clap chug_bass pads
->>> cymbal_end drum_hard end_clap chug_bass pads solo trumpet
+#>>> cymbal_end drum_hard end_clap chug_bass pads solo trumpet
+
+########## 
+
 
 >>> drum_hard end_clap chug_bass
 >>> drum_fast drum_tick chorus_bass trumpet_grow pads
@@ -51,8 +57,8 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 >>> drum_hard drum_tick chug_bass trumpet_jam
 >>> cymbal_end drum_step end_clap chug_bass pads  solo trumpet_slash
 >>> reed_blast pads karper
->>> drum_step march pads pluck_wild cymbal_end trumpet_slash
->>> drum_step trumpet_jam march pads cymbal_end pluck_wild danger
+#>>> drum_step march pads pluck_wild cymbal_end trumpet_slash
+#>>> drum_step trumpet_jam march pads cymbal_end pluck_wild danger
 
 >>> drum_step march danger
 >>> drum_step march danger pads end_clap

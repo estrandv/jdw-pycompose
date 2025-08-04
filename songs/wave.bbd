@@ -1,5 +1,5 @@
 UPDATE_COMMAND /create_router 10 0
-UPDATE_COMMAND /create_effect reverb master_reverb mix0.35,room0.3,out0
+UPDATE_COMMAND /create_effect vverb master_reverb mix0.95,room0.8,amp1,decay4,damp0.9,out0
 UPDATE_COMMAND /create_router 12 0
 UPDATE_COMMAND /create_router 14 0
 UPDATE_COMMAND /create_router 16 0
@@ -22,45 +22,47 @@ UPDATE_COMMAND /create_router 48 0
 UPDATE_COMMAND /create_router 50 0
 
 COMMAND /set_bpm 116
-COMMAND /set_scale g min 4
+COMMAND /set_scale g maj 3
 
 COMMAND /keyboard_quantization 0.5
 COMMAND /keyboard_octave 5
 
 DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
+>>> rook 
+
 @SP_EMU_SP12:emu sus10,out10
 
-    
+    #<rook> 3:4 17:4
 
-@SP_Roland808:roland sus10,out12
+    <rook> $dr_human(16,3)
+
+@SP_Roland808:roland sus10,out12,start0
 
     #<cymbal_start> x:31 45:1
     #<cymbal_end> 45:32
 
-    $dr_human(bd0,sn7,be0) 
-    bd23:4,rate0.8
+    #<rook> $dr_ox(23,21)
+   # <rook> $chug(63)
 
-    #bd22 sn3 be0 sn4
-
+    #€clamp:c over40,under2000
 
 @cheapPiano:cheap_piano out14
 
-@moogBass:moog out16,sus0.1,relT0.2,amp0.2
+@moogBass:moog out16
 
-    $arp_a $arp_c
+@eighties:eighties out18,time0.5
 
-@eighties:eighties out18,amp0.4
-
-    12 14 16 18 . 14 16 18 18 . 12 13 14 16
-
-
-    €vverb:v room0.7,mix0.6
+    <rook> 0 1 3 0 1 2 3
 
 @FMRhodes:rhodes out20
-   x:2 4*8:0.25,amp0.3 x:4
 
-@hypersaw:hypersaw out22
+@hypersaw:hypersaw out22,amp0.5,relT0.5
+
+
+
+    €clamp:a over200,under3000
+
 
 @wobble:wobble out24
 
@@ -82,12 +84,16 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 @pluck:pluck out42
 
-@organReed:reed out44
+@organReed:reed out44,sus0.8time,relT0.7time,fxi0.1,fxii22
+
+    (4 2 3 (2 / 6)):4 
+
+    €clamp:a over300,under1200
 
 @DR_hypersaw_drone:hyper_drone out46
 
 @trumpet:trumpet out48,attT0.03,susL0.3,relT0.2,decT0.2,amp0.8
 
-*@dangerBass:dangerBass out50
+@dangerBass:dangerBass out50
 
-(a5:0.5 bb5:0.5 a5:0.5 f5:1 c5:1 c5:0.5 f5:0.5 a5:0.5 bb5:1 (a5 / c6):2):len8,tot6.0
+<rook>    0*7 (2 / 3 / 1 / 4)
