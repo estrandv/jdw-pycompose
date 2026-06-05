@@ -30,17 +30,17 @@ COMMAND /keyboard_octave 5
 DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 >>> dive chug arp
->>> cymbal_start drum arp bass 
->>> drum lead arp bass 
->>> drum arp bass chime
->>> drum_break arp_break 
->>> cymbal_start chug moog bass 
->>> cymbal_start drum arp lead 
->>> drum_break bass 
->>> cymbal_start arp_break solo bass chug ender 
+#>>> cymbal_start drum arp bass 
+#>>> drum lead arp bass 
+#>>> drum arp bass chime
+#>>> drum_break arp_break 
+#>>> cymbal_start chug moog bass 
+#>>> cymbal_start drum arp lead 
+#>>> drum_break bass 
+#>>> cymbal_start arp_break solo bass chug ender 
 #>>> cymbal_start small_drum arp bass 
 #>>> chug arp bass cymbal_end lead ender 
->>> end 
+#>>> end 
 
 @SP_EMU_SP12:emu sus10,out10,amp0.3,start500
 

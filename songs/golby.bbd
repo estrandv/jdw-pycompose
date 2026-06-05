@@ -31,8 +31,7 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 @SP_EMU_SP12:emu sus10,out10,amp0.2,pfx1,rate1.8pfx
 
-    bd0:2 to2:2 bd0:2 to2:1 to3:1
-
+    $pt_chimp_a(to2,to3)
 
 @SP_Roland808:roland sus10,out12
 
@@ -42,15 +41,13 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
     #<cymbal_end> 45:32
 
 @cheapPiano:cheap_piano out14,amp0.02,relT0.5
-
 @moogBass:moog out16
 
 @eighties:eighties out18,sus2,relT0,decT0.7,susL0.3,attT0.03
 
-    $aarp
+#    $aarp
 
-@FMRhodes:rhodes out20,osc0.28,oscmix1,sus1time,relT0.2time,chime0.2,tension1.2,amod0.5
-
+*@FMRhodes:rhodes out20,osc0.28,oscmix1,sus1time,relT0.2time,chime0.8time,tension2.2,amod0.5
 
 @hypersaw:hypersaw out22
 
@@ -65,8 +62,8 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 @aPad:apad out30
 
-
-@gritBass:grit_bass out32
+@gritBass:grit_bass out32,susT1time,relT2.8time
+$pt_rhino_c(c4,g4) $pt_rhino_c(c4,f4)
 
 @dBass:dbass out34
 
@@ -78,14 +75,15 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 
 
-@pluck:pluck out42
+@pluck:pluck out42,blur0.2,relT2
 
 @organReed:reed out44
 
-@DR_hypersaw_drone:hyper_drone out46,amp0.2
+@DR_hypersaw_drone:hyper_drone out46,amp0.7,prt0.2
+(c5:0.5 d5:0.5 e5:1 g5:1 a5:1 g5:2 g5:0.5 a5:0.5 b5:1 g5:1 a5:0.5 g5:0.5 a5:1 g5:5 c5:0.5 d5:0.5 e5:1 g5:1 f5:1 g5:1 f5:1 e5:1 d5:3 e5:0.5 d5:0.5 c5:5):len32,tot27.0
 
-@trumpet:trumpet out48,attT0.3,susL0.5time,relT0.7,decT0.2,amp0.2
-
+@trumpet:trumpet out48,attT0.3,susL0.5,relT0.7time,decT0.2,amp0.8,sus1time
+(0 3 4 2):4
 
 €reverb:r mix0.6,room0.6
 
@@ -94,4 +92,3 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 €degrade:d 
 
 @dangerBass:dangerBass out50
-
