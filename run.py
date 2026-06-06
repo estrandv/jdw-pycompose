@@ -47,7 +47,6 @@ elif "--nrt" in sys.argv:
 else:
     if bbd_path:
         song.update_queue(bbd_path)
-        beep(0.1)
 
 if not bbd_path and not any(f in sys.argv for f in ("--stop", "--setup", "--nrt")):
     print(f"Usage: {sys.argv[0]} <song.bbd> [--update|--setup|--stop|--nrt]", file=sys.stderr)
