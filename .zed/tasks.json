@@ -25,6 +25,7 @@
   {
     "label": "JDW: NRT render",
     "command": "/home/estrandv/programming/jdw-helper-scripts/nrt-record.sh",
+    "args": ["{ZED_FILE}"],
     "tags": ["jdw", "nrt"]
   }
 ]

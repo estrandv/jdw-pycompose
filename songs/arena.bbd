@@ -46,9 +46,9 @@ DEFAULT time0.5,sus0.2,amp1.0
 >>> apad cdrum drumi rat cbass
 #>>> apad cdrum drumi cbass chorus vocchorus
 >>> apad cdrum drumi cbass chorus
->>> chorus drumi
->>> drumx dbass apad drumi
->>> drumx dbass drumi moog
+#>>> chorus drumi
+#>>> drumx dbass apad drumi
+#>>> drumx dbass drumi moog
 
 
 #>>> gritBass drumx drumi brah moog

@@ -23,10 +23,10 @@ DEFAULT time0.5,sus0.2,amp2.0
 # TODO: drone synth not detected in nrt for some reason
 >>> drums karp
 >>> drums karp rhodes
->>> drums rhodes
->>> karp drums rhodes saw cstart
->>> karp drums wob cstart ldrone
->>> cstart saw karp hdrone
+#>>> drums rhodes
+#>>> karp drums rhodes saw cstart
+#>>> karp drums wob cstart ldrone
+#>>> cstart saw karp hdrone
 #>>> drums karp
 #>>> saw wob drumsold hdrone
 #>>> drumsold
