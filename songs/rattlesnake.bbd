@@ -81,7 +81,7 @@ DEFAULT time0.5,sus0.2,amp1.0,ofs0
 *@SP_Roland808:cymbal sus10,ofs0
 
     88:16
-    (31:0.5000 31:3.5000, x:28):len4.0,tot0.50,amp*0.5
+    (31:0.5000 31:3.5000 x:28):len4.0,tot0.50,amp*0.5
 
 @moogBass:moog sus1.2,relT0.4,fxi0
 
