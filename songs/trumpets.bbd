@@ -47,7 +47,7 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 >>> drum_hard end_clap chug_bass pads
 #>>> cymbal_end drum_hard end_clap chug_bass pads solo trumpet
 
-########## 
+##########
 
 
 >>> drum_hard end_clap chug_bass
@@ -62,10 +62,10 @@ DEFAULT time0.5,sus1.0,amp1.0,ofs0
 
 #>>> drum_step march danger
 #>>> drum_step march danger pads end_clap
-#>>> cymbal_end chug_bass karper 
-#>>> cymbal_end drum_fast drum_hard chug_bass end_clap trumpet 
+#>>> cymbal_end chug_bass karper
+>>> cymbal_end drum_fast drum_hard chug_bass end_clap trumpet
 #>>> cymbal_end drum_fast trumpet_slash pads
-#>>> drum_step march cymbal_end trumpet_grow pads chug_bass
+>>> drum_step march cymbal_end trumpet_grow pads chug_bass
 
 @SP_EMU_SP12:emu sus10,out10
 

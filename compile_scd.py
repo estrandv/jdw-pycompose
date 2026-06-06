@@ -2,6 +2,7 @@ import re
 
 from macros import compile_macros, find_macro_defs
 import os
+import config
 
 # Build proper scd synthdefs from templates
 # Useful to avoid annoying scd boilerplate conventions
@@ -55,7 +56,7 @@ def get_all(path: str) -> list[str]:
 
     content = open(path, 'r').read()
 
-    common_macros = find_macro_defs(open("/home/estrandv/programming/jdw-pycompose/songs" + "/common_macros.txt", 'r').read())
+    common_macros = find_macro_defs(open(config.COMMON_MACROS_DIR + "/common_macros.txt", 'r').read())
 
     new_source = compile_macros(content, common_macros)
 

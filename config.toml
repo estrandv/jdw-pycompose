@@ -1,0 +1,16 @@
+# jdw-pycompose configuration
+bbd_root = "/home/estrandv/programming/jdw-pycompose/songs/"
+router_host = "127.0.0.1"
+router_port = 13339
+sample_pack_dir = "~/sample_packs"
+synthdefs_scd_path = "/home/estrandv/programming/jdw-pycompose/scd/synthDefs.scd"
+template_synths_path = "/home/estrandv/programming/jdw-pycompose/scd-templating/template_synths.txt"
+common_macros_dir = "/home/estrandv/programming/jdw-pycompose/songs"
+first_buffer_index = 100
+
+[delays]
+inter_message = 0.005
+configure = 0.001
+nrt_preload = 0.005
+update = 0.005
+quiet = 0.005

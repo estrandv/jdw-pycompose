@@ -7,6 +7,7 @@ from pythonosc.osc_message import OscMessage
 from pythonosc.udp_client import SimpleUDPClient
 from jdw_billboarding.lib import jdw_osc_utils
 
+import config
 
 from file_utilities import get_default_samples, get_default_synthdefs
 
@@ -29,7 +30,7 @@ def resolve_macros(file_path: str) -> str:
     return macros.compile_macros(content, common_defs)
 
 def default_client() -> SimpleUDPClient:
-    return SimpleUDPClient("127.0.0.1", 13339) # Router
+    return SimpleUDPClient(config.ROUTER_HOST, config.ROUTER_PORT)
 
 # One-time stups like loading all default synths (many messages, time-intensive)
 # TODO: Get things from file_utilities and also provide them to nrt_record
@@ -39,7 +40,7 @@ def setup(_bdd_path: str):
     all_messages: list[OscMessage] = [sample.load_msg for sample in get_default_samples()] + [synth.load_msg for synth in get_default_synthdefs()]
 
     for msg in all_messages:
-        sleep(0.005) # Seems to be needed to prevent dropped messages. This is a tested minimum for 100% configure.
+        sleep(config.DELAY_INTER_MESSAGE) # Seems to be needed to prevent dropped messages. This is a tested minimum for 100% configure.
         client.send(msg)
 
 def quiet(bdd_path: str):
@@ -53,7 +54,7 @@ def quiet(bdd_path: str):
     ])
     bdd_file = resolve_macros(bdd_path)
     for m in get_silence_drones(bdd_file):
-        sleep(0.005)
+        sleep(config.DELAY_QUIET)
         default_client().send(m)
 
 
@@ -68,7 +69,7 @@ def configure(bdd_path: str):
     all_messages: list[OscMessage] = get_configuration_messages(bdd_file)
     all_messages += [synth.load_msg for synth in get_default_synthdefs()] # TODO: Including synths for easy prototyping
     for msg in all_messages:
-        sleep(0.001) # Not 100% sure this is needed anymore but it's nice when configure doesn't drop any packets'
+        sleep(config.DELAY_CONFIGURE) # Not 100% sure this is needed anymore but it's nice when configure doesn't drop any packets'
         client.send(msg)
 
 def nrt_record(bdd_path: str):
@@ -88,10 +89,10 @@ def nrt_record(bdd_path: str):
         for preload in nrt_track.preload_messages:
             # TODO: We can batch this too, ya know
             client.send(preload)
-            sleep(0.005) # Arbitrary "that should do it" wait time to avoid dropping packets
+            sleep(config.DELAY_NRT_PRELOAD) # Arbitrary "that should do it" wait time to avoid dropping packets
         for batch in nrt_track.preload_bundle_batches:
             client.send(batch)
-            sleep(0.005)
+            sleep(config.DELAY_NRT_PRELOAD)
         client.send(nrt_track.main_bundle)
         lis.wait_for("/nrt_record_finished")
 
@@ -102,5 +103,5 @@ def update_queue(bdd_path: str):
 
     packets: list[OscMessage | OscBundle] = get_queue_update_packets(bdd_file)
     for p in packets:
-        sleep(0.005) # Seems to be needed to prevent dropped messages
+        sleep(config.DELAY_UPDATE) # Seems to be needed to prevent dropped messages
         client.send(p)

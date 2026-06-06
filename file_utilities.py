@@ -7,6 +7,8 @@ from jdw_billboarding.lib.jdw_osc_utils import create_msg
 
 from jdw_billboarding.lib.external_data_classes import SampleMessage, SynthDefMessage, Sample
 
+import config
+
 # TODO: Porting of as much as possible from the earlier convenience methods in pycompose
 # Move here first, then work on making it make sense ...
 
@@ -28,7 +30,7 @@ def read_sample_packs(path_string: str, allowed_extensions: list[str] = [".wav"]
     # Mainly a helper struct for indexing by category
     categorized_samples: dict[str, list[Sample]] = {}
 
-    buffer_index = 100
+    buffer_index = config.FIRST_BUFFER_INDEX
     for pack in os.listdir(samples_root):
         pack_path = samples_root + pack + "/"
         if os.path.isdir(pack_path):
@@ -87,7 +89,7 @@ def _defsynthdef_get() -> list[str]:
 
     defs: list[str] = []
     # TODO: Not sure how to get "path of script but not path of any script executing the script"
-    with open("/home/estrandv/programming/jdw-pycompose/scd/synthDefs.scd") as synthDefs:
+    with open(config.SYNTHDEFS_SCD_PATH) as synthDefs:
         content = synthDefs.read()
         for cut in content.split("SynthDef.new"):
             if cut.strip() != "":
@@ -95,7 +97,7 @@ def _defsynthdef_get() -> list[str]:
                 defs.append(full)
 
     import compile_scd
-    for s in compile_scd.get_all("/home/estrandv/programming/jdw-pycompose/scd-templating/template_synths.txt"):
+    for s in compile_scd.get_all(config.TEMPLATE_SYNTHS_PATH):
         defs.append(s)
 
     return defs
@@ -112,5 +114,5 @@ def get_default_synthdefs() -> list[SynthDefMessage]:
     return ret
 
 def get_default_samples() -> list[SampleMessage]:
-    samples = read_sample_packs("~/sample_packs")
+    samples = read_sample_packs(config.SAMPLE_PACK_DIR)
     return [SampleMessage(s, create_msg("/load_sample", s.as_args())) for s in samples]

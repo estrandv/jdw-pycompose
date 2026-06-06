@@ -1,10 +1,13 @@
 import billboard_running as song
 import sys
 import uuid
+import config
 
 from jdw_billboarding.lib import jdw_osc_utils
 
-BBD_ROOT = "/home/estrandv/programming/jdw-pycompose/songs/"
+config.load()
+
+BBD_ROOT = config.BBD_ROOT
 
 def resolve_bbd_path() -> str | None:
     for arg in sys.argv[1:]:
