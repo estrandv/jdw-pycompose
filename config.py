@@ -25,7 +25,9 @@ def _central_config_path():
     xdg = os.path.expanduser("~/.config/jdw.toml")
     if os.path.exists(xdg):
         return xdg
-    return None
+    print("Error: Central config not found at ~/.config/jdw.toml")
+    print("       Set $JDW_CONFIG to a custom path, or create the file.")
+    raise SystemExit(1)
 
 
 def _load_central():
