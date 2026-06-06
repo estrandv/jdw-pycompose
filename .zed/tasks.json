@@ -2,19 +2,19 @@
   {
     "label": "JDW: Play file",
     "command": "/home/estrandv/programming/jdw-helper-scripts/send-jam.sh",
-    "args": ["{ZED_FILE}"],
+    "args": ["$ZED_FILE"],
     "tags": ["jdw", "billboard"]
   },
   {
     "label": "JDW: Update file",
     "command": "/home/estrandv/programming/jdw-helper-scripts/update-config.sh",
-    "args": ["{ZED_FILE}"],
+    "args": ["$ZED_FILE"],
     "tags": ["jdw", "billboard"]
   },
   {
     "label": "JDW: Setup file",
     "command": "/home/estrandv/programming/jdw-helper-scripts/setup-jam.sh",
-    "args": ["{ZED_FILE}"],
+    "args": ["$ZED_FILE"],
     "tags": ["jdw", "billboard"]
   },
   {
@@ -25,7 +25,7 @@
   {
     "label": "JDW: NRT render",
     "command": "/home/estrandv/programming/jdw-helper-scripts/nrt-record.sh",
-    "args": ["{ZED_FILE}"],
+    "args": ["$ZED_FILE"],
     "tags": ["jdw", "nrt"]
   }
 ]
