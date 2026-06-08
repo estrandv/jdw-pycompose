@@ -1,5 +1,10 @@
 # jdw-pycompose
 
+> **DEPRECATED** — replaced by [`jdw-suite`](https://github.com/estrandv/jdw-suite) (Rust).
+> This repo remains as a reference implementation for business logic and as a
+> source of working SCD exports for diff comparison. Songs and synthdefs are
+> being migrated to `jdw-songs`.
+
 Song composition and orchestration layer for the JackDAW system. Compiles Billboard (`.bbd`) files into OSC commands that drive the sequencer, SuperCollider, and sampler subsystems.
 
 ## What It Does
